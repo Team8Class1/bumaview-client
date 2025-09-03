@@ -6,6 +6,67 @@ import { MessageCircle, ThumbsUp, Eye, Calendar, Building } from "lucide-react";
 import { Question } from "@/types/question";
 import { useState, useEffect } from "react";
 
+// 브라우저에서 CSV 데이터를 로드하는 함수
+async function loadQuestionsFromCSV(): Promise<Question[]> {
+  try {
+    const response = await fetch('/interview.csv');
+    const csvText = await response.text();
+
+    const lines = csvText.trim().split('\n');
+    const headers = lines[0].split(',');
+
+    const questions: Question[] = lines.slice(1).map((line, index) => {
+      const values = line.split(',');
+      return {
+        id: (index + 1).toString(),
+        question: values[0] || '',
+        category: values[1] || '',
+        company: values[2] || '',
+        question_at: values[3] || '',
+        author: '익명',
+        tags: values[1] ? [values[1]] : [],
+        createdAt: new Date().toISOString(),
+        views: Math.floor(Math.random() * 500) + 1,
+        likes: Math.floor(Math.random() * 50) + 1,
+        replies: Math.floor(Math.random() * 20) + 1
+      };
+    });
+
+    return questions;
+  } catch (error) {
+    console.error('Failed to load CSV:', error);
+    // Fallback to mock data
+    return [
+      {
+        id: "1",
+        question: "간단한 자기소개",
+        category: "back",
+        company: "마이다스IT",
+        question_at: "2023",
+        author: "익명",
+        tags: ["back"],
+        createdAt: "2024-01-15T10:30:00Z",
+        views: 152,
+        likes: 23,
+        replies: 7
+      },
+      {
+        id: "2",
+        question: "가장 기억에 남는 프로젝트는?",
+        category: "back",
+        company: "마이다스IT",
+        question_at: "2023",
+        author: "익명",
+        tags: ["back"],
+        createdAt: "2024-01-14T15:22:00Z",
+        views: 89,
+        likes: 15,
+        replies: 4
+      }
+    ];
+  }
+}
+
 interface QuestionCardProps {
   question: Question;
 }
@@ -87,11 +148,11 @@ export function RecentQuestions({ limit = 5 }: RecentQuestionsProps) {
   useEffect(() => {
     const loadQuestions = async () => {
       try {
-        const response = await fetch('/api/questions');
-        const data = await response.json();
-        setQuestions(data.slice(0, limit));
+        // Load questions from CSV file
+        const csvQuestions = await loadQuestionsFromCSV();
+        setQuestions(csvQuestions.slice(0, limit));
       } catch (error) {
-        console.error('Failed to load questions:', error);
+        console.error('Failed to load questions from CSV:', error);
         // Fallback to mock data
         const mockQuestions: Question[] = [
           {
