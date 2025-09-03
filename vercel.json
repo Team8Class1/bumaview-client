@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "app/**/*.ts": {
+      "runtime": "@vercel/node"
+    }
+  },
+  "github": {
+    "silent": true
+  }
+}
