@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       success: 8,
       errors: 2
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }

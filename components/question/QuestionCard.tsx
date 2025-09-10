@@ -13,7 +13,7 @@ async function loadQuestionsFromCSV(): Promise<Question[]> {
     const csvText = await response.text();
 
     const lines = csvText.trim().split('\n');
-    const headers = lines[0].split(',');
+    lines[0].split(','); // headers
 
     const questions: Question[] = lines.slice(1).map((line, index) => {
       const values = line.split(',');

@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       message: 'Question created successfully',
       question: newQuestion
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to create question' }, { status: 500 });
   }
 }

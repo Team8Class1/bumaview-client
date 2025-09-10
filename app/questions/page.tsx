@@ -20,10 +20,6 @@ export default function QuestionsPage() {
     sort: "recent"
   });
 
-  useEffect(() => {
-    loadQuestions();
-  }, [filters]);
-
   const loadQuestions = async () => {
     try {
       setLoading(true);
@@ -42,6 +38,10 @@ export default function QuestionsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadQuestions();
+  }, [filters, loadQuestions]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

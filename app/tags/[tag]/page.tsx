@@ -22,7 +22,7 @@ export default function TagPage() {
             <span className="text-gray-500">관련 질문 12개</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            '{decodeURIComponent(tag)}' 태그 질문들
+&lsquo;{decodeURIComponent(tag)}&rsquo; 태그 질문들
           </h1>
         </div>
         

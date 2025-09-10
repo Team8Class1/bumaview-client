@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const mockProfile = {
     name: "김개발",
     email: "dev@example.com",
@@ -11,6 +11,6 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ profile: mockProfile });
 }
 
-export async function PATCH(request: NextRequest) {
+export async function PATCH() {
   return NextResponse.json({ message: "Profile updated successfully" });
 }

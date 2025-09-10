@@ -1,5 +1,4 @@
-import Header from '@/components/common/Header';
-import Footer from '@/components/common/Footer';
+import { FullWidthLayout } from '@/components/common/MainLayout';
 import SearchBar from '@/components/common/SearchBar';
 import { RecentQuestions } from '@/components/question/QuestionCard';
 import { Button } from '@/components/ui/button';
@@ -9,9 +8,7 @@ import { BookOpen, Users, Building, TrendingUp } from 'lucide-react';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header />
-      
+    <FullWidthLayout>
       <main>
         {/* Hero Section */}
         <section className="bg-white dark:bg-gray-800 border-b">
@@ -181,8 +178,6 @@ export default function HomePage() {
           </div>
         </section>
       </main>
-      
-      <Footer />
-    </div>
+    </FullWidthLayout>
   );
 }

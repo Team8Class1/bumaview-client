@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
         'Hook 사용법에 대한 유사 질문'
       ] : []
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Duplicate check failed' }, { status: 500 });
   }
 }

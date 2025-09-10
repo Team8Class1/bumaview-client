@@ -18,10 +18,6 @@ export default function QuestionDetailPage() {
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadQuestion();
-  }, [params.id]);
-
   const loadQuestion = async () => {
     try {
       setLoading(true);
@@ -46,6 +42,10 @@ export default function QuestionDetailPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadQuestion();
+  }, [params.id, loadQuestion]);
 
   const handleSubmitAnswer = () => {
     if (!answer.trim()) return;

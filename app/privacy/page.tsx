@@ -13,7 +13,7 @@ export default function PrivacyPage() {
         
         <div className="bg-white dark:bg-gray-800 rounded-lg p-8 prose dark:prose-invert max-w-none">
           <h2>1. 개인정보의 처리 목적</h2>
-          <p>BumaView("회사")는 다음의 목적을 위하여 개인정보를 처리합니다:</p>
+          <p>BumaView(&ldquo;회사&rdquo;)는 다음의 목적을 위하여 개인정보를 처리합니다:</p>
           <p>- 서비스 제공 및 운영</p>
           <p>- 회원 관리</p>
           <p>- 서비스 개선 및 신규 서비스 개발</p>

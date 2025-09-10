@@ -39,7 +39,7 @@ export default function CreateQuestionPage() {
         company: "",
         year: "2024"
       });
-    } catch (error) {
+    } catch {
       alert("질문 등록에 실패했습니다.");
     } finally {
       setIsSubmitting(false);

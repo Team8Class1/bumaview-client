@@ -13,10 +13,10 @@ import { User, Mail, Github, Calendar } from "lucide-react";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState({
-    name: "김개발",
-    email: "dev@example.com",
-    bio: "5년차 풀스택 개발자입니다.",
-    github: "github.com/devkim",
+    name: "서명균",
+    email: "mgilovehim@gmail.com",
+    bio: "1년차 프론트엔드 엔지니어입니다.",
+    github: "github.com/mgilovehim",
     interests: ["React", "Node.js", "TypeScript"]
   });
 
