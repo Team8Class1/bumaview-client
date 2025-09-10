@@ -20,28 +20,28 @@ export default function QuestionsPage() {
     sort: "recent"
   });
 
-  const loadQuestions = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (filters.category) params.append('category', filters.category);
-      if (filters.company) params.append('company', filters.company);
-      if (filters.year) params.append('year', filters.year);
-      params.append('sort', filters.sort);
-      
-      const response = await fetch(`/api/questions?${params}`);
-      const data = await response.json();
-      setQuestions(data);
-    } catch (error) {
-      console.error('Failed to load questions:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        setLoading(true);
+        const params = new URLSearchParams();
+        if (filters.category) params.append('category', filters.category);
+        if (filters.company) params.append('company', filters.company);
+        if (filters.year) params.append('year', filters.year);
+        params.append('sort', filters.sort);
+        
+        const response = await fetch(`/api/questions?${params}`);
+        const data = await response.json();
+        setQuestions(data);
+      } catch (error) {
+        console.error('Failed to load questions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadQuestions();
-  }, [filters, loadQuestions]);
+  }, [filters]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

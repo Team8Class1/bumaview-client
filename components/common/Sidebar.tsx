@@ -128,7 +128,7 @@ export default function Sidebar({ isOpen = true, onClose, className }: SidebarPr
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-200 z-50",
+          "fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 bg-gray-900 border-r border-gray-800 transform transition-transform duration-200 z-50",
           "lg:translate-x-0 lg:sticky lg:top-16",
           isOpen ? "translate-x-0" : "-translate-x-full",
           className
@@ -137,7 +137,7 @@ export default function Sidebar({ isOpen = true, onClose, className }: SidebarPr
         <div className="flex flex-col h-full">
           {/* Quick Actions */}
           {isLoggedIn && (
-            <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+            <div className="p-4 border-b border-gray-800">
               <Button className="w-full flex items-center space-x-2" asChild>
                 <Link href="/questions/create">
                   <Plus className="h-4 w-4" />
@@ -161,8 +161,8 @@ export default function Sidebar({ isOpen = true, onClose, className }: SidebarPr
                       className={cn(
                         "flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer",
                         isActive(item.href)
-                          ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                          ? "bg-blue-900/50 text-blue-300"
+                          : "text-gray-300 hover:bg-gray-800"
                       )}
                       onClick={() => hasChildren ? toggleExpanded(item.label) : null}
                     >
@@ -198,8 +198,8 @@ export default function Sidebar({ isOpen = true, onClose, className }: SidebarPr
                               className={cn(
                                 "flex items-center space-x-3 px-3 py-2 rounded-md text-sm transition-colors",
                                 isActive(child.href)
-                                  ? "bg-blue-50 dark:bg-blue-900/25 text-blue-600 dark:text-blue-400"
-                                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                  ? "bg-blue-900/25 text-blue-400"
+                                  : "text-gray-400 hover:bg-gray-800"
                               )}
                               onClick={onClose}
                             >
@@ -218,7 +218,7 @@ export default function Sidebar({ isOpen = true, onClose, className }: SidebarPr
             {/* Quick Links */}
             {isLoggedIn && (
               <div className="mt-6 px-4">
-                <h4 className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                <h4 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                   빠른 링크
                 </h4>
                 <div className="space-y-1">
@@ -231,8 +231,8 @@ export default function Sidebar({ isOpen = true, onClose, className }: SidebarPr
                         className={cn(
                           "flex items-center space-x-3 px-3 py-2 rounded-md text-sm transition-colors",
                           isActive(link.href)
-                            ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            ? "bg-blue-900/50 text-blue-300"
+                            : "text-gray-300 hover:bg-gray-800"
                         )}
                         onClick={onClose}
                       >
@@ -247,7 +247,7 @@ export default function Sidebar({ isOpen = true, onClose, className }: SidebarPr
 
             {/* Trending Tags */}
             <div className="mt-6 px-4">
-              <h4 className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+              <h4 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 인기 태그
               </h4>
               <div className="px-3 space-y-2">
@@ -258,7 +258,7 @@ export default function Sidebar({ isOpen = true, onClose, className }: SidebarPr
                     className="inline-block"
                     onClick={onClose}
                   >
-                    <Badge variant="outline" className="text-xs hover:bg-blue-50 dark:hover:bg-blue-900/25 transition-colors">
+                    <Badge variant="outline" className="text-xs hover:bg-blue-900/25 transition-colors">
                       {tag}
                     </Badge>
                   </Link>
@@ -268,11 +268,11 @@ export default function Sidebar({ isOpen = true, onClose, className }: SidebarPr
           </nav>
 
           {/* Bottom Section */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+          <div className="p-4 border-t border-gray-800">
             {isLoggedIn && (
               <Link
                 href="/settings"
-                className="flex items-center space-x-3 px-3 py-2 rounded-md text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="flex items-center space-x-3 px-3 py-2 rounded-md text-sm text-gray-300 hover:bg-gray-800 transition-colors"
                 onClick={onClose}
               >
                 <Settings className="h-4 w-4" />

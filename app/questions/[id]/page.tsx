@@ -18,34 +18,34 @@ export default function QuestionDetailPage() {
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const loadQuestion = async () => {
-    try {
-      setLoading(true);
-      // Mock question data since we don't have individual question API yet
-      const mockQuestion: Question = {
-        id: params.id as string,
-        question: "React에서 useEffect의 의존성 배열을 비워두면 어떻게 될까요?",
-        category: "front",
-        company: "카카오",
-        question_at: "2023",
-        author: "익명",
-        tags: ["React", "Hooks"],
-        createdAt: "2024-01-15T10:30:00Z",
-        views: 152,
-        likes: 23,
-        replies: 7
-      };
-      setQuestion(mockQuestion);
-    } catch (error) {
-      console.error('Failed to load question:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const loadQuestion = async () => {
+      try {
+        setLoading(true);
+        // Mock question data since we don't have individual question API yet
+        const mockQuestion: Question = {
+          id: params.id as string,
+          question: "React에서 useEffect의 의존성 배열을 비워두면 어떻게 될까요?",
+          category: "front",
+          company: "카카오",
+          question_at: "2023",
+          author: "익명",
+          tags: ["React", "Hooks"],
+          createdAt: "2024-01-15T10:30:00Z",
+          views: 152,
+          likes: 23,
+          replies: 7
+        };
+        setQuestion(mockQuestion);
+      } catch (error) {
+        console.error('Failed to load question:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadQuestion();
-  }, [params.id, loadQuestion]);
+  }, [params.id]);
 
   const handleSubmitAnswer = () => {
     if (!answer.trim()) return;
