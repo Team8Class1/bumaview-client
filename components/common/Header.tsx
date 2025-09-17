@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import SearchBar from "./SearchBar";
+import ThemeToggle from "./ThemeToggle";
 import { User, Menu, X, Plus, Bookmark, Users, Building, Settings } from "lucide-react";
 import { useState } from "react";
 
@@ -35,11 +36,11 @@ export default function Header() {
 
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-800 bg-gray-900/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
-            <Link href="/" className="text-xl font-bold text-white hover:text-blue-400 transition-colors">
+            <Link href="/" className="text-xl font-bold text-foreground hover:text-blue-500 transition-colors">
               BumaView
             </Link>
             
@@ -57,7 +58,7 @@ export default function Header() {
                 <Link 
                   key={item.href}
                   href={item.href}
-                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-800 transition-all"
+                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
                 >
                   {Icon && <Icon className="h-4 w-4" />}
                   <span>{item.label}</span>
@@ -66,6 +67,9 @@ export default function Header() {
             })}
             
 
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             {/* User Section */}
             {isLoggedIn ? (
               <div className="flex items-center space-x-2 ml-4">
@@ -85,7 +89,7 @@ export default function Header() {
                   </Button>
                   
                   {/* User Dropdown */}
-                  <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg border border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                  <div className="absolute right-0 mt-2 w-48 bg-popover rounded-md shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                     <div className="p-2">
                       {userMenuItems.map((item) => {
                         const Icon = item.icon;
@@ -93,17 +97,17 @@ export default function Header() {
                           <Link
                             key={item.href}
                             href={item.href}
-                            className="flex items-center space-x-2 px-3 py-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+                            className="flex items-center space-x-2 px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                           >
                             <Icon className="h-4 w-4" />
                             <span>{item.label}</span>
                           </Link>
                         );
                       })}
-                      <hr className="my-2 border-gray-700" />
+                      <hr className="my-2 border-border" />
                       <button
                         onClick={() => setIsLoggedIn(false)}
-                        className="w-full flex items-center space-x-2 px-3 py-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700 transition-colors text-left"
+                        className="w-full flex items-center space-x-2 px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-left"
                       >
                         <span>로그아웃</span>
                       </button>
@@ -124,7 +128,8 @@ export default function Header() {
           </nav>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-2">
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="icon"
@@ -150,7 +155,7 @@ export default function Header() {
                   <Link 
                     key={item.href}
                     href={item.href}
-                    className="flex items-center space-x-2 px-3 py-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+                    className="flex items-center space-x-2 px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {Icon && <Icon className="h-4 w-4" />}
@@ -161,14 +166,14 @@ export default function Header() {
               
               {isLoggedIn ? (
                 <>
-                  <hr className="my-2 border-gray-700" />
+                  <hr className="my-2 border-border" />
                   {userMenuItems.map((item) => {
                     const Icon = item.icon;
                     return (
                       <Link
                         key={item.href}
                         href={item.href}
-                        className="flex items-center space-x-2 px-3 py-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+                        className="flex items-center space-x-2 px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <Icon className="h-4 w-4" />
@@ -181,7 +186,7 @@ export default function Header() {
                       setIsLoggedIn(false);
                       setIsMenuOpen(false);
                     }}
-                    className="w-full flex items-center space-x-2 px-3 py-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-800 transition-colors text-left"
+                    className="w-full flex items-center space-x-2 px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-left"
                   >
                     <span>로그아웃</span>
                   </button>
