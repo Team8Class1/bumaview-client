@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import Head from "next/head";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import { Button } from "@/components/ui/button";
@@ -332,8 +333,45 @@ export default function QuestionDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
+      <Head>
+        <title>{question ? `${question.question} | BumaView` : '질문 상세 | BumaView'}</title>
+        <meta name="description" content={question ? `${question.company}에서 받은 면접 질문: ${question.question}` : '면접 질문 상세 정보'} />
+        <meta name="keywords" content={`${question?.company || ''} 면접, ${question?.category || ''} 개발자, 면접 질문`} />
+        <link rel="canonical" href={`https://bumaview.com/questions/${question?.id || ''}`} />
+        {question && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Question",
+                "name": question.question,
+                "text": question.question,
+                "author": {
+                  "@type": "Person",
+                  "name": question.author
+                },
+                "dateCreated": question.createdAt,
+                "interactionStatistic": [
+                  {
+                    "@type": "InteractionCounter",
+                    "interactionType": "https://schema.org/ViewAction",
+                    "userInteractionCount": question.views
+                  },
+                  {
+                    "@type": "InteractionCounter",
+                    "interactionType": "https://schema.org/LikeAction",
+                    "userInteractionCount": question.likes
+                  }
+                ]
+              })
+            }}
+          />
+        )}
+      </Head>
+      <div className="min-h-screen bg-background">
+        <Header />
       
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
@@ -640,7 +678,8 @@ export default function QuestionDetailPage() {
         )}
       </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 }

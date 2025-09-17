@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import Head from "next/head";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import SearchBar from "@/components/common/SearchBar";
@@ -142,8 +143,15 @@ export default function QuestionsPage() {
   const totalPages = Math.ceil(totalQuestions / questionsPerPage);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
+      <Head>
+        <title>질문 둘러보기 | BumaView</title>
+        <meta name="description" content="개발자 면접에서 실제로 받은 질문들을 둘러보고 답변을 준비하세요. 카테고리별, 회사별로 정리된 면접 질문 모음." />
+        <meta name="keywords" content="면접 질문, 개발자 면접, 프로그래밍 질문, 코딩 면접, 기술 면접" />
+        <link rel="canonical" href="https://bumaview.com/questions" />
+      </Head>
+      <div className="min-h-screen bg-background">
+        <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
@@ -296,7 +304,8 @@ export default function QuestionsPage() {
         )}
       </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 }

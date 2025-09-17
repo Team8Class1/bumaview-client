@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import Link from 'next/link';
 import { BookOpen, Users, Building, TrendingUp } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import Head from 'next/head';
 
 // Lazy load RecentQuestions component
 const RecentQuestions = dynamic(() =>
@@ -28,8 +29,37 @@ const RecentQuestions = dynamic(() =>
 
 export default function HomePage() {
   return (
-    <FullWidthLayout>
-      <main>
+    <>
+      <Head>
+        <link rel="canonical" href="https://bumaview.com" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              "name": "BumaView",
+              "description": "개발자 면접 질문 공유 플랫폼",
+              "url": "https://bumaview.com",
+              "applicationCategory": "EducationalApplication",
+              "operatingSystem": "Web",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "KRW"
+              },
+              "featureList": [
+                "면접 질문 공유",
+                "답변 작성 및 공유",
+                "회사별 질문 분류",
+                "카테고리별 정리"
+              ]
+            })
+          }}
+        />
+      </Head>
+      <FullWidthLayout>
+        <main>
         {/* Hero Section */}
         <section className="bg-gray-800 border-b border-gray-700" style={{backgroundColor: 'var(--gray-800)', borderColor: 'var(--gray-700)'}}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -197,7 +227,8 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-      </main>
-    </FullWidthLayout>
+        </main>
+      </FullWidthLayout>
+    </>
   );
 }

@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Disallow admin or private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+
+# Allow specific important pages
+Allow: /questions
+Allow: /companies
+Allow: /groups
+
+# Sitemap location
+Sitemap: https://bumaview.com/sitemap.xml
