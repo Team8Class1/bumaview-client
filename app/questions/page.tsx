@@ -63,12 +63,12 @@ export default function QuestionsPage() {
           <SearchBar className="mb-4" />
           
           <div className="flex flex-wrap gap-4">
-            <Select value={filters.category} onValueChange={(value) => setFilters({...filters, category: value})}>
+            <Select value={filters.category} onValueChange={(value) => setFilters({...filters, category: value === 'all' ? '' : value})}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="카테고리" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
+                <SelectItem value="all">전체</SelectItem>
                 <SelectItem value="front">프론트엔드</SelectItem>
                 <SelectItem value="back">백엔드</SelectItem>
                 <SelectItem value="ai">AI</SelectItem>
@@ -76,12 +76,12 @@ export default function QuestionsPage() {
               </SelectContent>
             </Select>
 
-            <Select value={filters.company} onValueChange={(value) => setFilters({...filters, company: value})}>
+            <Select value={filters.company} onValueChange={(value) => setFilters({...filters, company: value === 'all' ? '' : value})}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="회사" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
+                <SelectItem value="all">전체</SelectItem>
                 <SelectItem value="마이다스IT">마이다스IT</SelectItem>
                 <SelectItem value="신한은행">신한은행</SelectItem>
               </SelectContent>
