@@ -24,15 +24,76 @@ export default function QuestionsPage() {
     const loadQuestions = async () => {
       try {
         setLoading(true);
-        const params = new URLSearchParams();
-        if (filters.category) params.append('category', filters.category);
-        if (filters.company) params.append('company', filters.company);
-        if (filters.year) params.append('year', filters.year);
-        params.append('sort', filters.sort);
-        
-        const response = await fetch(`/api/questions?${params}`);
-        const data = await response.json();
-        setQuestions(data);
+        const response = await fetch('/interview.csv');
+        const text = await response.text();
+        const lines = text.split('\n');
+
+        const csvQuestions = lines.slice(1)
+          .filter(line => line.trim())
+          .map((line, index) => {
+            // Simple CSV parsing - handle quotes properly
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+              const char = line[i];
+              if (char === '"') {
+                inQuotes = !inQuotes;
+              } else if (char === ',' && !inQuotes) {
+                values.push(current.trim());
+                current = '';
+              } else {
+                current += char;
+              }
+            }
+            values.push(current.trim());
+
+            const [question, category, company, question_at] = values;
+            return {
+              id: (index + 1).toString(),
+              question: question?.replace(/"/g, '') || '',
+              category: category || '',
+              company: company || '',
+              question_at: question_at || '',
+              likes: Math.floor(Math.random() * 50),
+              views: Math.floor(Math.random() * 200) + 10,
+              createdAt: question_at || '2023',
+              author: '익명',
+              tags: category ? [category] : [],
+              replies: Math.floor(Math.random() * 20)
+            };
+          })
+          .filter(q => q.question && q.question.trim() !== '');
+
+        let filteredQuestions = [...csvQuestions];
+
+        // Apply filters
+        if (filters.category) {
+          filteredQuestions = filteredQuestions.filter(q => q.category === filters.category);
+        }
+        if (filters.company) {
+          filteredQuestions = filteredQuestions.filter(q => q.company === filters.company);
+        }
+
+        // Apply sorting
+        switch (filters.sort) {
+          case 'oldest':
+            filteredQuestions.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+            break;
+          case 'likes':
+            filteredQuestions.sort((a, b) => b.likes - a.likes);
+            break;
+          case 'views':
+            filteredQuestions.sort((a, b) => b.views - a.views);
+            break;
+          case 'recent':
+          default:
+            filteredQuestions.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+            break;
+        }
+
+        setQuestions(filteredQuestions);
       } catch (error) {
         console.error('Failed to load questions:', error);
       } finally {
@@ -44,12 +105,12 @@ export default function QuestionsPage() {
   }, [filters]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-foreground">
             면접 질문 목록
           </h1>
           <Button asChild>
@@ -104,7 +165,7 @@ export default function QuestionsPage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-600 dark:text-gray-400 mt-4">질문을 불러오는 중...</p>
+            <p className="text-muted-foreground mt-4">질문을 불러오는 중...</p>
           </div>
         ) : (
           <div className="space-y-6">
@@ -114,7 +175,7 @@ export default function QuestionsPage() {
               ))
             ) : (
               <div className="text-center py-12">
-                <p className="text-gray-600 dark:text-gray-400">검색 결과가 없습니다.</p>
+                <p className="text-muted-foreground">검색 결과가 없습니다.</p>
               </div>
             )}
           </div>

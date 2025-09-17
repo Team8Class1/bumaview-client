@@ -73,13 +73,13 @@ interface QuestionCardProps {
 
 export default function QuestionCard({ question }: QuestionCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow">
+    <div className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start mb-4">
         <Link 
           href={`/questions/${question.id}`}
           className="flex-1"
         >
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-2">
+          <h3 className="text-lg font-semibold text-foreground hover:text-blue-500 transition-colors line-clamp-2">
             {question.question}
           </h3>
         </Link>
@@ -87,31 +87,31 @@ export default function QuestionCard({ question }: QuestionCardProps) {
       
       <div className="flex items-center gap-4 mb-4">
         <div className="flex items-center space-x-1 text-sm">
-          <Building className="h-4 w-4 text-gray-500" />
-          <span className="text-gray-700 dark:text-gray-300">{question.company}</span>
+          <Building className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">{question.company}</span>
         </div>
         <div className="flex items-center space-x-1 text-sm">
-          <Calendar className="h-4 w-4 text-gray-500" />
-          <span className="text-gray-700 dark:text-gray-300">{question.question_at}</span>
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">{question.question_at}</span>
         </div>
       </div>
       
       <div className="flex flex-wrap gap-2 mb-4">
-        <div className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-md">
+        <div className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs rounded-md">
           {question.category}
         </div>
         {question.tags && question.tags.map((tag, index) => (
           <Link 
             key={index} 
             href={`/tags/${tag}`}
-            className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+            className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
           >
             {tag}
           </Link>
         ))}
       </div>
       
-      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-1">
             <Eye className="h-4 w-4" />
@@ -128,7 +128,7 @@ export default function QuestionCard({ question }: QuestionCardProps) {
         </div>
         
         <div className="flex items-center space-x-4">
-          <span className="text-gray-700 dark:text-gray-300">
+          <span className="text-muted-foreground">
             by <span className="font-medium">{question.author || '익명'}</span>
           </span>
         </div>
