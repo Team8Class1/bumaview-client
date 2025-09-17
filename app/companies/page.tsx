@@ -177,7 +177,7 @@ export default function CompaniesPage() {
   const filteredCompanies = companies.filter(company => {
     const matchesSearch = 
       company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (company.description && company.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
       company.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesIndustry = !selectedIndustry || company.industry === selectedIndustry;
