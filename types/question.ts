@@ -4,12 +4,12 @@ export interface Question {
   category: string;
   company: string;
   question_at: string;
-  author?: string;
-  tags?: string[];
-  createdAt?: string;
-  views?: number;
-  likes?: number;
-  replies?: number;
+  author: string;
+  tags: string[];
+  createdAt: string;
+  views: number;
+  likes: number;
+  replies: number;
 }
 
 export interface QuestionFilters {

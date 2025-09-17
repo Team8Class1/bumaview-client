@@ -151,13 +151,13 @@ export default function TagPage() {
   const sortedQuestions = [...filteredQuestions].sort((a, b) => {
     switch (sortBy) {
       case "recent":
-        return new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime();
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       case "oldest":
-        return new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime();
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       case "likes":
-        return (b.likes || 0) - (a.likes || 0);
+        return b.likes - a.likes;
       case "views":
-        return (b.views || 0) - (a.views || 0);
+        return b.views - a.views;
       default:
         return 0;
     }

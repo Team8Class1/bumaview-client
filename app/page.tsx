@@ -1,10 +1,30 @@
+"use client";
+
 import { FullWidthLayout } from '@/components/common/MainLayout';
 import SearchBar from '@/components/common/SearchBar';
-import { RecentQuestions } from '@/components/question/QuestionCard';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
 import { BookOpen, Users, Building, TrendingUp } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+// Lazy load RecentQuestions component
+const RecentQuestions = dynamic(() =>
+  import('@/components/question/QuestionCard').then(mod => ({ default: mod.RecentQuestions })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-8 bg-muted rounded w-64 mb-4"></div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-24 bg-muted rounded"></div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+);
 
 export default function HomePage() {
   return (

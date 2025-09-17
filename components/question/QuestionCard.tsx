@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, ThumbsUp, Eye, Calendar, Building } from "lucide-react";
 import { Question } from "@/types/question";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
 // 브라우저에서 CSV 데이터를 로드하는 함수
 async function loadQuestionsFromCSV(): Promise<Question[]> {
@@ -16,23 +16,40 @@ async function loadQuestionsFromCSV(): Promise<Question[]> {
     lines[0].split(','); // headers
 
     const questions: Question[] = lines.slice(1).map((line, index) => {
-      const values = line.split(',');
+      const values = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          values.push(current.trim());
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      values.push(current.trim());
+      
+      const [question, category, company, question_at] = values;
+
       return {
         id: (index + 1).toString(),
-        question: values[0] || '',
-        category: values[1] || '',
-        company: values[2] || '',
-        question_at: values[3] || '',
+        question: question?.replace(/"/g, '') || '',
+        category: category || '',
+        company: company || '',
+        question_at: question_at || '',
         author: '익명',
-        tags: values[1] ? [values[1]] : [],
-        createdAt: new Date().toISOString(),
+        tags: category ? [category] : [],
+        createdAt: question_at || '2023',
         views: Math.floor(Math.random() * 500) + 1,
         likes: Math.floor(Math.random() * 50) + 1,
         replies: Math.floor(Math.random() * 20) + 1
       };
     });
 
-    return questions;
+    return questions.filter(q => q.question && q.question.trim() !== '');
   } catch (error) {
     console.error('Failed to load CSV:', error);
     // Fallback to mock data
@@ -71,7 +88,7 @@ interface QuestionCardProps {
   question: Question;
 }
 
-export default function QuestionCard({ question }: QuestionCardProps) {
+const QuestionCard = memo(function QuestionCard({ question }: QuestionCardProps) {
   return (
     <div className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start mb-4">
@@ -135,7 +152,9 @@ export default function QuestionCard({ question }: QuestionCardProps) {
       </div>
     </div>
   );
-}
+});
+
+export default QuestionCard;
 
 interface RecentQuestionsProps {
   limit?: number;
