@@ -30,17 +30,23 @@ export default function AuthPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    
+
+    // TODO: Replace mock authentication with real implementation
+    // - Integrate with /api/auth endpoint
+    // - Add proper JWT token handling
+    // - Implement secure session management
+    // - Add OAuth providers (Google, GitHub, etc.)
+    // - Add rate limiting for failed login attempts
     // Mock login logic
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     if (loginForm.email === "admin@example.com" && loginForm.password === "admin") {
       // Redirect to dashboard
       window.location.href = "/";
     } else {
       setError("이메일 또는 비밀번호가 올바르지 않습니다.");
     }
-    
+
     setIsLoading(false);
   };
 
@@ -48,22 +54,29 @@ export default function AuthPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    
+
     if (signupForm.password !== signupForm.confirmPassword) {
       setError("비밀번호가 일치하지 않습니다.");
       setIsLoading(false);
       return;
     }
-    
+
     if (signupForm.password.length < 8) {
       setError("비밀번호는 8자 이상이어야 합니다.");
       setIsLoading(false);
       return;
     }
-    
+
+    // TODO: Replace mock signup with real implementation
+    // - Integrate with /api/auth endpoint for user registration
+    // - Add email verification process
+    // - Implement password strength validation
+    // - Add user data validation and sanitization
+    // - Check for duplicate email addresses
+    // - Add CAPTCHA for bot protection
     // Mock signup logic
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     // Redirect to home
     window.location.href = "/";
     setIsLoading(false);
@@ -143,6 +156,13 @@ export default function AuthPage() {
                     </div>
                     
                     <div className="text-right">
+                      {/* TODO: Implement password reset functionality
+                          - Create /auth/forgot-password page
+                          - Add email verification for password reset
+                          - Implement secure token generation and validation
+                          - Add rate limiting for reset requests
+                          - Send reset emails with secure links
+                      */}
                       <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:text-blue-500">
                         비밀번호를 잊으셨나요?
                       </Link>

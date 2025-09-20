@@ -27,6 +27,13 @@ export function parseCSV(csvContent: string): Question[] {
 
 export async function loadQuestionsFromCSV(): Promise<Question[]> {
   try {
+    // TODO: Migrate from CSV to proper database
+    // - Replace CSV file reading with database queries
+    // - Implement proper data models with ORM (Prisma/TypeORM)
+    // - Add database indexes for better query performance
+    // - Create proper migration scripts for data transfer
+    // - Add data validation and constraints
+    // - Implement proper transaction handling
     const csvPath = path.join(process.cwd(), 'data', 'seed', 'interview.csv');
     const csvContent = fs.readFileSync(csvPath, 'utf-8');
     return parseCSV(csvContent);

@@ -42,6 +42,12 @@ export const metadata: Metadata = {
     description: "실제 면접에서 받은 질문들을 공유하고, 다른 개발자들과 함께 답변을 준비하세요.",
     images: [
       {
+        // TODO: Create missing OG image file
+        // - Design and create /public/og-image.jpg (1200x630px)
+        // - Include BumaView branding and key messaging
+        // - Optimize file size for fast loading
+        // - Consider creating dynamic OG images for different pages
+        // - Add favicon and other brand assets
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
@@ -53,6 +59,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "BumaView - 개발자 면접 질문 공유 플랫폼",
     description: "실제 면접에서 받은 질문들을 공유하고, 다른 개발자들과 함께 답변을 준비하세요.",
+    // TODO: Same OG image file needed for Twitter cards
     images: ["/og-image.jpg"],
   },
   robots: {

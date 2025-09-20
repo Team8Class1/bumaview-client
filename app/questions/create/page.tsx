@@ -28,8 +28,16 @@ export default function CreateQuestionPage() {
     }
 
     setIsSubmitting(true);
-    
+
     try {
+      // TODO: Replace mock submission with real database integration
+      // - Create API endpoint for question creation
+      // - Add user authentication check before submission
+      // - Implement question content validation and sanitization
+      // - Add duplicate question detection using similarity algorithms
+      // - Store question data in database with proper indexing
+      // - Send notification to moderators for review
+      // - Add rate limiting to prevent spam submissions
       // Mock submission
       await new Promise(resolve => setTimeout(resolve, 1000));
       alert("질문이 등록되었습니다!");
@@ -143,6 +151,12 @@ export default function CreateQuestionPage() {
                   <li>• 실제 면접에서 받은 질문을 정확히 기입해주세요</li>
                   <li>• 개인정보나 민감한 정보는 제외해주세요</li>
                   <li>• 질문의 맥락이나 배경이 있다면 함께 적어주세요</li>
+                  {/* TODO: Implement duplicate question checking functionality
+                      - Add real-time search as user types question
+                      - Use text similarity algorithms to detect duplicates
+                      - Show similar questions before submission
+                      - Allow users to confirm if their question is unique
+                  */}
                   <li>• 중복된 질문이 있는지 먼저 검색해보세요</li>
                 </ul>
               </div>
