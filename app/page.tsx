@@ -152,11 +152,18 @@ export default function HomePage() {
                     실제 면접에서 받은 질문들을 <br/>
                     카테고리별, 회사별로 정리하여 공유하세요.
                   </p>
-                  <Button variant="outline" asChild>
-                    <Link href="/questions">
-                      질문 보기
-                    </Link>
-                  </Button>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" asChild>
+                      <Link href="/questions">
+                        질문 보기
+                      </Link>
+                    </Button>
+                    <Button asChild>
+                      <Link href="/study">
+                        학습하기
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </Card>
 

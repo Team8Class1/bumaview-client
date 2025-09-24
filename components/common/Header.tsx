@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import SearchBar from "./SearchBar";
 import ThemeToggle from "./ThemeToggle";
-import { User, Menu, X, Plus, Bookmark, Users, Building, Settings } from "lucide-react";
+import { User, Menu, X, Plus, Bookmark, Users, Building, Settings, GraduationCap } from "lucide-react";
 import { useState } from "react";
 
 interface User {
@@ -22,6 +22,7 @@ export default function Header() {
 
   const navigationItems = [
     { href: "/questions", label: "질문 탐색", icon: null },
+    { href: "/study", label: "학습하기", icon: GraduationCap },
     { href: "/companies", label: "회사 정보", icon: Building },
     { href: "/groups", label: "그룹", icon: Users },
   ];

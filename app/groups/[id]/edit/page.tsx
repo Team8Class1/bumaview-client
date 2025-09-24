@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
@@ -40,40 +40,72 @@ export default function EditGroupPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
   const [searchResults, setSearchResults] = useState<Question[]>([]);
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Mock questions for search
-  const mockQuestions: Question[] = [
-    {
-      id: "1",
-      question: "React의 useEffect 훅에 대해 설명해주세요",
-      category: "front",
-      company: "카카오",
-      question_at: "2024",
-      author: "익명",
-      tags: ["React", "Hooks", "Frontend"],
-      createdAt: "2024-01-15T10:30:00Z",
-      views: 234,
-      likes: 45,
-      replies: 12
-    },
-    {
-      id: "2",
-      question: "데이터베이스 정규화에 대해 설명해주세요",
-      category: "back",
-      company: "네이버",
-      question_at: "2024",
-      author: "익명",
-      tags: ["Database", "SQL", "Backend"],
-      createdAt: "2024-01-10T09:15:00Z",
-      views: 189,
-      likes: 32,
-      replies: 8
+  // CSV 파싱 함수
+  const parseCSVLine = useCallback((line: string) => {
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        values.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
     }
-  ];
+    values.push(current.trim());
+    return values;
+  }, []);
+
+  // CSV 데이터 로드
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        const response = await fetch('/interview.csv', {
+          cache: 'force-cache',
+        });
+        const text = await response.text();
+        const lines = text.split('\n');
+
+        const csvQuestions = lines.slice(1)
+          .filter(line => line.trim())
+          .map((line, index) => {
+            const values = parseCSVLine(line);
+            const [question, category, company, question_at] = values;
+            return {
+              id: (index + 1).toString(),
+              question: question?.replace(/"/g, '') || '',
+              category: category || '',
+              company: company || '',
+              question_at: question_at || '',
+              likes: Math.floor(Math.random() * 50),
+              views: Math.floor(Math.random() * 200) + 10,
+              createdAt: question_at || '2023',
+              author: '익명',
+              tags: category ? [category] : [],
+              replies: Math.floor(Math.random() * 20)
+            };
+          })
+          .filter(q => q.question && q.question.trim() !== '');
+
+        setAllQuestions(csvQuestions);
+      } catch (error) {
+        console.error('Failed to load questions:', error);
+      }
+    };
+
+    loadQuestions();
+  }, [parseCSVLine]);
 
   useEffect(() => {
     const loadGroup = async () => {
@@ -83,13 +115,16 @@ export default function EditGroupPage() {
         // TODO: Replace with real API call
         await new Promise(resolve => setTimeout(resolve, 1000));
 
+        // Use first few questions from CSV as mock group questions
+        const mockGroupQuestions = allQuestions.slice(0, 3);
+
         const mockGroup: Group = {
           id: groupId,
           name: "프론트엔드 면접 질문",
           description: "프론트엔드 개발자 면접에서 자주 나오는 질문들을 모은 그룹입니다.",
           tags: ["React", "JavaScript", "Frontend"],
           isPublic: true,
-          questions: [mockQuestions[0]],
+          questions: mockGroupQuestions,
           createdAt: "2024-01-20T10:00:00Z",
           author: "현재사용자"
         };
@@ -111,10 +146,10 @@ export default function EditGroupPage() {
       }
     };
 
-    if (groupId) {
+    if (groupId && allQuestions.length > 0) {
       loadGroup();
     }
-  }, [groupId, router]);
+  }, [groupId, router, allQuestions]);
 
   const hasChanges = originalGroup && (
     formData.name !== originalGroup.name ||
@@ -135,15 +170,15 @@ export default function EditGroupPage() {
     setSearchQuery(query);
 
     setTimeout(() => {
-      const results = mockQuestions.filter(q =>
+      const results = allQuestions.filter(q =>
         !selectedQuestions.some(sq => sq.id === q.id) &&
         (q.question.toLowerCase().includes(query.toLowerCase()) ||
          q.company.toLowerCase().includes(query.toLowerCase()) ||
          q.category.toLowerCase().includes(query.toLowerCase()))
-      );
+      ).slice(0, 20); // Limit to 20 results for performance
       setSearchResults(results);
       setIsSearching(false);
-    }, 500);
+    }, 300);
   };
 
   const addQuestion = (question: Question) => {

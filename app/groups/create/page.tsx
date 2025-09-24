@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import { Button } from "@/components/ui/button";
@@ -27,51 +27,70 @@ export default function CreateGroupPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedQuestions, setSelectedQuestions] = useState<SelectedQuestion[]>([]);
   const [searchResults, setSearchResults] = useState<SelectedQuestion[]>([]);
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mock questions for search
-  const mockQuestions: Question[] = [
-    {
-      id: "1",
-      question: "React의 useEffect 훅에 대해 설명해주세요",
-      category: "front",
-      company: "카카오",
-      question_at: "2024",
-      author: "익명",
-      tags: ["React", "Hooks", "Frontend"],
-      createdAt: "2024-01-15T10:30:00Z",
-      views: 234,
-      likes: 45,
-      replies: 12
-    },
-    {
-      id: "2",
-      question: "데이터베이스 정규화에 대해 설명해주세요",
-      category: "back",
-      company: "네이버",
-      question_at: "2024",
-      author: "익명",
-      tags: ["Database", "SQL", "Backend"],
-      createdAt: "2024-01-10T09:15:00Z",
-      views: 189,
-      likes: 32,
-      replies: 8
-    },
-    {
-      id: "3",
-      question: "JavaScript의 클로저에 대해 설명해주세요",
-      category: "front",
-      company: "토스",
-      question_at: "2024",
-      author: "익명",
-      tags: ["JavaScript", "Closure"],
-      createdAt: "2024-01-05T13:20:00Z",
-      views: 456,
-      likes: 78,
-      replies: 15
+  // CSV 파싱 함수
+  const parseCSVLine = useCallback((line: string) => {
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        values.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
     }
-  ];
+    values.push(current.trim());
+    return values;
+  }, []);
+
+  // CSV 데이터 로드
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        const response = await fetch('/interview.csv', {
+          cache: 'force-cache',
+        });
+        const text = await response.text();
+        const lines = text.split('\n');
+
+        const csvQuestions = lines.slice(1)
+          .filter(line => line.trim())
+          .map((line, index) => {
+            const values = parseCSVLine(line);
+            const [question, category, company, question_at] = values;
+            return {
+              id: (index + 1).toString(),
+              question: question?.replace(/"/g, '') || '',
+              category: category || '',
+              company: company || '',
+              question_at: question_at || '',
+              likes: Math.floor(Math.random() * 50),
+              views: Math.floor(Math.random() * 200) + 10,
+              createdAt: question_at || '2023',
+              author: '익명',
+              tags: category ? [category] : [],
+              replies: Math.floor(Math.random() * 20)
+            };
+          })
+          .filter(q => q.question && q.question.trim() !== '');
+
+        setAllQuestions(csvQuestions);
+      } catch (error) {
+        console.error('Failed to load questions:', error);
+      }
+    };
+
+    loadQuestions();
+  }, [parseCSVLine]);
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
@@ -82,16 +101,16 @@ export default function CreateGroupPage() {
     setIsSearching(true);
     setSearchQuery(query);
 
-    // Simulate API search
+    // Search through real CSV data
     setTimeout(() => {
-      const results = mockQuestions.filter(q =>
+      const results = allQuestions.filter(q =>
         q.question.toLowerCase().includes(query.toLowerCase()) ||
         q.company.toLowerCase().includes(query.toLowerCase()) ||
         q.category.toLowerCase().includes(query.toLowerCase())
-      );
+      ).slice(0, 20); // Limit to 20 results for performance
       setSearchResults(results);
       setIsSearching(false);
-    }, 500);
+    }, 300);
   };
 
   const toggleQuestionSelection = (question: Question) => {
