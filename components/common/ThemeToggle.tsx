@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [isDisabled, setIsDisabled] = useState(false);
-  const [remainingTime, setRemainingTime] = useState(0);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
@@ -27,18 +26,10 @@ export default function ThemeToggle() {
     document.documentElement.classList.toggle('dark', newTheme === 'dark');
 
     setIsDisabled(true);
-    setRemainingTime(10);
 
-    const interval = setInterval(() => {
-      setRemainingTime((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setIsDisabled(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    setTimeout(() => {
+      setIsDisabled(false);
+    }, 10000);
   };
 
   return (
