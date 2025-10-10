@@ -65,3 +65,31 @@ export const apiPatch = <T>(endpoint: string, data?: unknown) =>
     method: "PATCH",
     body: data ? JSON.stringify(data) : undefined,
   });
+
+// Auth API
+export interface LoginRequest {
+  id: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  id: string;
+  password: string;
+  interest: string[];
+}
+
+export interface AuthResponse {
+  id: string;
+  email?: string;
+  role?: string;
+  token?: string;
+}
+
+export const login = (data: LoginRequest) =>
+  apiGet<AuthResponse>(
+    `/user/login?${new URLSearchParams(data as Record<string, string>).toString()}`,
+  );
+
+export const register = (data: RegisterRequest) =>
+  apiPost<AuthResponse>("/user/register", data);
