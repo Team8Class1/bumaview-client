@@ -79,14 +79,12 @@ export default function RegisterPage() {
   });
 
   const toggleInterest = (interest: string) => {
-    setSelectedInterests((prev) => {
-      const newInterests = prev.includes(interest)
-        ? prev.filter((i) => i !== interest)
-        : [...prev, interest];
+    const newInterests = selectedInterests.includes(interest)
+      ? selectedInterests.filter((i) => i !== interest)
+      : [...selectedInterests, interest];
 
-      form.setValue("interest", newInterests.join(","));
-      return newInterests;
-    });
+    setSelectedInterests(newInterests);
+    form.setValue("interest", newInterests.join(","), { shouldValidate: true });
   };
 
   const onSubmit = async (data: RegisterFormValues) => {

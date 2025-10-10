@@ -102,9 +102,11 @@ export const login = async (data: LoginRequest): Promise<AuthResponse> => {
       token: "mock-token-12345",
     };
   }
-  return apiGet<AuthResponse>(
-    `/user/login?${new URLSearchParams(data as Record<string, string>).toString()}`,
-  );
+  const params = new URLSearchParams({
+    id: data.id,
+    password: data.password,
+  });
+  return apiGet<AuthResponse>(`/user/login?${params.toString()}`);
 };
 
 export const register = async (
