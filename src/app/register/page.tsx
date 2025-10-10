@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -65,6 +66,8 @@ export default function RegisterPage() {
   const register = useAuthStore((state) => state.register);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<RegisterFormValues>({
@@ -181,12 +184,27 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>비밀번호</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="비밀번호를 입력하세요"
-                        {...field}
-                        disabled={isLoading}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="비밀번호를 입력하세요"
+                          {...field}
+                          disabled={isLoading}
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                          disabled={isLoading}
+                        >
+                          {showPassword ? (
+                            <Eye className="h-4 w-4" />
+                          ) : (
+                            <EyeOff className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormDescription>
                       8자 이상의 비밀번호를 입력해주세요.
@@ -202,12 +220,29 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>비밀번호 확인</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="비밀번호를 다시 입력하세요"
-                        {...field}
-                        disabled={isLoading}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showPasswordConfirm ? "text" : "password"}
+                          placeholder="비밀번호를 다시 입력하세요"
+                          {...field}
+                          disabled={isLoading}
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowPasswordConfirm(!showPasswordConfirm)
+                          }
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                          disabled={isLoading}
+                        >
+                          {showPasswordConfirm ? (
+                            <Eye className="h-4 w-4" />
+                          ) : (
+                            <EyeOff className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
