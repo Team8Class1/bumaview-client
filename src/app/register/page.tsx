@@ -50,18 +50,14 @@ const registerSchema = z
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const INTEREST_OPTIONS = [
-  "프론트엔드",
-  "백엔드",
-  "풀스택",
-  "DevOps",
-  "데이터 사이언스",
-  "머신러닝",
-  "모바일",
-  "게임",
-  "보안",
-  "클라우드",
   "AI",
-  "블록체인",
+  "백엔드",
+  "금융",
+  "디자인",
+  "임베디드",
+  "프론트엔드",
+  "인프라",
+  "시큐리티",
 ];
 
 export default function RegisterPage() {
