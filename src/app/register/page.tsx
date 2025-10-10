@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -25,6 +24,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { InterestSelector } from "@/components/ui/interest-selector";
+import { PasswordInput } from "@/components/ui/password-input";
+import { useInterestSelection } from "@/hooks/use-interest-selection";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/auth";
 
@@ -50,24 +52,10 @@ const registerSchema = z
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-const INTEREST_OPTIONS = [
-  "AI",
-  "백엔드",
-  "금융",
-  "디자인",
-  "임베디드",
-  "프론트엔드",
-  "인프라",
-  "시큐리티",
-];
-
 export default function RegisterPage() {
   const router = useRouter();
   const register = useAuthStore((state) => state.register);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<RegisterFormValues>({
@@ -81,14 +69,11 @@ export default function RegisterPage() {
     },
   });
 
-  const toggleInterest = (interest: string) => {
-    const newInterests = selectedInterests.includes(interest)
-      ? selectedInterests.filter((i) => i !== interest)
-      : [...selectedInterests, interest];
-
-    setSelectedInterests(newInterests);
-    form.setValue("interest", newInterests.join(","), { shouldValidate: true });
-  };
+  const { selectedInterests, toggleInterest } = useInterestSelection(
+    (interests) => {
+      form.setValue("interest", interests.join(","), { shouldValidate: true });
+    },
+  );
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
@@ -184,27 +169,11 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>비밀번호</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="비밀번호를 입력하세요"
-                          {...field}
-                          disabled={isLoading}
-                          className="pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                          disabled={isLoading}
-                        >
-                          {showPassword ? (
-                            <Eye className="h-4 w-4" />
-                          ) : (
-                            <EyeOff className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
+                      <PasswordInput
+                        placeholder="비밀번호를 입력하세요"
+                        {...field}
+                        disabled={isLoading}
+                      />
                     </FormControl>
                     <FormDescription>
                       8자 이상의 비밀번호를 입력해주세요.
@@ -220,29 +189,11 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>비밀번호 확인</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showPasswordConfirm ? "text" : "password"}
-                          placeholder="비밀번호를 다시 입력하세요"
-                          {...field}
-                          disabled={isLoading}
-                          className="pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setShowPasswordConfirm(!showPasswordConfirm)
-                          }
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                          disabled={isLoading}
-                        >
-                          {showPasswordConfirm ? (
-                            <Eye className="h-4 w-4" />
-                          ) : (
-                            <EyeOff className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
+                      <PasswordInput
+                        placeholder="비밀번호를 다시 입력하세요"
+                        {...field}
+                        disabled={isLoading}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -257,25 +208,11 @@ export default function RegisterPage() {
                     <FormDescription>
                       관심있는 분야를 선택해주세요. (복수 선택 가능)
                     </FormDescription>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                      {INTEREST_OPTIONS.map((interest) => (
-                        <Button
-                          key={interest}
-                          type="button"
-                          variant={
-                            selectedInterests.includes(interest)
-                              ? "default"
-                              : "outline"
-                          }
-                          size="sm"
-                          onClick={() => toggleInterest(interest)}
-                          disabled={isLoading}
-                          className="justify-start"
-                        >
-                          {interest}
-                        </Button>
-                      ))}
-                    </div>
+                    <InterestSelector
+                      selectedInterests={selectedInterests}
+                      onToggleInterest={toggleInterest}
+                      disabled={isLoading}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
