@@ -78,13 +78,7 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     try {
-      const interests =
-        selectedInterests.length > 0
-          ? selectedInterests
-          : data.interest
-              .split(",")
-              .map((i) => i.trim())
-              .filter(Boolean);
+      const interests = selectedInterests;
 
       await register({
         email: data.email,
