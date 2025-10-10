@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import * as api from "@/lib/api";
 
 interface User {
   id: string;
@@ -11,6 +12,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   login: (id: string, password: string) => Promise<void>;
+  register: (data: api.RegisterRequest) => Promise<void>;
   setUser: (user: User | null) => void;
   logout: () => void;
 }
@@ -18,36 +20,33 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      user: {
-        id: "admin",
-        email: "admin@bumaview.com",
-        role: "admin",
+      user: null,
+      isAuthenticated: false,
+
+      login: async (id: string, password: string) => {
+        const response = await api.login({ id, password });
+
+        set({
+          user: {
+            id: response.id,
+            email: response.email,
+            role: response.role,
+          },
+          isAuthenticated: true,
+        });
       },
-      isAuthenticated: true,
 
-      login: async (id: string, _password: string) => {
-        try {
-          // TODO: API 호출 구현
-          // const response = await fetch('/api/user/login', {
-          //   method: 'GET',
-          //   headers: { 'Content-Type': 'application/json' },
-          //   body: JSON.stringify({ id, password })
-          // });
+      register: async (data: api.RegisterRequest) => {
+        const response = await api.register(data);
 
-          // 임시로 성공한 것으로 처리
-          const mockUser: User = {
-            id,
-            email: `${id}@example.com`,
-            role: "basic",
-          };
-
-          set({
-            user: mockUser,
-            isAuthenticated: true,
-          });
-        } catch (_error) {
-          throw new Error("Login failed");
-        }
+        set({
+          user: {
+            id: response.id,
+            email: response.email,
+            role: response.role,
+          },
+          isAuthenticated: true,
+        });
       },
 
       setUser: (user) =>

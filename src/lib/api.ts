@@ -1,7 +1,9 @@
 import { useAuthStore } from "@/stores/auth";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+
+const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 
 class ApiError extends Error {
   constructor(
@@ -65,3 +67,60 @@ export const apiPatch = <T>(endpoint: string, data?: unknown) =>
     method: "PATCH",
     body: data ? JSON.stringify(data) : undefined,
   });
+
+// Auth API
+export interface LoginRequest {
+  id: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  id: string;
+  password: string;
+  interest: string[];
+}
+
+export interface AuthResponse {
+  id: string;
+  email?: string;
+  role?: string;
+  token?: string;
+}
+
+// Mock 데이터 (개발용)
+const mockDelay = () => new Promise((resolve) => setTimeout(resolve, 500));
+
+export const login = async (data: LoginRequest): Promise<AuthResponse> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    // Mock 로그인 - 항상 성공
+    return {
+      id: data.id,
+      email: `${data.id}@example.com`,
+      role: data.id === "admin" ? "admin" : "basic",
+      token: "mock-token-12345",
+    };
+  }
+  const params = new URLSearchParams({
+    id: data.id,
+    password: data.password,
+  });
+  return apiGet<AuthResponse>(`/user/login?${params.toString()}`);
+};
+
+export const register = async (
+  data: RegisterRequest,
+): Promise<AuthResponse> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    // Mock 회원가입 - 항상 성공
+    return {
+      id: data.id,
+      email: data.email,
+      role: "basic",
+      token: "mock-token-12345",
+    };
+  }
+  return apiPost<AuthResponse>("/user/register", data);
+};
