@@ -3,6 +3,7 @@
 import { Bookmark, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useBookmark } from "@/hooks/use-bookmark";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,13 +17,13 @@ import {
   getAllInterviews,
   getBookmarks,
   type InterviewItem,
-  toggleBookmark,
 } from "@/lib/api";
 
 export default function InterviewAllPage() {
   const [interviews, setInterviews] = useState<InterviewItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<number>>(new Set());
+  const { bookmarkedIds, setBookmarkedIds, handleToggleBookmark } =
+    useBookmark();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -48,55 +49,7 @@ export default function InterviewAllPage() {
     };
 
     fetchData();
-  }, [toast]);
-
-  const handleToggleBookmark = async (
-    e: React.MouseEvent,
-    interviewId: number,
-  ) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // 이전 상태 저장 (롤백용)
-    const prevBookmarkedIds = new Set(bookmarkedIds);
-
-    // Optimistic update
-    const newBookmarkedIds = new Set(bookmarkedIds);
-    if (newBookmarkedIds.has(interviewId)) {
-      newBookmarkedIds.delete(interviewId);
-    } else {
-      newBookmarkedIds.add(interviewId);
-    }
-    setBookmarkedIds(newBookmarkedIds);
-
-    try {
-      await toggleBookmark(interviewId);
-      toast({
-        title: newBookmarkedIds.has(interviewId)
-          ? "북마크 추가"
-          : "북마크 해제",
-        description: newBookmarkedIds.has(interviewId)
-          ? "북마크에 추가되었습니다."
-          : "북마크가 해제되었습니다.",
-      });
-    } catch (_error) {
-      // 에러 시 롤백 및 최신 북마크 목록 재조회
-      setBookmarkedIds(prevBookmarkedIds);
-      try {
-        const bookmarkResponse = await getBookmarks();
-        setBookmarkedIds(
-          new Set(bookmarkResponse.data.map((item) => item.interviewId)),
-        );
-      } catch {
-        // 재조회 실패 시 이전 상태 유지
-      }
-      toast({
-        variant: "destructive",
-        title: "북마크 변경 실패",
-        description: "북마크 변경에 실패했습니다.",
-      });
-    }
-  };
+  }, [toast, setBookmarkedIds]);
 
   if (isLoading) {
     return (

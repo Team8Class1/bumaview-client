@@ -3,6 +3,7 @@
 import { Bookmark } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { useBookmark } from "@/hooks/use-bookmark";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,12 +13,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { getBookmarks, type InterviewItem, toggleBookmark } from "@/lib/api";
+import { getBookmarks, toggleBookmark, type InterviewItem } from "@/lib/api";
 
 export default function BookmarkPage() {
   const [interviews, setInterviews] = useState<InterviewItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<number>>(new Set());
+  const { bookmarkedIds, setBookmarkedIds } = useBookmark();
   const { toast } = useToast();
 
   const fetchBookmarks = useCallback(async () => {
@@ -34,7 +35,7 @@ export default function BookmarkPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, setBookmarkedIds]);
 
   useEffect(() => {
     fetchBookmarks();
