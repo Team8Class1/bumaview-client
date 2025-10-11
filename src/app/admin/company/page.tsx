@@ -22,10 +22,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import {
+  type Company,
   createCompany,
   deleteCompany,
   getCompanies,
-  type Company,
   updateCompany,
 } from "@/lib/api";
 
@@ -166,7 +166,7 @@ export default function AdminCompanyPage() {
     <div className="container max-w-6xl py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-      <h1 className="text-3xl font-bold">회사 관리</h1>
+          <h1 className="text-3xl font-bold">회사 관리</h1>
           <p className="text-muted-foreground mt-2">
             면접 질문에 연결할 회사 정보를 관리하세요.
           </p>
@@ -190,12 +190,17 @@ export default function AdminCompanyPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {companies.map((company) => (
-            <Card key={company.companyId} className="hover:shadow-md transition-shadow">
+            <Card
+              key={company.companyId}
+              className="hover:shadow-md transition-shadow"
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2 flex-1">
                     <Building2 className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-lg">{company.companyName}</CardTitle>
+                    <CardTitle className="text-lg">
+                      {company.companyName}
+                    </CardTitle>
                   </div>
                 </div>
                 {company.link && (
@@ -369,8 +374,8 @@ export default function AdminCompanyPage() {
           <DialogHeader>
             <DialogTitle>회사 삭제</DialogTitle>
             <DialogDescription>
-              정말로 "{selectedCompany?.companyName}" 회사를 삭제하시겠습니까? 이
-              작업은 되돌릴 수 없습니다.
+              정말로 "{selectedCompany?.companyName}" 회사를 삭제하시겠습니까?
+              이 작업은 되돌릴 수 없습니다.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

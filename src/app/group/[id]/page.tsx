@@ -4,7 +4,6 @@ import { Bookmark, MessageSquare, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { useBookmark } from "@/hooks/use-bookmark";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,12 +21,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useBookmark } from "@/hooks/use-bookmark";
 import { useToast } from "@/hooks/use-toast";
 import {
   addInterviewsToGroup,
+  type GroupDetail,
   getAllInterviews,
   getGroupDetail,
-  type GroupDetail,
   type InterviewItem,
 } from "@/lib/api";
 
@@ -284,9 +284,10 @@ export default function GroupDetailPage() {
               ) : (
                 <div className="divide-y">
                   {filteredInterviews.map((interview) => (
-                    <div
+                    <button
+                      type="button"
                       key={interview.interviewId}
-                      className={`p-4 cursor-pointer hover:bg-muted/50 transition-colors ${
+                      className={`p-4 cursor-pointer hover:bg-muted/50 transition-colors text-left w-full ${
                         selectedInterviewIds.includes(interview.interviewId)
                           ? "bg-muted"
                           : ""
@@ -294,14 +295,6 @@ export default function GroupDetailPage() {
                       onClick={() =>
                         toggleInterviewSelection(interview.interviewId)
                       }
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          toggleInterviewSelection(interview.interviewId);
-                        }
-                      }}
-                      role="button"
-                      tabIndex={0}
                     >
                       <div className="flex items-start gap-3">
                         <input
@@ -337,7 +330,7 @@ export default function GroupDetailPage() {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
@@ -375,4 +368,3 @@ export default function GroupDetailPage() {
     </div>
   );
 }
-

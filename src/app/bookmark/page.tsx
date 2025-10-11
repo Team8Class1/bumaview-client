@@ -3,7 +3,6 @@
 import { Bookmark } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { useBookmark } from "@/hooks/use-bookmark";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,8 +11,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useBookmark } from "@/hooks/use-bookmark";
 import { useToast } from "@/hooks/use-toast";
-import { getBookmarks, toggleBookmark, type InterviewItem } from "@/lib/api";
+import { getBookmarks, type InterviewItem, toggleBookmark } from "@/lib/api";
 
 export default function BookmarkPage() {
   const [interviews, setInterviews] = useState<InterviewItem[]>([]);

@@ -25,8 +25,8 @@ import { useToast } from "@/hooks/use-toast";
 import {
   createGroup,
   deleteGroup,
-  getGroups,
   type Group,
+  getGroups,
   updateGroup,
 } from "@/lib/api";
 
@@ -166,8 +166,7 @@ export default function GroupPage() {
           </p>
         </div>
         <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          새 그룹
+          <Plus className="h-4 w-4 mr-2" />새 그룹
         </Button>
       </div>
 
