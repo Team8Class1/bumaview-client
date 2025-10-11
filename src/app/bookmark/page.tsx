@@ -12,11 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import {
-  getBookmarks,
-  toggleBookmark,
-  type InterviewItem,
-} from "@/lib/api";
+import { getBookmarks, toggleBookmark, type InterviewItem } from "@/lib/api";
 
 export default function BookmarkPage() {
   const [interviews, setInterviews] = useState<InterviewItem[]>([]);
@@ -113,9 +109,7 @@ export default function BookmarkPage() {
         <Card>
           <CardContent className="py-12 text-center">
             <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              북마크한 질문이 없습니다.
-            </p>
+            <p className="text-muted-foreground">북마크한 질문이 없습니다.</p>
             <Button asChild className="mt-4">
               <Link href="/interview">질문 검색하기</Link>
             </Button>
@@ -153,6 +147,7 @@ export default function BookmarkPage() {
                         handleToggleBookmark(e, interview.interviewId)
                       }
                       className="shrink-0"
+                      aria-label="북마크 해제"
                     >
                       <Bookmark className="h-5 w-5 fill-current" />
                     </Button>

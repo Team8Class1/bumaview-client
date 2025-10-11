@@ -676,12 +676,12 @@ export const likeAnswer = async (
 };
 
 // Bookmark API
-const mockBookmarks: number[] = [];
+let mockBookmarks: number[] = [];
 
 export const toggleBookmark = async (interviewId: number): Promise<void> => {
   if (USE_MOCK) {
     await mockDelay();
-    
+
     // 북마크 토글
     const index = mockBookmarks.indexOf(interviewId);
     if (index > -1) {
@@ -697,13 +697,13 @@ export const toggleBookmark = async (interviewId: number): Promise<void> => {
 export const getBookmarks = async (): Promise<InterviewListResponse> => {
   if (USE_MOCK) {
     await mockDelay();
-    
+
     // 전체 인터뷰 목록에서 북마크된 것만 필터링
     const allData = await getAllInterviews();
     const bookmarkedInterviews = allData.data.filter((interview) =>
       mockBookmarks.includes(interview.interviewId),
     );
-    
+
     return { data: bookmarkedInterviews };
   }
   return apiGet<InterviewListResponse>("/bookmark");

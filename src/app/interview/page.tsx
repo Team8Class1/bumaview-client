@@ -92,6 +92,9 @@ export default function InterviewPage() {
     e.preventDefault();
     e.stopPropagation();
 
+    // 이전 상태 저장 (롤백용)
+    const prevBookmarkedIds = new Set(bookmarkedIds);
+
     // Optimistic update
     const newBookmarkedIds = new Set(bookmarkedIds);
     if (newBookmarkedIds.has(interviewId)) {
@@ -112,8 +115,16 @@ export default function InterviewPage() {
           : "북마크가 해제되었습니다.",
       });
     } catch (_error) {
-      // 에러 시 롤백
-      setBookmarkedIds(bookmarkedIds);
+      // 에러 시 롤백 및 최신 북마크 목록 재조회
+      setBookmarkedIds(prevBookmarkedIds);
+      try {
+        const bookmarkResponse = await getBookmarks();
+        setBookmarkedIds(
+          new Set(bookmarkResponse.data.map((item) => item.interviewId)),
+        );
+      } catch {
+        // 재조회 실패 시 이전 상태 유지
+      }
       toast({
         variant: "destructive",
         title: "북마크 변경 실패",
@@ -320,6 +331,11 @@ export default function InterviewPage() {
                         handleToggleBookmark(e, interview.interviewId)
                       }
                       className="shrink-0"
+                      aria-label={
+                        bookmarkedIds.has(interview.interviewId)
+                          ? "북마크 해제"
+                          : "북마크 추가"
+                      }
                     >
                       <Bookmark
                         className={`h-5 w-5 ${
