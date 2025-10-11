@@ -216,14 +216,14 @@ export default function InterviewDetailPage() {
     }
   };
 
-  const handleLikeAnswer = async (answerId: number) => {
+  const handleLikeAnswer = async (answer: InterviewAnswer) => {
     if (!interview) return;
 
     try {
-      await likeAnswer(answerId, {
+      await likeAnswer(answer.answerId, {
         interviewId: interview.interviewId,
-        answer: "",
-        is_private: false,
+        answer: answer.answer,
+        is_private: answer.isPrivate || false,
       });
 
       // 좋아요 후 인터뷰 데이터 새로고침
@@ -485,7 +485,7 @@ export default function InterviewDetailPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleLikeAnswer(ans.answerId)}
+                              onClick={() => handleLikeAnswer(ans)}
                               className="h-8 px-2 text-muted-foreground hover:text-foreground"
                             >
                               <Heart
@@ -686,9 +686,7 @@ export default function InterviewDetailPage() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() =>
-                                      handleLikeAnswer(reply.answerId)
-                                    }
+                                    onClick={() => handleLikeAnswer(reply)}
                                     className="h-7 px-2 text-muted-foreground hover:text-foreground"
                                   >
                                     <Heart

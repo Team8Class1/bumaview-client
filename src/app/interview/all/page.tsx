@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare } from "lucide-react";
+import { Bookmark, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,18 +12,30 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { getAllInterviews, type InterviewItem } from "@/lib/api";
+import {
+  getAllInterviews,
+  getBookmarks,
+  toggleBookmark,
+  type InterviewItem,
+} from "@/lib/api";
 
 export default function InterviewAllPage() {
   const [interviews, setInterviews] = useState<InterviewItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<number>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchInterviews = async () => {
+    const fetchData = async () => {
       try {
-        const response = await getAllInterviews();
-        setInterviews(response.data);
+        const [interviewResponse, bookmarkResponse] = await Promise.all([
+          getAllInterviews(),
+          getBookmarks(),
+        ]);
+        setInterviews(interviewResponse.data);
+        setBookmarkedIds(
+          new Set(bookmarkResponse.data.map((item) => item.interviewId)),
+        );
       } catch (_error) {
         toast({
           variant: "destructive",
@@ -35,8 +47,45 @@ export default function InterviewAllPage() {
       }
     };
 
-    fetchInterviews();
+    fetchData();
   }, [toast]);
+
+  const handleToggleBookmark = async (
+    e: React.MouseEvent,
+    interviewId: number,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Optimistic update
+    const newBookmarkedIds = new Set(bookmarkedIds);
+    if (newBookmarkedIds.has(interviewId)) {
+      newBookmarkedIds.delete(interviewId);
+    } else {
+      newBookmarkedIds.add(interviewId);
+    }
+    setBookmarkedIds(newBookmarkedIds);
+
+    try {
+      await toggleBookmark(interviewId);
+      toast({
+        title: newBookmarkedIds.has(interviewId)
+          ? "북마크 추가"
+          : "북마크 해제",
+        description: newBookmarkedIds.has(interviewId)
+          ? "북마크에 추가되었습니다."
+          : "북마크가 해제되었습니다.",
+      });
+    } catch (_error) {
+      // 에러 시 롤백
+      setBookmarkedIds(bookmarkedIds);
+      toast({
+        variant: "destructive",
+        title: "북마크 변경 실패",
+        description: "북마크 변경에 실패했습니다.",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -101,6 +150,22 @@ export default function InterviewAllPage() {
                         ))}
                       </CardDescription>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) =>
+                        handleToggleBookmark(e, interview.interviewId)
+                      }
+                      className="shrink-0"
+                    >
+                      <Bookmark
+                        className={`h-5 w-5 ${
+                          bookmarkedIds.has(interview.interviewId)
+                            ? "fill-current"
+                            : ""
+                        }`}
+                      />
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
