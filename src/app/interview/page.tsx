@@ -2,6 +2,7 @@
 
 import { Bookmark, Filter, FolderPlus, MessageSquare, X } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useBookmark } from "@/hooks/use-bookmark";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ import {
 } from "@/lib/api";
 
 export default function InterviewPage() {
+  const router = useRouter();
   const [interviews, setInterviews] = useState<InterviewItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [companies, setCompanies] = useState<
@@ -405,7 +407,7 @@ export default function InterviewPage() {
                   variant="outline"
                   onClick={() => {
                     setShowGroupDialog(false);
-                    window.location.href = "/group";
+                    router.push("/group");
                   }}
                   className="mt-4"
                 >

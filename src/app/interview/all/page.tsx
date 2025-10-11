@@ -2,6 +2,7 @@
 
 import { Bookmark, FolderPlus, MessageSquare } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useBookmark } from "@/hooks/use-bookmark";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ import {
 } from "@/lib/api";
 
 export default function InterviewAllPage() {
+  const router = useRouter();
   const [interviews, setInterviews] = useState<InterviewItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { bookmarkedIds, setBookmarkedIds, handleToggleBookmark } =
@@ -246,7 +248,7 @@ export default function InterviewAllPage() {
                   variant="outline"
                   onClick={() => {
                     setShowGroupDialog(false);
-                    window.location.href = "/group";
+                    router.push("/group");
                   }}
                   className="mt-4"
                 >
