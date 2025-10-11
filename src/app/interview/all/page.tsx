@@ -1,8 +1,9 @@
 "use client";
 
-import { MessageSquare } from "lucide-react";
+import { Bookmark, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useBookmark } from "@/hooks/use-bookmark";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,18 +13,30 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { getAllInterviews, type InterviewItem } from "@/lib/api";
+import {
+  getAllInterviews,
+  getBookmarks,
+  type InterviewItem,
+} from "@/lib/api";
 
 export default function InterviewAllPage() {
   const [interviews, setInterviews] = useState<InterviewItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { bookmarkedIds, setBookmarkedIds, handleToggleBookmark } =
+    useBookmark();
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchInterviews = async () => {
+    const fetchData = async () => {
       try {
-        const response = await getAllInterviews();
-        setInterviews(response.data);
+        const [interviewResponse, bookmarkResponse] = await Promise.all([
+          getAllInterviews(),
+          getBookmarks(),
+        ]);
+        setInterviews(interviewResponse.data);
+        setBookmarkedIds(
+          new Set(bookmarkResponse.data.map((item) => item.interviewId)),
+        );
       } catch (_error) {
         toast({
           variant: "destructive",
@@ -35,8 +48,8 @@ export default function InterviewAllPage() {
       }
     };
 
-    fetchInterviews();
-  }, [toast]);
+    fetchData();
+  }, [toast, setBookmarkedIds]);
 
   if (isLoading) {
     return (
@@ -101,6 +114,27 @@ export default function InterviewAllPage() {
                         ))}
                       </CardDescription>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) =>
+                        handleToggleBookmark(e, interview.interviewId)
+                      }
+                      className="shrink-0"
+                      aria-label={
+                        bookmarkedIds.has(interview.interviewId)
+                          ? "북마크 해제"
+                          : "북마크 추가"
+                      }
+                    >
+                      <Bookmark
+                        className={`h-5 w-5 ${
+                          bookmarkedIds.has(interview.interviewId)
+                            ? "fill-current"
+                            : ""
+                        }`}
+                      />
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent>

@@ -1,8 +1,9 @@
 "use client";
 
-import { Filter, MessageSquare, X } from "lucide-react";
+import { Bookmark, Filter, MessageSquare, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useBookmark } from "@/hooks/use-bookmark";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
+  getBookmarks,
   getInterviewCreateData,
   getInterviews,
   type InterviewFilterParams,
@@ -36,14 +38,22 @@ export default function InterviewPage() {
     Array<{ categoryId: number; categoryName: string }>
   >([]);
   const [filters, setFilters] = useState<InterviewFilterParams>({});
+  const { bookmarkedIds, setBookmarkedIds, handleToggleBookmark } =
+    useBookmark();
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getInterviewCreateData();
-        setCompanies(data.companyList);
-        setCategories(data.categoryList);
+        const [createData, bookmarkResponse] = await Promise.all([
+          getInterviewCreateData(),
+          getBookmarks(),
+        ]);
+        setCompanies(createData.companyList);
+        setCategories(createData.categoryList);
+        setBookmarkedIds(
+          new Set(bookmarkResponse.data.map((item) => item.interviewId)),
+        );
       } catch (_error) {
         toast({
           variant: "destructive",
@@ -54,7 +64,7 @@ export default function InterviewPage() {
     };
 
     fetchData();
-  }, [toast]);
+  }, [toast, setBookmarkedIds]);
 
   useEffect(() => {
     const fetchInterviews = async () => {
@@ -267,6 +277,27 @@ export default function InterviewPage() {
                         ))}
                       </CardDescription>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) =>
+                        handleToggleBookmark(e, interview.interviewId)
+                      }
+                      className="shrink-0"
+                      aria-label={
+                        bookmarkedIds.has(interview.interviewId)
+                          ? "북마크 해제"
+                          : "북마크 추가"
+                      }
+                    >
+                      <Bookmark
+                        className={`h-5 w-5 ${
+                          bookmarkedIds.has(interview.interviewId)
+                            ? "fill-current"
+                            : ""
+                        }`}
+                      />
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
