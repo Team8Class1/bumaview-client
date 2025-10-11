@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -32,9 +32,11 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
-  createInterviewSingle,
   getInterviewCreateData,
+  getInterviewDetail,
   type InterviewCreateData,
+  type InterviewDetail,
+  updateInterview,
 } from "@/lib/api";
 
 const interviewSchema = z.object({
@@ -50,10 +52,13 @@ const interviewSchema = z.object({
 
 type InterviewFormValues = z.infer<typeof interviewSchema>;
 
-export default function InterviewCreatePage() {
+export default function InterviewEditPage() {
+  const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [interview, setInterview] = useState<InterviewDetail | null>(null);
   const [createData, setCreateData] = useState<InterviewCreateData | null>(
     null,
   );
@@ -72,19 +77,43 @@ export default function InterviewCreatePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getInterviewCreateData();
-        setCreateData(data);
+        const interviewId = Number(params.id);
+
+        // 병렬로 데이터 가져오기
+        const [interviewData, createDataResponse] = await Promise.all([
+          getInterviewDetail(interviewId),
+          getInterviewCreateData(),
+        ]);
+
+        setInterview(interviewData);
+        setCreateData(createDataResponse);
+
+        // 폼 초기값 설정
+        const categories = interviewData.categoryList.map(
+          (cat) => cat.categoryId,
+        );
+        setSelectedCategories(categories);
+
+        form.reset({
+          question: interviewData.question,
+          categoryList: categories,
+          companyId: interviewData.companyId?.toString() || "none",
+          questionAt: interviewData.questionAt,
+        });
       } catch (_error) {
         toast({
           variant: "destructive",
           title: "데이터 로드 실패",
-          description: "회사 및 카테고리 목록을 불러오는데 실패했습니다.",
+          description: "면접 질문 정보를 불러오는데 실패했습니다.",
         });
+        router.push("/interview");
+      } finally {
+        setIsInitialLoading(false);
       }
     };
 
     fetchData();
-  }, [toast]);
+  }, [params.id, toast, form, router]);
 
   const toggleCategory = (categoryId: number) => {
     const newCategories = selectedCategories.includes(categoryId)
@@ -96,11 +125,14 @@ export default function InterviewCreatePage() {
   };
 
   const onSubmit = async (data: InterviewFormValues) => {
+    if (!interview) return;
+
     setIsLoading(true);
     try {
-      await createInterviewSingle({
+      await updateInterview(interview.interviewId, {
+        interviewId: interview.interviewId,
         question: data.question,
-        categoryList: selectedCategories,
+        category: selectedCategories,
         companyId:
           data.companyId && data.companyId !== "none"
             ? Number(data.companyId)
@@ -109,28 +141,26 @@ export default function InterviewCreatePage() {
       });
 
       toast({
-        title: "등록 성공",
-        description: "면접 질문이 성공적으로 등록되었습니다.",
+        title: "수정 완료",
+        description: "면접 질문이 성공적으로 수정되었습니다.",
       });
 
-      // 폼 초기화
-      form.reset();
-      setSelectedCategories([]);
+      router.push(`/interview/${interview.interviewId}`);
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "등록 실패",
+        title: "수정 실패",
         description:
           error instanceof Error
             ? error.message
-            : "질문 등록 중 오류가 발생했습니다.",
+            : "질문 수정 중 오류가 발생했습니다.",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!createData) {
+  if (isInitialLoading) {
     return (
       <div className="container max-w-4xl py-8">
         <Card>
@@ -142,14 +172,39 @@ export default function InterviewCreatePage() {
     );
   }
 
+  if (!interview || !createData) {
+    return (
+      <div className="container max-w-4xl py-8">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">
+              면접 질문을 찾을 수 없습니다.
+            </p>
+            <Button
+              onClick={() => router.push("/interview")}
+              className="mt-4"
+              variant="outline"
+            >
+              목록으로
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container max-w-4xl py-8">
+      <div className="flex items-center justify-between mb-6">
+        <Button variant="outline" onClick={() => router.back()}>
+          ← 돌아가기
+        </Button>
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">면접 질문 등록</CardTitle>
-          <CardDescription>
-            새로운 면접 질문을 등록하세요. (관리자 권한 필요)
-          </CardDescription>
+          <CardTitle className="text-2xl">면접 질문 수정</CardTitle>
+          <CardDescription>면접 질문 정보를 수정하세요.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -217,7 +272,7 @@ export default function InterviewCreatePage() {
                     <FormLabel>회사명 (선택)</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       disabled={isLoading}
                     >
                       <FormControl>
@@ -274,7 +329,7 @@ export default function InterviewCreatePage() {
                   className="flex-1"
                   size="lg"
                 >
-                  {isLoading ? "등록 중..." : "등록"}
+                  {isLoading ? "수정 중..." : "수정 완료"}
                 </Button>
                 <Button
                   type="button"
