@@ -605,10 +605,9 @@ export const deleteAnswer = async (answerId: number): Promise<void> => {
           answers.splice(i, 1);
           return true;
         }
-        if (answers[i].replies) {
-          if (deleteAnswerFromArray(answers[i].replies!)) {
-            return true;
-          }
+        const replies = answers[i].replies;
+        if (replies && deleteAnswerFromArray(replies)) {
+          return true;
         }
       }
       return false;
@@ -674,4 +673,38 @@ export const likeAnswer = async (
     return;
   }
   return apiPatch(`/answer/like/${answerId}`, data);
+};
+
+// Bookmark API
+const mockBookmarks: number[] = [];
+
+export const toggleBookmark = async (interviewId: number): Promise<void> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    
+    // 북마크 토글
+    const index = mockBookmarks.indexOf(interviewId);
+    if (index > -1) {
+      mockBookmarks.splice(index, 1);
+    } else {
+      mockBookmarks.push(interviewId);
+    }
+    return;
+  }
+  return apiPatch(`/bookmark/${interviewId}`);
+};
+
+export const getBookmarks = async (): Promise<InterviewListResponse> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    
+    // 전체 인터뷰 목록에서 북마크된 것만 필터링
+    const allData = await getAllInterviews();
+    const bookmarkedInterviews = allData.data.filter((interview) =>
+      mockBookmarks.includes(interview.interviewId),
+    );
+    
+    return { data: bookmarkedInterviews };
+  }
+  return apiGet<InterviewListResponse>("/bookmark");
 };
