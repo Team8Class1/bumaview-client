@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Loading } from "@/components/ui/loading";
 import { useBookmark } from "@/hooks/use-bookmark";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -127,21 +128,33 @@ export default function GroupDetailPage() {
     interview.question.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  if (isLoading) {
-    return (
-      <>
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">데이터를 불러오는 중...</p>
-          </CardContent>
-        </Card>
-      </>
-    );
-  }
+  return (
+    <>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={isLoading}
+          >
+            ← 돌아가기
+          </Button>
+          <h1 className="text-3xl font-bold mt-4">
+            {isLoading ? "로딩 중..." : group?.name}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            {isLoading ? " " : `${group?.interviews.length}개의 질문`}
+          </p>
+        </div>
+        <Button onClick={openAddDialog} disabled={isLoading || !group}>
+          <Plus className="h-4 w-4 mr-2" />
+          질문 추가
+        </Button>
+      </div>
 
-  if (!group) {
-    return (
-      <>
+      {isLoading ? (
+        <Loading />
+      ) : !group ? (
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">그룹을 찾을 수 없습니다.</p>
@@ -154,29 +167,7 @@ export default function GroupDetailPage() {
             </Button>
           </CardContent>
         </Card>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <Button variant="outline" onClick={() => router.back()}>
-            ← 돌아가기
-          </Button>
-          <h1 className="text-3xl font-bold mt-4">{group.name}</h1>
-          <p className="text-muted-foreground mt-2">
-            {group.interviews.length}개의 질문
-          </p>
-        </div>
-        <Button onClick={openAddDialog}>
-          <Plus className="h-4 w-4 mr-2" />
-          질문 추가
-        </Button>
-      </div>
-
-      {group.interviews.length === 0 ? (
+      ) : group.interviews.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

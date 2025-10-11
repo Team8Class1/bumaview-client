@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Loading } from "@/components/ui/loading";
 import { useBookmark } from "@/hooks/use-bookmark";
 import { useToast } from "@/hooks/use-toast";
 import { getBookmarks, type InterviewItem, toggleBookmark } from "@/lib/api";
@@ -80,18 +81,6 @@ export default function BookmarkPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <>
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">데이터를 불러오는 중...</p>
-          </CardContent>
-        </Card>
-      </>
-    );
-  }
-
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -101,12 +90,14 @@ export default function BookmarkPage() {
             즐겨찾기로 저장한 면접 질문들을 확인하세요.
           </p>
         </div>
-        <Button asChild>
+        <Button asChild disabled={isLoading}>
           <Link href="/interview">질문 검색</Link>
         </Button>
       </div>
 
-      {interviews.length === 0 ? (
+      {isLoading ? (
+        <Loading />
+      ) : interviews.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

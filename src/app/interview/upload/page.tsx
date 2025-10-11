@@ -92,108 +92,106 @@ export default function InterviewUploadPage() {
   };
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">파일 일괄 업로드</CardTitle>
-          <CardDescription>
-            CSV 파일을 사용하여 면접 질문을 일괄 등록하세요. (관리자 권한 필요)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* 샘플 다운로드 */}
-          <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
-            <div>
-              <h3 className="font-medium">CSV 샘플 파일</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                양식에 맞춰 작성하세요: question, categoryIds, companyId,
-                questionAt
-              </p>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-2xl">파일 일괄 업로드</CardTitle>
+        <CardDescription>
+          CSV 파일을 사용하여 면접 질문을 일괄 등록하세요. (관리자 권한 필요)
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* 샘플 다운로드 */}
+        <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+          <div>
+            <h3 className="font-medium">CSV 샘플 파일</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              양식에 맞춰 작성하세요: question, categoryIds, companyId,
+              questionAt
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={downloadSampleCSV}
+            disabled={isUploading}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            샘플 다운로드
+          </Button>
+        </div>
+
+        {/* 파일 업로드 영역 */}
+        <input
+          type="file"
+          accept=".csv"
+          onChange={handleFileChange}
+          className="hidden"
+          id="file-upload"
+          disabled={isUploading}
+        />
+        <label
+          htmlFor="file-upload"
+          className={`block border-2 border-dashed rounded-lg p-12 text-center transition-colors cursor-pointer ${
+            isDragging
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25"
+          }`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <div className="space-y-2">
+            <p className="text-lg font-medium">
+              파일을 드래그하거나 클릭하여 선택하세요
+            </p>
+            <p className="text-sm text-muted-foreground">
+              CSV 파일만 지원 (최대 10MB)
+            </p>
+          </div>
+          <Button
+            variant="secondary"
+            className="mt-4 pointer-events-none"
+            disabled={isUploading}
+          >
+            파일 선택
+          </Button>
+        </label>
+
+        {/* 선택된 파일 정보 */}
+        {selectedFile && (
+          <div className="flex items-center justify-between p-4 border rounded-lg bg-background">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded bg-primary/10">
+                <Upload className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium">{selectedFile.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {(selectedFile.size / 1024).toFixed(2)} KB
+                </p>
+              </div>
             </div>
             <Button
-              variant="outline"
-              onClick={downloadSampleCSV}
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedFile(null)}
               disabled={isUploading}
             >
-              <Download className="h-4 w-4 mr-2" />
-              샘플 다운로드
+              제거
             </Button>
           </div>
+        )}
 
-          {/* 파일 업로드 영역 */}
-          <input
-            type="file"
-            accept=".csv"
-            onChange={handleFileChange}
-            className="hidden"
-            id="file-upload"
-            disabled={isUploading}
-          />
-          <label
-            htmlFor="file-upload"
-            className={`block border-2 border-dashed rounded-lg p-12 text-center transition-colors cursor-pointer ${
-              isDragging
-                ? "border-primary bg-primary/5"
-                : "border-muted-foreground/25"
-            }`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <div className="space-y-2">
-              <p className="text-lg font-medium">
-                파일을 드래그하거나 클릭하여 선택하세요
-              </p>
-              <p className="text-sm text-muted-foreground">
-                CSV 파일만 지원 (최대 10MB)
-              </p>
-            </div>
-            <Button
-              variant="secondary"
-              className="mt-4 pointer-events-none"
-              disabled={isUploading}
-            >
-              파일 선택
-            </Button>
-          </label>
-
-          {/* 선택된 파일 정보 */}
-          {selectedFile && (
-            <div className="flex items-center justify-between p-4 border rounded-lg bg-background">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded bg-primary/10">
-                  <Upload className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium">{selectedFile.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {(selectedFile.size / 1024).toFixed(2)} KB
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedFile(null)}
-                disabled={isUploading}
-              >
-                제거
-              </Button>
-            </div>
-          )}
-
-          {/* 업로드 버튼 */}
-          <Button
-            onClick={handleUpload}
-            disabled={!selectedFile || isUploading}
-            className="w-full"
-            size="lg"
-          >
-            {isUploading ? "업로드 중..." : "업로드"}
-          </Button>
-        </CardContent>
-      </Card>
-    </>
+        {/* 업로드 버튼 */}
+        <Button
+          onClick={handleUpload}
+          disabled={!selectedFile || isUploading}
+          className="w-full"
+          size="lg"
+        >
+          {isUploading ? "업로드 중..." : "업로드"}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

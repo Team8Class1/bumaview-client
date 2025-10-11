@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Loading } from "@/components/ui/loading";
 import { useToast } from "@/hooks/use-toast";
 import {
   createGroup,
@@ -144,18 +145,6 @@ export default function GroupPage() {
     setShowDeleteDialog(true);
   };
 
-  if (isLoading) {
-    return (
-      <>
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">데이터를 불러오는 중...</p>
-          </CardContent>
-        </Card>
-      </>
-    );
-  }
-
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -165,12 +154,14 @@ export default function GroupPage() {
             면접 질문을 그룹으로 관리하세요.
           </p>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
+        <Button onClick={() => setShowCreateDialog(true)} disabled={isLoading}>
           <Plus className="h-4 w-4 mr-2" />새 그룹
         </Button>
       </div>
 
-      {groups.length === 0 ? (
+      {isLoading ? (
+        <Loading />
+      ) : groups.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Folder className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

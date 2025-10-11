@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Loading } from "@/components/ui/loading";
 import {
   Select,
   SelectContent,
@@ -110,18 +111,6 @@ export default function InterviewAllPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <>
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">데이터를 불러오는 중...</p>
-          </CardContent>
-        </Card>
-      </>
-    );
-  }
-
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -131,12 +120,14 @@ export default function InterviewAllPage() {
             등록된 모든 면접 질문을 확인하세요.
           </p>
         </div>
-        <Button asChild>
+        <Button asChild disabled={isLoading}>
           <Link href="/interview/create">질문 등록</Link>
         </Button>
       </div>
 
-      {interviews.length === 0 ? (
+      {isLoading ? (
+        <Loading />
+      ) : interviews.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

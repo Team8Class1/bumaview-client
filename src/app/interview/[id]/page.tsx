@@ -34,6 +34,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Loading } from "@/components/ui/loading";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -253,11 +254,12 @@ export default function InterviewDetailPage() {
   if (isLoading) {
     return (
       <>
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">데이터를 불러오는 중...</p>
-          </CardContent>
-        </Card>
+        <div className="flex items-center justify-between mb-6">
+          <Button variant="outline" onClick={() => router.back()}>
+            ← 돌아가기
+          </Button>
+        </div>
+        <Loading />
       </>
     );
   }
@@ -265,6 +267,11 @@ export default function InterviewDetailPage() {
   if (!interview) {
     return (
       <>
+        <div className="flex items-center justify-between mb-6">
+          <Button variant="outline" onClick={() => router.back()}>
+            ← 돌아가기
+          </Button>
+        </div>
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">

@@ -143,153 +143,151 @@ export default function InterviewCreatePage() {
   }
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">면접 질문 등록</CardTitle>
-          <CardDescription>
-            새로운 면접 질문을 등록하세요. (관리자 권한 필요)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="question"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>질문</FormLabel>
-                    <FormControl>
-                      <textarea
-                        placeholder="면접 질문을 입력하세요"
-                        className="w-full min-h-[120px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        {...field}
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      실제 면접에서 받은 질문을 입력해주세요.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="categoryList"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>카테고리</FormLabel>
-                    <FormDescription>
-                      질문과 관련된 분야를 선택해주세요. (복수 선택 가능)
-                    </FormDescription>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                      {createData.categoryList.map((category) => (
-                        <Button
-                          key={category.categoryId}
-                          type="button"
-                          variant={
-                            selectedCategories.includes(category.categoryId)
-                              ? "default"
-                              : "outline"
-                          }
-                          size="sm"
-                          onClick={() => toggleCategory(category.categoryId)}
-                          disabled={isLoading}
-                          className="justify-start"
-                        >
-                          {category.categoryName}
-                        </Button>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="companyId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>회사명 (선택)</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-2xl">면접 질문 등록</CardTitle>
+        <CardDescription>
+          새로운 면접 질문을 등록하세요. (관리자 권한 필요)
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="question"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>질문</FormLabel>
+                  <FormControl>
+                    <textarea
+                      placeholder="면접 질문을 입력하세요"
+                      className="w-full min-h-[120px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      {...field}
                       disabled={isLoading}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="회사를 선택하세요" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">선택 안 함</SelectItem>
-                        {createData.companyList.map((company) => (
-                          <SelectItem
-                            key={company.companyId}
-                            value={company.companyId.toString()}
-                          >
-                            {company.companyName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      특정 회사의 면접이라면 선택해주세요.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    실제 면접에서 받은 질문을 입력해주세요.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="questionAt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>질문 날짜</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        {...field}
+            <FormField
+              control={form.control}
+              name="categoryList"
+              render={() => (
+                <FormItem>
+                  <FormLabel>카테고리</FormLabel>
+                  <FormDescription>
+                    질문과 관련된 분야를 선택해주세요. (복수 선택 가능)
+                  </FormDescription>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                    {createData.categoryList.map((category) => (
+                      <Button
+                        key={category.categoryId}
+                        type="button"
+                        variant={
+                          selectedCategories.includes(category.categoryId)
+                            ? "default"
+                            : "outline"
+                        }
+                        size="sm"
+                        onClick={() => toggleCategory(category.categoryId)}
                         disabled={isLoading}
-                        max={new Date().toISOString().split("T")[0]}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      면접을 본 날짜를 선택해주세요.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                        className="justify-start"
+                      >
+                        {category.categoryName}
+                      </Button>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <div className="flex gap-3">
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1"
-                  size="lg"
-                >
-                  {isLoading ? "등록 중..." : "등록"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.back()}
-                  disabled={isLoading}
-                  size="lg"
-                >
-                  취소
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </>
+            <FormField
+              control={form.control}
+              name="companyId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>회사명 (선택)</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={isLoading}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="회사를 선택하세요" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">선택 안 함</SelectItem>
+                      {createData.companyList.map((company) => (
+                        <SelectItem
+                          key={company.companyId}
+                          value={company.companyId.toString()}
+                        >
+                          {company.companyName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    특정 회사의 면접이라면 선택해주세요.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="questionAt"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>질문 날짜</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      {...field}
+                      disabled={isLoading}
+                      max={new Date().toISOString().split("T")[0]}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    면접을 본 날짜를 선택해주세요.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex gap-3">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="flex-1"
+                size="lg"
+              >
+                {isLoading ? "등록 중..." : "등록"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+                disabled={isLoading}
+                size="lg"
+              >
+                취소
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }
