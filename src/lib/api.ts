@@ -840,3 +840,85 @@ export const addInterviewsToGroup = async (
   }
   return apiPost(`/group/${groupId}`, data);
 };
+
+// Company API
+export interface Company {
+  companyId: number;
+  companyName: string;
+  link: string;
+}
+
+export interface CompanyListResponse {
+  data: Company[];
+}
+
+export interface CompanyCreateRequest {
+  companyName: string;
+  link: string;
+}
+
+export interface CompanyUpdateRequest {
+  companyName: string;
+  link: string;
+}
+
+let mockCompanies: Company[] = [
+  { companyId: 1, companyName: "삼성전자", link: "https://www.samsung.com" },
+  { companyId: 2, companyName: "카카오", link: "https://www.kakao.com" },
+  { companyId: 3, companyName: "네이버", link: "https://www.naver.com" },
+  { companyId: 4, companyName: "라인", link: "https://line.me" },
+  { companyId: 5, companyName: "쿠팡", link: "https://www.coupang.com" },
+];
+let nextCompanyId = 6;
+
+export const getCompanies = async (): Promise<CompanyListResponse> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    return { data: mockCompanies };
+  }
+  return apiGet<CompanyListResponse>("/company");
+};
+
+export const createCompany = async (
+  data: CompanyCreateRequest,
+): Promise<Company> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    const newCompany: Company = {
+      companyId: nextCompanyId++,
+      companyName: data.companyName,
+      link: data.link,
+    };
+    mockCompanies.push(newCompany);
+    return newCompany;
+  }
+  return apiPost<Company>("/company", data);
+};
+
+export const updateCompany = async (
+  companyId: number,
+  data: CompanyUpdateRequest,
+): Promise<void> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    const company = mockCompanies.find((c) => c.companyId === companyId);
+    if (company) {
+      company.companyName = data.companyName;
+      company.link = data.link;
+    }
+    return;
+  }
+  return apiPatch(`/company/${companyId}`, data);
+};
+
+export const deleteCompany = async (companyId: number): Promise<void> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    const index = mockCompanies.findIndex((c) => c.companyId === companyId);
+    if (index > -1) {
+      mockCompanies.splice(index, 1);
+    }
+    return;
+  }
+  return apiDelete(`/company/${companyId}`);
+};
