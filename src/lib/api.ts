@@ -708,3 +708,135 @@ export const getBookmarks = async (): Promise<InterviewListResponse> => {
   }
   return apiGet<InterviewListResponse>("/bookmark");
 };
+
+// Group API
+export interface Group {
+  groupId: number;
+  name: string;
+  createdAt?: string;
+}
+
+export interface GroupDetail extends Group {
+  interviews: InterviewItem[];
+}
+
+export interface GroupListResponse {
+  data: Group[];
+}
+
+export interface GroupCreateRequest {
+  name: string;
+}
+
+export interface GroupUpdateRequest {
+  name: string;
+}
+
+export interface GroupAddInterviewsRequest {
+  interviewIdList: number[];
+}
+
+let mockGroups: GroupDetail[] = [];
+let nextGroupId = 1;
+
+export const getGroups = async (): Promise<GroupListResponse> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    return {
+      data: mockGroups.map((g) => ({
+        groupId: g.groupId,
+        name: g.name,
+        createdAt: g.createdAt,
+      })),
+    };
+  }
+  return apiGet<GroupListResponse>("/group");
+};
+
+export const getGroupDetail = async (groupId: number): Promise<GroupDetail> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    const group = mockGroups.find((g) => g.groupId === groupId);
+    if (!group) {
+      throw new Error("그룹을 찾을 수 없습니다.");
+    }
+    return group;
+  }
+  return apiGet<GroupDetail>(`/group/${groupId}`);
+};
+
+export const createGroup = async (
+  data: GroupCreateRequest,
+): Promise<Group> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    const newGroup: GroupDetail = {
+      groupId: nextGroupId++,
+      name: data.name,
+      createdAt: new Date().toISOString(),
+      interviews: [],
+    };
+    mockGroups.push(newGroup);
+    return {
+      groupId: newGroup.groupId,
+      name: newGroup.name,
+      createdAt: newGroup.createdAt,
+    };
+  }
+  return apiPost<Group>("/group", data);
+};
+
+export const updateGroup = async (
+  groupId: number,
+  data: GroupUpdateRequest,
+): Promise<void> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    const group = mockGroups.find((g) => g.groupId === groupId);
+    if (group) {
+      group.name = data.name;
+    }
+    return;
+  }
+  return apiPatch(`/group/${groupId}`, data);
+};
+
+export const deleteGroup = async (groupId: number): Promise<void> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    const index = mockGroups.findIndex((g) => g.groupId === groupId);
+    if (index > -1) {
+      mockGroups.splice(index, 1);
+    }
+    return;
+  }
+  return apiDelete(`/group/${groupId}`);
+};
+
+export const addInterviewsToGroup = async (
+  groupId: number,
+  data: GroupAddInterviewsRequest,
+): Promise<void> => {
+  if (USE_MOCK) {
+    await mockDelay();
+    const group = mockGroups.find((g) => g.groupId === groupId);
+    if (!group) {
+      throw new Error("그룹을 찾을 수 없습니다.");
+    }
+
+    // 전체 인터뷰 목록에서 해당 ID들 찾기
+    const allInterviews = await getAllInterviews();
+    const interviewsToAdd = allInterviews.data.filter((interview) =>
+      data.interviewIdList.includes(interview.interviewId),
+    );
+
+    // 중복 제거하며 추가
+    for (const interview of interviewsToAdd) {
+      if (!group.interviews.find((i) => i.interviewId === interview.interviewId)) {
+        group.interviews.push(interview);
+      }
+    }
+    return;
+  }
+  return apiPost(`/group/${groupId}`, data);
+};
