@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { getBookmarks, toggleBookmark, type InterviewItem } from "@/lib/api";
+import { getBookmarks, type InterviewItem, toggleBookmark } from "@/lib/api";
 
 export default function BookmarkPage() {
   const [interviews, setInterviews] = useState<InterviewItem[]>([]);

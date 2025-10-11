@@ -15,8 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import {
   getAllInterviews,
   getBookmarks,
-  toggleBookmark,
   type InterviewItem,
+  toggleBookmark,
 } from "@/lib/api";
 
 export default function InterviewAllPage() {

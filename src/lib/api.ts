@@ -676,7 +676,7 @@ export const likeAnswer = async (
 };
 
 // Bookmark API
-let mockBookmarks: number[] = [];
+const mockBookmarks: number[] = [];
 
 export const toggleBookmark = async (interviewId: number): Promise<void> => {
   if (USE_MOCK) {

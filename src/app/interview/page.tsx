@@ -23,9 +23,9 @@ import {
   getBookmarks,
   getInterviewCreateData,
   getInterviews,
-  toggleBookmark,
   type InterviewFilterParams,
   type InterviewItem,
+  toggleBookmark,
 } from "@/lib/api";
 
 export default function InterviewPage() {
