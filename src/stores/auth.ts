@@ -10,10 +10,12 @@ interface User {
 
 interface AuthState {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
   login: (id: string, password: string) => Promise<void>;
   register: (data: api.RegisterRequest) => Promise<void>;
   setUser: (user: User | null) => void;
+  setToken: (token: string | null) => void;
   logout: () => void;
 }
 
@@ -21,6 +23,7 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
+      token: null,
       isAuthenticated: false,
 
       login: async (id: string, password: string) => {
@@ -32,6 +35,7 @@ export const useAuthStore = create<AuthState>()(
             email: response.email,
             role: response.role,
           },
+          token: response.token || null,
           isAuthenticated: true,
         });
       },
@@ -45,6 +49,7 @@ export const useAuthStore = create<AuthState>()(
             email: response.email,
             role: response.role,
           },
+          token: response.token || null,
           isAuthenticated: true,
         });
       },
@@ -55,9 +60,15 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: !!user,
         }),
 
+      setToken: (token) =>
+        set({
+          token,
+        }),
+
       logout: () =>
         set({
           user: null,
+          token: null,
           isAuthenticated: false,
         }),
     }),
