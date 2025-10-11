@@ -109,7 +109,7 @@ export default function InterviewTrimPage() {
   };
 
   return (
-    <div className="container max-w-4xl py-8">
+    <>
       <div className="mb-6">
         <h1 className="text-3xl font-bold">질문 다듬기</h1>
         <p className="text-muted-foreground mt-2">
@@ -234,6 +234,6 @@ export default function InterviewTrimPage() {
           전문적이고 이해하기 쉬운 질문으로 다듬어드립니다.
         </p>
       </div>
-    </div>
+    </>
   );
 }

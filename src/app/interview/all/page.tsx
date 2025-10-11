@@ -112,18 +112,18 @@ export default function InterviewAllPage() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-6xl py-8">
+      <>
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">데이터를 불러오는 중...</p>
           </CardContent>
         </Card>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="container max-w-6xl py-8">
+    <>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">전체 면접 질문</h1>
@@ -295,6 +295,6 @@ export default function InterviewAllPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

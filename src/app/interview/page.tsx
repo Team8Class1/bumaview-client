@@ -167,7 +167,7 @@ export default function InterviewPage() {
   const hasActiveFilters = Object.keys(filters).length > 0;
 
   return (
-    <div className="container max-w-6xl py-8">
+    <>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">면접 질문 검색</h1>
@@ -454,6 +454,6 @@ export default function InterviewPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

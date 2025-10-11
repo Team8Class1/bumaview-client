@@ -143,7 +143,7 @@ export default function InterviewCreatePage() {
   }
 
   return (
-    <div className="container max-w-4xl py-8">
+    <>
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">면접 질문 등록</CardTitle>
@@ -290,6 +290,6 @@ export default function InterviewCreatePage() {
           </Form>
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 }

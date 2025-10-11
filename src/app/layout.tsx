@@ -23,7 +23,11 @@ export default function RootLayout({
         <Providers>
           <div className="min-h-screen flex flex-col">
             <Header />
-            <main className="flex-1 p-6 bg-background">{children}</main>
+            <main className="flex-1 bg-background">
+              <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {children}
+              </div>
+            </main>
             <Footer />
           </div>
           <Toaster />

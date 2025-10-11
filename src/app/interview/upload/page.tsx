@@ -92,7 +92,7 @@ export default function InterviewUploadPage() {
   };
 
   return (
-    <div className="container max-w-4xl py-8">
+    <>
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">파일 일괄 업로드</CardTitle>
@@ -194,6 +194,6 @@ export default function InterviewUploadPage() {
           </Button>
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 }

@@ -252,19 +252,19 @@ export default function InterviewDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-4xl py-8">
+      <>
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">데이터를 불러오는 중...</p>
           </CardContent>
         </Card>
-      </div>
+      </>
     );
   }
 
   if (!interview) {
     return (
-      <div className="container max-w-4xl py-8">
+      <>
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">
@@ -279,12 +279,12 @@ export default function InterviewDetailPage() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="container max-w-4xl py-8">
+    <>
       <div className="flex items-center justify-between mb-6">
         <Button variant="outline" onClick={() => router.back()}>
           ← 돌아가기
@@ -736,6 +736,6 @@ export default function InterviewDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

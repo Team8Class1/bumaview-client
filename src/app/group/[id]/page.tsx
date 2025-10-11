@@ -129,19 +129,19 @@ export default function GroupDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-6xl py-8">
+      <>
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">데이터를 불러오는 중...</p>
           </CardContent>
         </Card>
-      </div>
+      </>
     );
   }
 
   if (!group) {
     return (
-      <div className="container max-w-6xl py-8">
+      <>
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">그룹을 찾을 수 없습니다.</p>
@@ -154,12 +154,12 @@ export default function GroupDetailPage() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="container max-w-6xl py-8">
+    <>
       <div className="flex items-center justify-between mb-6">
         <div>
           <Button variant="outline" onClick={() => router.back()}>
@@ -365,6 +365,6 @@ export default function GroupDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
