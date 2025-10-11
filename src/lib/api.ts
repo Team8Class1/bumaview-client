@@ -736,7 +736,7 @@ export interface GroupAddInterviewsRequest {
   interviewIdList: number[];
 }
 
-let mockGroups: GroupDetail[] = [];
+const mockGroups: GroupDetail[] = [];
 let nextGroupId = 1;
 
 export const getGroups = async (): Promise<GroupListResponse> => {
@@ -765,9 +765,7 @@ export const getGroupDetail = async (groupId: number): Promise<GroupDetail> => {
   return apiGet<GroupDetail>(`/group/${groupId}`);
 };
 
-export const createGroup = async (
-  data: GroupCreateRequest,
-): Promise<Group> => {
+export const createGroup = async (data: GroupCreateRequest): Promise<Group> => {
   if (USE_MOCK) {
     await mockDelay();
     const newGroup: GroupDetail = {
@@ -832,7 +830,9 @@ export const addInterviewsToGroup = async (
 
     // 중복 제거하며 추가
     for (const interview of interviewsToAdd) {
-      if (!group.interviews.find((i) => i.interviewId === interview.interviewId)) {
+      if (
+        !group.interviews.find((i) => i.interviewId === interview.interviewId)
+      ) {
         group.interviews.push(interview);
       }
     }
@@ -862,7 +862,7 @@ export interface CompanyUpdateRequest {
   link: string;
 }
 
-let mockCompanies: Company[] = [
+const mockCompanies: Company[] = [
   { companyId: 1, companyName: "삼성전자", link: "https://www.samsung.com" },
   { companyId: 2, companyName: "카카오", link: "https://www.kakao.com" },
   { companyId: 3, companyName: "네이버", link: "https://www.naver.com" },

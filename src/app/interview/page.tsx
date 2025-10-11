@@ -4,7 +4,6 @@ import { Bookmark, Filter, FolderPlus, MessageSquare, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useBookmark } from "@/hooks/use-bookmark";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,13 +13,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -28,14 +20,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useBookmark } from "@/hooks/use-bookmark";
 import { useToast } from "@/hooks/use-toast";
 import {
   addInterviewsToGroup,
+  type Group,
   getBookmarks,
   getGroups,
   getInterviewCreateData,
   getInterviews,
-  type Group,
   type InterviewFilterParams,
   type InterviewItem,
 } from "@/lib/api";
@@ -65,11 +65,7 @@ export default function InterviewPage() {
     const fetchData = async () => {
       try {
         const [createData, bookmarkResponse, groupResponse] = await Promise.all(
-          [
-            getInterviewCreateData(),
-            getBookmarks(),
-            getGroups(),
-          ],
+          [getInterviewCreateData(), getBookmarks(), getGroups()],
         );
         setCompanies(createData.companyList);
         setCategories(createData.categoryList);
@@ -415,13 +411,19 @@ export default function InterviewPage() {
                 </Button>
               </div>
             ) : (
-              <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+              <Select
+                value={selectedGroupId}
+                onValueChange={setSelectedGroupId}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="그룹 선택" />
                 </SelectTrigger>
                 <SelectContent>
                   {groups.map((group) => (
-                    <SelectItem key={group.groupId} value={group.groupId.toString()}>
+                    <SelectItem
+                      key={group.groupId}
+                      value={group.groupId.toString()}
+                    >
                       {group.name}
                     </SelectItem>
                   ))}
@@ -443,7 +445,9 @@ export default function InterviewPage() {
             </Button>
             <Button
               onClick={handleAddToGroup}
-              disabled={isAddingToGroup || !selectedGroupId || groups.length === 0}
+              disabled={
+                isAddingToGroup || !selectedGroupId || groups.length === 0
+              }
             >
               {isAddingToGroup ? "추가 중..." : "추가"}
             </Button>
