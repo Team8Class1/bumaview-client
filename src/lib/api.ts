@@ -460,7 +460,7 @@ export const trimInterviewFile = async (file: File): Promise<Response> => {
   formData.append("file", file);
 
   return fetch(`${API_BASE_URL}/interview/trim/file`, {
-    method: "GET",
+    method: "POST",
     body: formData,
     credentials: "include",
   });
