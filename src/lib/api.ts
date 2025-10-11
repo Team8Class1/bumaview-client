@@ -606,7 +606,7 @@ export const deleteAnswer = async (answerId: number): Promise<void> => {
           return true;
         }
         if (answers[i].replies) {
-          if (deleteAnswerFromArray(answers[i].replies)) {
+          if (deleteAnswerFromArray(answers[i].replies!)) {
             return true;
           }
         }
