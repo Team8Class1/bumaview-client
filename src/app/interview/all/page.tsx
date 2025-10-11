@@ -1,7 +1,8 @@
 "use client";
 
-import { Bookmark, MessageSquare } from "lucide-react";
+import { Bookmark, FolderPlus, MessageSquare } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useBookmark } from "@/hooks/use-bookmark";
 import { Button } from "@/components/ui/button";
@@ -12,31 +13,59 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
+  addInterviewsToGroup,
   getAllInterviews,
   getBookmarks,
+  getGroups,
+  type Group,
   type InterviewItem,
 } from "@/lib/api";
 
 export default function InterviewAllPage() {
+  const router = useRouter();
   const [interviews, setInterviews] = useState<InterviewItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { bookmarkedIds, setBookmarkedIds, handleToggleBookmark } =
     useBookmark();
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [showGroupDialog, setShowGroupDialog] = useState(false);
+  const [selectedInterviewForGroup, setSelectedInterviewForGroup] =
+    useState<InterviewItem | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<string>("");
+  const [isAddingToGroup, setIsAddingToGroup] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [interviewResponse, bookmarkResponse] = await Promise.all([
-          getAllInterviews(),
-          getBookmarks(),
-        ]);
+        const [interviewResponse, bookmarkResponse, groupResponse] =
+          await Promise.all([
+            getAllInterviews(),
+            getBookmarks(),
+            getGroups(),
+          ]);
         setInterviews(interviewResponse.data);
         setBookmarkedIds(
           new Set(bookmarkResponse.data.map((item) => item.interviewId)),
         );
+        setGroups(groupResponse.data);
       } catch (_error) {
         toast({
           variant: "destructive",
@@ -50,6 +79,40 @@ export default function InterviewAllPage() {
 
     fetchData();
   }, [toast, setBookmarkedIds]);
+
+  const openGroupDialog = (e: React.MouseEvent, interview: InterviewItem) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedInterviewForGroup(interview);
+    setSelectedGroupId("");
+    setShowGroupDialog(true);
+  };
+
+  const handleAddToGroup = async () => {
+    if (!selectedInterviewForGroup || !selectedGroupId) return;
+
+    setIsAddingToGroup(true);
+    try {
+      await addInterviewsToGroup(Number(selectedGroupId), {
+        interviewIdList: [selectedInterviewForGroup.interviewId],
+      });
+      toast({
+        title: "그룹에 추가",
+        description: "질문이 그룹에 추가되었습니다.",
+      });
+      setShowGroupDialog(false);
+      setSelectedInterviewForGroup(null);
+      setSelectedGroupId("");
+    } catch (_error) {
+      toast({
+        variant: "destructive",
+        title: "추가 실패",
+        description: "그룹에 질문을 추가하는데 실패했습니다.",
+      });
+    } finally {
+      setIsAddingToGroup(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -114,27 +177,38 @@ export default function InterviewAllPage() {
                         ))}
                       </CardDescription>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) =>
-                        handleToggleBookmark(e, interview.interviewId)
-                      }
-                      className="shrink-0"
-                      aria-label={
-                        bookmarkedIds.has(interview.interviewId)
-                          ? "북마크 해제"
-                          : "북마크 추가"
-                      }
-                    >
-                      <Bookmark
-                        className={`h-5 w-5 ${
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) =>
+                          handleToggleBookmark(e, interview.interviewId)
+                        }
+                        className="shrink-0"
+                        aria-label={
                           bookmarkedIds.has(interview.interviewId)
-                            ? "fill-current"
-                            : ""
-                        }`}
-                      />
-                    </Button>
+                            ? "북마크 해제"
+                            : "북마크 추가"
+                        }
+                      >
+                        <Bookmark
+                          className={`h-5 w-5 ${
+                            bookmarkedIds.has(interview.interviewId)
+                              ? "fill-current"
+                              : ""
+                          }`}
+                        />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => openGroupDialog(e, interview)}
+                        className="shrink-0"
+                        aria-label="그룹에 추가"
+                      >
+                        <FolderPlus className="h-5 w-5" />
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -156,6 +230,67 @@ export default function InterviewAllPage() {
       <div className="mt-6 text-center text-sm text-muted-foreground">
         총 {interviews.length}개의 질문
       </div>
+
+      {/* 그룹에 추가 다이얼로그 */}
+      <Dialog open={showGroupDialog} onOpenChange={setShowGroupDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>그룹에 추가</DialogTitle>
+            <DialogDescription>
+              이 질문을 추가할 그룹을 선택하세요.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {groups.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>생성된 그룹이 없습니다.</p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowGroupDialog(false);
+                    router.push("/group");
+                  }}
+                  className="mt-4"
+                >
+                  그룹 만들기
+                </Button>
+              </div>
+            ) : (
+              <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="그룹 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {groups.map((group) => (
+                    <SelectItem key={group.groupId} value={group.groupId.toString()}>
+                      {group.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowGroupDialog(false);
+                setSelectedInterviewForGroup(null);
+                setSelectedGroupId("");
+              }}
+              disabled={isAddingToGroup}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={handleAddToGroup}
+              disabled={isAddingToGroup || !selectedGroupId || groups.length === 0}
+            >
+              {isAddingToGroup ? "추가 중..." : "추가"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
