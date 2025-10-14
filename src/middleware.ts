@@ -9,13 +9,18 @@ export function middleware(request: NextRequest) {
 
   const isAuthPage =
     pathname.startsWith("/login") || pathname.startsWith("/register");
+  const isAdminPage = pathname.startsWith("/admin");
 
   // 토큰이 있고 로그인/회원가입 페이지에 접근하면 홈으로 리다이렉트
   if (token && isAuthPage) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // 토큰이 없어도 모든 페이지 접근 허용 (백엔드 연결 전이므로)
+  // 어드민 페이지에 토큰 없이 접근하면 로그인 페이지로 리다이렉트
+  if (isAdminPage && !token) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
   return NextResponse.next();
 }
 

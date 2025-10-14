@@ -96,7 +96,14 @@ export function Header() {
         <div className="flex items-center gap-4">
           {user ? (
             <>
-              <div className="text-sm text-muted-foreground">{user.id}</div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{user.id}</span>
+                {user.role === "admin" && (
+                  <span className="px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-full">
+                    관리자
+                  </span>
+                )}
+              </div>
               <Button
                 variant="outline"
                 size="sm"
