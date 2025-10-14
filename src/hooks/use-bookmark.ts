@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getBookmarks, toggleBookmark } from "@/lib/api";
+import { bookmarkAPI } from "@/lib/api";
 import { useToast } from "./use-toast";
 
 export function useBookmark() {
@@ -26,7 +26,7 @@ export function useBookmark() {
     setBookmarkedIds(newBookmarkedIds);
 
     try {
-      await toggleBookmark(interviewId);
+      await bookmarkAPI.toggle(interviewId.toString());
       const isBookmarked = newBookmarkedIds.has(interviewId);
       toast({
         title: isBookmarked ? "북마크 추가" : "북마크 해제",
@@ -38,7 +38,7 @@ export function useBookmark() {
       // 에러 시 롤백 및 최신 북마크 목록 재조회
       setBookmarkedIds(prevBookmarkedIds);
       try {
-        const bookmarkResponse = await getBookmarks();
+        const bookmarkResponse = await bookmarkAPI.getAll();
         setBookmarkedIds(
           new Set(bookmarkResponse.data.map((item) => item.interviewId)),
         );
