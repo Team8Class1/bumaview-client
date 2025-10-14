@@ -40,7 +40,14 @@ export const api = ky.create({
           let errorMessage = "Request failed";
           try {
             const error = await response.json();
-            errorMessage = error.message || errorMessage;
+            if (
+              error &&
+              typeof error === "object" &&
+              "message" in error &&
+              typeof error.message === "string"
+            ) {
+              errorMessage = error.message || errorMessage;
+            }
           } catch {
             // JSON 파싱 실패시 기본 메시지 사용
           }

@@ -103,43 +103,49 @@ export default function InterviewDetailPage() {
   const handleSubmitAnswer = () => {
     if (!interview || !newAnswer.trim()) return;
 
-    const mutation = replyTo ? createAnswerReplyMutation : createAnswerMutation;
-    const data = replyTo
-      ? {
+    const onSuccess = () => {
+      toast({
+        title: replyTo ? "대댓글 등록" : "답변 등록",
+        description: replyTo
+          ? "대댓글이 성공적으로 등록되었습니다."
+          : "답변이 성공적으로 등록되었습니다.",
+      });
+      setNewAnswer("");
+      setIsPrivate(false);
+      setReplyTo(null);
+    };
+
+    const onError = (error: unknown) => {
+      toast({
+        variant: "destructive",
+        title: "등록 실패",
+        description:
+          error instanceof Error
+            ? error.message
+            : "답변 등록 중 오류가 발생했습니다.",
+      });
+    };
+
+    if (replyTo) {
+      createAnswerReplyMutation.mutate(
+        {
           interviewId: interview.interviewId,
           answer: newAnswer,
           isPrivate,
           parentAnswerId: replyTo,
-        }
-      : {
+        },
+        { onSuccess, onError },
+      );
+    } else {
+      createAnswerMutation.mutate(
+        {
           interviewId: interview.interviewId,
           answer: newAnswer,
           isPrivate,
-        };
-
-    mutation.mutate(data, {
-      onSuccess: () => {
-        toast({
-          title: replyTo ? "대댓글 등록" : "답변 등록",
-          description: replyTo
-            ? "대댓글이 성공적으로 등록되었습니다."
-            : "답변이 성공적으로 등록되었습니다.",
-        });
-        setNewAnswer("");
-        setIsPrivate(false);
-        setReplyTo(null);
-      },
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "등록 실패",
-          description:
-            error instanceof Error
-              ? error.message
-              : "답변 등록 중 오류가 발생했습니다.",
-        });
-      },
-    });
+        },
+        { onSuccess, onError },
+      );
+    }
   };
 
   const handleEditAnswer = (answerId: number) => {

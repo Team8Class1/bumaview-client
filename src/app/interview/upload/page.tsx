@@ -121,7 +121,7 @@ export default function InterviewUploadPage() {
           onChange={handleFileChange}
           className="hidden"
           id="file-upload"
-          disabled={isUploading}
+          disabled={uploadFileMutation.isPending}
         />
         <label
           htmlFor="file-upload"
