@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,9 +36,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Loading } from "@/components/ui/loading";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  useCreateAnswer,
+  useCreateAnswerReply,
+  useDeleteAnswer,
+  useLikeAnswer,
+  useUpdateAnswer,
+} from "@/hooks/use-answer-queries";
+import {
+  useDeleteInterview,
+  useInterview,
+} from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
-import { useInterview, useDeleteInterview } from "@/hooks/use-interview-queries";
-import { useCreateAnswer, useCreateAnswerReply, useDeleteAnswer, useUpdateAnswer, useLikeAnswer } from "@/hooks/use-answer-queries";
 import type { InterviewAnswer } from "@/lib/api";
 
 export default function InterviewDetailPage() {
@@ -64,7 +73,8 @@ export default function InterviewDetailPage() {
   const [editAnswerText, setEditAnswerText] = useState("");
   const [editAnswerPrivate, setEditAnswerPrivate] = useState(false);
 
-  const isSubmittingAnswer = createAnswerMutation.isPending || createAnswerReplyMutation.isPending;
+  const isSubmittingAnswer =
+    createAnswerMutation.isPending || createAnswerReplyMutation.isPending;
 
   const handleDelete = () => {
     if (!interview) return;
@@ -135,33 +145,36 @@ export default function InterviewDetailPage() {
   const handleEditAnswer = (answerId: number) => {
     if (!editAnswerText.trim()) return;
 
-    updateAnswerMutation.mutate({
-      answerId: answerId.toString(),
-      data: {
-        answer: editAnswerText,
-        private: editAnswerPrivate,
+    updateAnswerMutation.mutate(
+      {
+        answerId: answerId.toString(),
+        data: {
+          answer: editAnswerText,
+          private: editAnswerPrivate,
+        },
       },
-    }, {
-      onSuccess: () => {
-        toast({
-          title: "수정 완료",
-          description: "답변이 성공적으로 수정되었습니다.",
-        });
-        setEditingAnswer(null);
-        setEditAnswerText("");
-        setEditAnswerPrivate(false);
+      {
+        onSuccess: () => {
+          toast({
+            title: "수정 완료",
+            description: "답변이 성공적으로 수정되었습니다.",
+          });
+          setEditingAnswer(null);
+          setEditAnswerText("");
+          setEditAnswerPrivate(false);
+        },
+        onError: (error) => {
+          toast({
+            variant: "destructive",
+            title: "수정 실패",
+            description:
+              error instanceof Error
+                ? error.message
+                : "답변 수정 중 오류가 발생했습니다.",
+          });
+        },
       },
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "수정 실패",
-          description:
-            error instanceof Error
-              ? error.message
-              : "답변 수정 중 오류가 발생했습니다.",
-        });
-      },
-    });
+    );
   };
 
   const handleDeleteAnswer = (answerId: number) => {

@@ -31,8 +31,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  useInterview,
+  useInterviewCreateData,
+  useUpdateInterview,
+} from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
-import { useInterview, useInterviewCreateData, useUpdateInterview } from "@/hooks/use-interview-queries";
 
 const interviewSchema = z.object({
   question: z
@@ -54,8 +58,11 @@ export default function InterviewEditPage() {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
 
   // React Query hooks
-  const { data: interview, isLoading: isLoadingInterview } = useInterview(params.id as string);
-  const { data: createData, isLoading: isLoadingData } = useInterviewCreateData();
+  const { data: interview, isLoading: isLoadingInterview } = useInterview(
+    params.id as string,
+  );
+  const { data: createData, isLoading: isLoadingData } =
+    useInterviewCreateData();
   const updateInterviewMutation = useUpdateInterview();
 
   const form = useForm<InterviewFormValues>({
@@ -75,7 +82,7 @@ export default function InterviewEditPage() {
       form.setValue("questionAt", interview.questionAt);
       form.setValue("companyId", interview.companyId?.toString() || "none");
 
-      const categoryIds = interview.categoryList.map(cat => cat.categoryId);
+      const categoryIds = interview.categoryList.map((cat) => cat.categoryId);
       setSelectedCategories(categoryIds);
       form.setValue("categoryList", categoryIds);
     }
@@ -93,37 +100,40 @@ export default function InterviewEditPage() {
   const onSubmit = (data: InterviewFormValues) => {
     if (!interview) return;
 
-    updateInterviewMutation.mutate({
-      id: params.id as string,
-      data: {
-        interviewId: interview.interviewId,
-        question: data.question,
-        category: selectedCategories,
-        companyId:
-          data.companyId && data.companyId !== "none"
-            ? Number(data.companyId)
-            : null,
-        questionAt: data.questionAt,
+    updateInterviewMutation.mutate(
+      {
+        id: params.id as string,
+        data: {
+          interviewId: interview.interviewId,
+          question: data.question,
+          category: selectedCategories,
+          companyId:
+            data.companyId && data.companyId !== "none"
+              ? Number(data.companyId)
+              : null,
+          questionAt: data.questionAt,
+        },
       },
-    }, {
-      onSuccess: () => {
-        toast({
-          title: "수정 완료",
-          description: "면접 질문이 성공적으로 수정되었습니다.",
-        });
-        router.push(`/interview/${interview.interviewId}`);
+      {
+        onSuccess: () => {
+          toast({
+            title: "수정 완료",
+            description: "면접 질문이 성공적으로 수정되었습니다.",
+          });
+          router.push(`/interview/${interview.interviewId}`);
+        },
+        onError: (error) => {
+          toast({
+            variant: "destructive",
+            title: "수정 실패",
+            description:
+              error instanceof Error
+                ? error.message
+                : "질문 수정 중 오류가 발생했습니다.",
+          });
+        },
       },
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "수정 실패",
-          description:
-            error instanceof Error
-              ? error.message
-              : "질문 수정 중 오류가 발생했습니다.",
-        });
-      },
-    });
+    );
   };
 
   return (
@@ -287,7 +297,9 @@ export default function InterviewEditPage() {
                     className="flex-1"
                     size="lg"
                   >
-                    {updateInterviewMutation.isPending ? "수정 중..." : "수정 완료"}
+                    {updateInterviewMutation.isPending
+                      ? "수정 중..."
+                      : "수정 완료"}
                   </Button>
                   <Button
                     type="button"

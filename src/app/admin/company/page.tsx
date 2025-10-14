@@ -21,8 +21,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loading } from "@/components/ui/loading";
+import {
+  useCompanies,
+  useCreateCompany,
+  useDeleteCompany,
+  useUpdateCompany,
+} from "@/hooks/use-company-queries";
 import { useToast } from "@/hooks/use-toast";
-import { useCompanies, useCreateCompany, useUpdateCompany, useDeleteCompany } from "@/hooks/use-company-queries";
 import type { Company } from "@/lib/api";
 
 export default function AdminCompanyPage() {
@@ -42,55 +47,60 @@ export default function AdminCompanyPage() {
 
   const companies = companiesData?.data || [];
 
-
   const handleCreateCompany = () => {
     if (!companyName.trim()) return;
 
-    createCompanyMutation.mutate({ companyName, link: companyLink }, {
-      onSuccess: () => {
-        toast({
-          title: "회사 생성",
-          description: "회사가 성공적으로 생성되었습니다.",
-        });
-        setShowCreateDialog(false);
-        setCompanyName("");
-        setCompanyLink("");
+    createCompanyMutation.mutate(
+      { companyName, link: companyLink },
+      {
+        onSuccess: () => {
+          toast({
+            title: "회사 생성",
+            description: "회사가 성공적으로 생성되었습니다.",
+          });
+          setShowCreateDialog(false);
+          setCompanyName("");
+          setCompanyLink("");
+        },
+        onError: () => {
+          toast({
+            variant: "destructive",
+            title: "회사 생성 실패",
+            description: "회사 생성에 실패했습니다.",
+          });
+        },
       },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          title: "회사 생성 실패",
-          description: "회사 생성에 실패했습니다.",
-        });
-      }
-    });
+    );
   };
 
   const handleUpdateCompany = () => {
     if (!selectedCompany || !companyName.trim()) return;
 
-    updateCompanyMutation.mutate({
-      id: selectedCompany.companyId.toString(),
-      data: { companyName, link: companyLink }
-    }, {
-      onSuccess: () => {
-        toast({
-          title: "회사 수정",
-          description: "회사 정보가 성공적으로 수정되었습니다.",
-        });
-        setShowEditDialog(false);
-        setCompanyName("");
-        setCompanyLink("");
-        setSelectedCompany(null);
+    updateCompanyMutation.mutate(
+      {
+        id: selectedCompany.companyId.toString(),
+        data: { companyName, link: companyLink },
       },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          title: "회사 수정 실패",
-          description: "회사 수정에 실패했습니다.",
-        });
-      }
-    });
+      {
+        onSuccess: () => {
+          toast({
+            title: "회사 수정",
+            description: "회사 정보가 성공적으로 수정되었습니다.",
+          });
+          setShowEditDialog(false);
+          setCompanyName("");
+          setCompanyLink("");
+          setSelectedCompany(null);
+        },
+        onError: () => {
+          toast({
+            variant: "destructive",
+            title: "회사 수정 실패",
+            description: "회사 수정에 실패했습니다.",
+          });
+        },
+      },
+    );
   };
 
   const handleDeleteCompany = () => {
@@ -111,7 +121,7 @@ export default function AdminCompanyPage() {
           title: "회사 삭제 실패",
           description: "회사 삭제에 실패했습니다.",
         });
-      }
+      },
     });
   };
 
@@ -232,7 +242,11 @@ export default function AdminCompanyPage() {
                     handleCreateCompany();
                   }
                 }}
-                disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
+                disabled={
+                  createCompanyMutation.isPending ||
+                  updateCompanyMutation.isPending ||
+                  deleteCompanyMutation.isPending
+                }
                 autoFocus
               />
             </div>
@@ -248,7 +262,11 @@ export default function AdminCompanyPage() {
                     handleCreateCompany();
                   }
                 }}
-                disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
+                disabled={
+                  createCompanyMutation.isPending ||
+                  updateCompanyMutation.isPending ||
+                  deleteCompanyMutation.isPending
+                }
               />
             </div>
           </div>
@@ -260,7 +278,11 @@ export default function AdminCompanyPage() {
                 setCompanyName("");
                 setCompanyLink("");
               }}
-              disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
+              disabled={
+                createCompanyMutation.isPending ||
+                updateCompanyMutation.isPending ||
+                deleteCompanyMutation.isPending
+              }
             >
               취소
             </Button>
@@ -293,7 +315,11 @@ export default function AdminCompanyPage() {
                     handleUpdateCompany();
                   }
                 }}
-                disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
+                disabled={
+                  createCompanyMutation.isPending ||
+                  updateCompanyMutation.isPending ||
+                  deleteCompanyMutation.isPending
+                }
                 autoFocus
               />
             </div>
@@ -308,7 +334,11 @@ export default function AdminCompanyPage() {
                     handleUpdateCompany();
                   }
                 }}
-                disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
+                disabled={
+                  createCompanyMutation.isPending ||
+                  updateCompanyMutation.isPending ||
+                  deleteCompanyMutation.isPending
+                }
               />
             </div>
           </div>
@@ -321,7 +351,11 @@ export default function AdminCompanyPage() {
                 setCompanyLink("");
                 setSelectedCompany(null);
               }}
-              disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
+              disabled={
+                createCompanyMutation.isPending ||
+                updateCompanyMutation.isPending ||
+                deleteCompanyMutation.isPending
+              }
             >
               취소
             </Button>
@@ -352,7 +386,11 @@ export default function AdminCompanyPage() {
                 setShowDeleteDialog(false);
                 setSelectedCompany(null);
               }}
-              disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
+              disabled={
+                createCompanyMutation.isPending ||
+                updateCompanyMutation.isPending ||
+                deleteCompanyMutation.isPending
+              }
             >
               취소
             </Button>

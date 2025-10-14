@@ -23,9 +23,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
 import { useBookmark } from "@/hooks/use-bookmark";
-import { useToast } from "@/hooks/use-toast";
-import { useGroup, useAddInterviewsToGroup } from "@/hooks/use-group-queries";
+import { useAddInterviewsToGroup, useGroup } from "@/hooks/use-group-queries";
 import { useInterviews } from "@/hooks/use-interview-queries";
+import { useToast } from "@/hooks/use-toast";
 import type { InterviewItem } from "@/lib/api";
 
 export default function GroupDetailPage() {
@@ -47,7 +47,6 @@ export default function GroupDetailPage() {
   const { data: allInterviewsData } = useInterviews();
   const addInterviewsToGroupMutation = useAddInterviewsToGroup();
 
-
   const openAddDialog = () => {
     if (!allInterviewsData || !group) return;
 
@@ -63,27 +62,30 @@ export default function GroupDetailPage() {
   const handleAddInterviews = () => {
     if (!group || selectedInterviewIds.length === 0) return;
 
-    addInterviewsToGroupMutation.mutate({
-      groupId: group.groupId.toString(),
-      data: { interviewIdList: selectedInterviewIds }
-    }, {
-      onSuccess: () => {
-        toast({
-          title: "질문 추가",
-          description: `${selectedInterviewIds.length}개의 질문이 그룹에 추가되었습니다.`,
-        });
-        setShowAddDialog(false);
-        setSelectedInterviewIds([]);
-        setSearchQuery("");
+    addInterviewsToGroupMutation.mutate(
+      {
+        groupId: group.groupId.toString(),
+        data: { interviewIdList: selectedInterviewIds },
       },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          title: "추가 실패",
-          description: "질문 추가에 실패했습니다.",
-        });
-      }
-    });
+      {
+        onSuccess: () => {
+          toast({
+            title: "질문 추가",
+            description: `${selectedInterviewIds.length}개의 질문이 그룹에 추가되었습니다.`,
+          });
+          setShowAddDialog(false);
+          setSelectedInterviewIds([]);
+          setSearchQuery("");
+        },
+        onError: () => {
+          toast({
+            variant: "destructive",
+            title: "추가 실패",
+            description: "질문 추가에 실패했습니다.",
+          });
+        },
+      },
+    );
   };
 
   const toggleInterviewSelection = (interviewId: number) => {
@@ -116,7 +118,10 @@ export default function GroupDetailPage() {
             {isLoading ? " " : `${group?.interviews.length}개의 질문`}
           </p>
         </div>
-        <Button onClick={openAddDialog} disabled={isLoading || !group || !allInterviewsData}>
+        <Button
+          onClick={openAddDialog}
+          disabled={isLoading || !group || !allInterviewsData}
+        >
           <Plus className="h-4 w-4 mr-2" />
           질문 추가
         </Button>
@@ -317,7 +322,10 @@ export default function GroupDetailPage() {
             </Button>
             <Button
               onClick={handleAddInterviews}
-              disabled={addInterviewsToGroupMutation.isPending || selectedInterviewIds.length === 0}
+              disabled={
+                addInterviewsToGroupMutation.isPending ||
+                selectedInterviewIds.length === 0
+              }
             >
               {addInterviewsToGroupMutation.isPending
                 ? "추가 중..."

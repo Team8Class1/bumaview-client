@@ -17,9 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  useInterviewCreateData,
+  useTrimInterviewFile,
+  useTrimInterviewSingle,
+} from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
-import { useInterviewCreateData, useTrimInterviewSingle, useTrimInterviewFile } from "@/hooks/use-interview-queries";
-import type { InterviewCreateData } from "@/lib/api";
 
 export default function InterviewTrimPage() {
   const [mode, setMode] = useState<"single" | "file">("single");
@@ -32,7 +35,6 @@ export default function InterviewTrimPage() {
   const trimSingleMutation = useTrimInterviewSingle();
   const trimFileMutation = useTrimInterviewFile();
 
-
   const handleTrimSingle = () => {
     if (!question.trim()) {
       toast({
@@ -43,27 +45,30 @@ export default function InterviewTrimPage() {
       return;
     }
 
-    trimSingleMutation.mutate({
-      question,
-      category: createData?.categoryList || [],
-      companyId: null,
-      questionAt: new Date().toISOString().split("T")[0],
-    }, {
-      onSuccess: (result) => {
-        setTrimmedQuestion(result.question);
-        toast({
-          title: "다듬기 완료",
-          description: "질문이 정리되었습니다.",
-        });
+    trimSingleMutation.mutate(
+      {
+        question,
+        category: createData?.categoryList || [],
+        companyId: null,
+        questionAt: new Date().toISOString().split("T")[0],
       },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          title: "처리 실패",
-          description: "질문 다듬기에 실패했습니다.",
-        });
-      }
-    });
+      {
+        onSuccess: (result) => {
+          setTrimmedQuestion(result.question);
+          toast({
+            title: "다듬기 완료",
+            description: "질문이 정리되었습니다.",
+          });
+        },
+        onError: () => {
+          toast({
+            variant: "destructive",
+            title: "처리 실패",
+            description: "질문 다듬기에 실패했습니다.",
+          });
+        },
+      },
+    );
   };
 
   const handleTrimFile = (file: File) => {
@@ -82,7 +87,7 @@ export default function InterviewTrimPage() {
           title: "처리 실패",
           description: "파일 처리에 실패했습니다.",
         });
-      }
+      },
     });
   };
 
@@ -134,7 +139,9 @@ export default function InterviewTrimPage() {
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder="다듬을 질문을 입력하세요..."
                 className="w-full min-h-[120px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={trimSingleMutation.isPending || trimFileMutation.isPending}
+                disabled={
+                  trimSingleMutation.isPending || trimFileMutation.isPending
+                }
               />
             </div>
 
@@ -175,7 +182,9 @@ export default function InterviewTrimPage() {
               }}
               className="hidden"
               id="file-trim-upload"
-              disabled={trimSingleMutation.isPending || trimFileMutation.isPending}
+              disabled={
+                trimSingleMutation.isPending || trimFileMutation.isPending
+              }
             />
             <label
               htmlFor="file-trim-upload"
@@ -191,7 +200,9 @@ export default function InterviewTrimPage() {
               <Button
                 variant="secondary"
                 className="mt-4 pointer-events-none"
-                disabled={trimSingleMutation.isPending || trimFileMutation.isPending}
+                disabled={
+                  trimSingleMutation.isPending || trimFileMutation.isPending
+                }
               >
                 {trimFileMutation.isPending ? "처리 중..." : "파일 선택"}
               </Button>

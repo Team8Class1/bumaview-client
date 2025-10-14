@@ -1,15 +1,15 @@
-import ky from 'ky'
-import { useAuthStore } from '@/stores/auth'
+import ky from "ky";
+import { useAuthStore } from "@/stores/auth";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
   ) {
-    super(message)
-    this.name = 'ApiError'
+    super(message);
+    this.name = "ApiError";
   }
 }
 
@@ -17,36 +17,36 @@ export class ApiError extends Error {
 export const api = ky.create({
   prefixUrl: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
-  credentials: 'include',
+  credentials: "include",
   hooks: {
     beforeRequest: [
       (request) => {
         // JWT 토큰 가져오기
-        const token = useAuthStore.getState().token
+        const token = useAuthStore.getState().token;
         if (token) {
-          request.headers.set('Authorization', `Bearer ${token}`)
+          request.headers.set("Authorization", `Bearer ${token}`);
         }
       },
     ],
     afterResponse: [
       async (_request, _options, response) => {
         if (response.status === 401) {
-          useAuthStore.getState().logout()
+          useAuthStore.getState().logout();
         }
 
         if (!response.ok) {
-          let errorMessage = 'Request failed'
+          let errorMessage = "Request failed";
           try {
-            const error = await response.json()
-            errorMessage = error.message || errorMessage
+            const error = await response.json();
+            errorMessage = error.message || errorMessage;
           } catch {
             // JSON 파싱 실패시 기본 메시지 사용
           }
-          throw new ApiError(response.status, errorMessage)
+          throw new ApiError(response.status, errorMessage);
         }
       },
     ],
   },
-})
+});

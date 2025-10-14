@@ -28,10 +28,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useBookmark } from "@/hooks/use-bookmark";
-import { useToast } from "@/hooks/use-toast";
-import { useInterviewSearch, useInterviewCreateData } from "@/hooks/use-interview-queries";
 import { useBookmarks } from "@/hooks/use-bookmark-queries";
-import { useGroups, useAddInterviewsToGroup } from "@/hooks/use-group-queries";
+import { useAddInterviewsToGroup, useGroups } from "@/hooks/use-group-queries";
+import {
+  useInterviewCreateData,
+  useInterviewSearch,
+} from "@/hooks/use-interview-queries";
+import { useToast } from "@/hooks/use-toast";
 import type { InterviewFilterParams, InterviewItem } from "@/lib/api";
 
 export default function InterviewPage() {
@@ -77,29 +80,32 @@ export default function InterviewPage() {
   const handleAddToGroup = () => {
     if (!selectedInterviewForGroup || !selectedGroupId) return;
 
-    addToGroupMutation.mutate({
-      groupId: selectedGroupId,
-      data: {
-        interviewIdList: [selectedInterviewForGroup.interviewId],
+    addToGroupMutation.mutate(
+      {
+        groupId: selectedGroupId,
+        data: {
+          interviewIdList: [selectedInterviewForGroup.interviewId],
+        },
       },
-    }, {
-      onSuccess: () => {
-        toast({
-          title: "그룹에 추가",
-          description: "질문이 그룹에 추가되었습니다.",
-        });
-        setShowGroupDialog(false);
-        setSelectedInterviewForGroup(null);
-        setSelectedGroupId("");
+      {
+        onSuccess: () => {
+          toast({
+            title: "그룹에 추가",
+            description: "질문이 그룹에 추가되었습니다.",
+          });
+          setShowGroupDialog(false);
+          setSelectedInterviewForGroup(null);
+          setSelectedGroupId("");
+        },
+        onError: () => {
+          toast({
+            variant: "destructive",
+            title: "추가 실패",
+            description: "그룹에 질문을 추가하는데 실패했습니다.",
+          });
+        },
       },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          title: "추가 실패",
-          description: "그룹에 질문을 추가하는데 실패했습니다.",
-        });
-      },
-    });
+    );
   };
 
   const handleFilterChange = (
@@ -409,7 +415,9 @@ export default function InterviewPage() {
             <Button
               onClick={handleAddToGroup}
               disabled={
-                addToGroupMutation.isPending || !selectedGroupId || groups.length === 0
+                addToGroupMutation.isPending ||
+                !selectedGroupId ||
+                groups.length === 0
               }
             >
               {addToGroupMutation.isPending ? "추가 중..." : "추가"}

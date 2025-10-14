@@ -29,10 +29,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useBookmark } from "@/hooks/use-bookmark";
-import { useToast } from "@/hooks/use-toast";
+import { useAddInterviewsToGroup, useGroups } from "@/hooks/use-group-queries";
 import { useInterviews } from "@/hooks/use-interview-queries";
-import { useGroups, useAddInterviewsToGroup } from "@/hooks/use-group-queries";
-import type { Group, InterviewItem } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
+import type { InterviewItem } from "@/lib/api";
 
 export default function InterviewAllPage() {
   const router = useRouter();
@@ -44,14 +44,14 @@ export default function InterviewAllPage() {
   const { toast } = useToast();
 
   // React Query hooks
-  const { data: interviewsData, isLoading: isLoadingInterviews } = useInterviews();
+  const { data: interviewsData, isLoading: isLoadingInterviews } =
+    useInterviews();
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups();
   const addInterviewsToGroupMutation = useAddInterviewsToGroup();
 
   const interviews = interviewsData?.data || [];
   const groups = groupsData?.data || [];
   const isLoading = isLoadingInterviews || isLoadingGroups;
-
 
   const openGroupDialog = (e: React.MouseEvent, interview: InterviewItem) => {
     e.preventDefault();
@@ -64,27 +64,30 @@ export default function InterviewAllPage() {
   const handleAddToGroup = () => {
     if (!selectedInterviewForGroup || !selectedGroupId) return;
 
-    addInterviewsToGroupMutation.mutate({
-      groupId: selectedGroupId,
-      data: { interviewIdList: [selectedInterviewForGroup.interviewId] }
-    }, {
-      onSuccess: () => {
-        toast({
-          title: "그룹에 추가",
-          description: "질문이 그룹에 추가되었습니다.",
-        });
-        setShowGroupDialog(false);
-        setSelectedInterviewForGroup(null);
-        setSelectedGroupId("");
+    addInterviewsToGroupMutation.mutate(
+      {
+        groupId: selectedGroupId,
+        data: { interviewIdList: [selectedInterviewForGroup.interviewId] },
       },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          title: "추가 실패",
-          description: "그룹에 질문을 추가하는데 실패했습니다.",
-        });
-      }
-    });
+      {
+        onSuccess: () => {
+          toast({
+            title: "그룹에 추가",
+            description: "질문이 그룹에 추가되었습니다.",
+          });
+          setShowGroupDialog(false);
+          setSelectedInterviewForGroup(null);
+          setSelectedGroupId("");
+        },
+        onError: () => {
+          toast({
+            variant: "destructive",
+            title: "추가 실패",
+            description: "그룹에 질문을 추가하는데 실패했습니다.",
+          });
+        },
+      },
+    );
   };
 
   return (
@@ -254,7 +257,9 @@ export default function InterviewAllPage() {
             <Button
               onClick={handleAddToGroup}
               disabled={
-                addInterviewsToGroupMutation.isPending || !selectedGroupId || groups.length === 0
+                addInterviewsToGroupMutation.isPending ||
+                !selectedGroupId ||
+                groups.length === 0
               }
             >
               {addInterviewsToGroupMutation.isPending ? "추가 중..." : "추가"}

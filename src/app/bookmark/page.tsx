@@ -13,9 +13,8 @@ import {
 } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import { useBookmark } from "@/hooks/use-bookmark";
-import { useToast } from "@/hooks/use-toast";
 import { useBookmarks, useToggleBookmark } from "@/hooks/use-bookmark-queries";
-import type { InterviewItem } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 export default function BookmarkPage() {
   const { bookmarkedIds, setBookmarkedIds } = useBookmark();
@@ -36,10 +35,7 @@ export default function BookmarkPage() {
     }
   }, [bookmarkData?.data, setBookmarkedIds]);
 
-  const handleToggleBookmark = (
-    e: React.MouseEvent,
-    interviewId: number,
-  ) => {
+  const handleToggleBookmark = (e: React.MouseEvent, interviewId: number) => {
     e.preventDefault();
     e.stopPropagation();
 

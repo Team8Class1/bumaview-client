@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -30,8 +30,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  useCreateInterview,
+  useInterviewCreateData,
+} from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
-import { useInterviewCreateData, useCreateInterview } from "@/hooks/use-interview-queries";
 
 const interviewSchema = z.object({
   question: z
@@ -52,7 +55,8 @@ export default function InterviewCreatePage() {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
 
   // React Query hooks
-  const { data: createData, isLoading: isLoadingData } = useInterviewCreateData();
+  const { data: createData, isLoading: isLoadingData } =
+    useInterviewCreateData();
   const createInterviewMutation = useCreateInterview();
 
   const form = useForm<InterviewFormValues>({
@@ -75,35 +79,38 @@ export default function InterviewCreatePage() {
   };
 
   const onSubmit = (data: InterviewFormValues) => {
-    createInterviewMutation.mutate({
-      question: data.question,
-      categoryList: selectedCategories,
-      companyId:
-        data.companyId && data.companyId !== "none"
-          ? Number(data.companyId)
-          : null,
-      questionAt: data.questionAt,
-    }, {
-      onSuccess: () => {
-        toast({
-          title: "등록 성공",
-          description: "면접 질문이 성공적으로 등록되었습니다.",
-        });
-        // 폼 초기화
-        form.reset();
-        setSelectedCategories([]);
+    createInterviewMutation.mutate(
+      {
+        question: data.question,
+        categoryList: selectedCategories,
+        companyId:
+          data.companyId && data.companyId !== "none"
+            ? Number(data.companyId)
+            : null,
+        questionAt: data.questionAt,
       },
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "등록 실패",
-          description:
-            error instanceof Error
-              ? error.message
-              : "질문 등록 중 오류가 발생했습니다.",
-        });
+      {
+        onSuccess: () => {
+          toast({
+            title: "등록 성공",
+            description: "면접 질문이 성공적으로 등록되었습니다.",
+          });
+          // 폼 초기화
+          form.reset();
+          setSelectedCategories([]);
+        },
+        onError: (error) => {
+          toast({
+            variant: "destructive",
+            title: "등록 실패",
+            description:
+              error instanceof Error
+                ? error.message
+                : "질문 등록 중 오류가 발생했습니다.",
+          });
+        },
       },
-    });
+    );
   };
 
   if (isLoadingData || !createData) {

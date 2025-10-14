@@ -1,28 +1,28 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { authAPI, type LoginRequest, type RegisterRequest } from '@/lib/api'
-import { useAuthStore } from '@/stores/auth'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { authAPI } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth";
 
 // Query Keys
 export const authKeys = {
-  all: ['auth'] as const,
-  user: () => [...authKeys.all, 'user'] as const,
-}
+  all: ["auth"] as const,
+  user: () => [...authKeys.all, "user"] as const,
+};
 
 // Queries
 export const useUser = () => {
-  const { token } = useAuthStore()
+  const { token } = useAuthStore();
 
   return useQuery({
     queryKey: authKeys.user(),
     queryFn: authAPI.getUser,
     enabled: !!token,
-  })
-}
+  });
+};
 
 // Mutations
 export const useLogin = () => {
-  const queryClient = useQueryClient()
-  const { login: setAuth } = useAuthStore()
+  const queryClient = useQueryClient();
+  const { login: setAuth } = useAuthStore();
 
   return useMutation({
     mutationFn: authAPI.login,
@@ -35,16 +35,16 @@ export const useLogin = () => {
             email: data.email,
             role: data.role,
           },
-        })
-        queryClient.setQueryData(authKeys.user(), data)
+        });
+        queryClient.setQueryData(authKeys.user(), data);
       }
     },
-  })
-}
+  });
+};
 
 export const useRegister = () => {
-  const queryClient = useQueryClient()
-  const { login: setAuth } = useAuthStore()
+  const queryClient = useQueryClient();
+  const { login: setAuth } = useAuthStore();
 
   return useMutation({
     mutationFn: authAPI.register,
@@ -57,25 +57,25 @@ export const useRegister = () => {
             email: data.email,
             role: data.role,
           },
-        })
-        queryClient.setQueryData(authKeys.user(), data)
+        });
+        queryClient.setQueryData(authKeys.user(), data);
       }
     },
-  })
-}
+  });
+};
 
 export const useLogout = () => {
-  const queryClient = useQueryClient()
-  const { logout } = useAuthStore()
+  const queryClient = useQueryClient();
+  const { logout } = useAuthStore();
 
   return useMutation({
     mutationFn: async () => {
       // API 로그아웃이 있다면 여기서 호출
-      return Promise.resolve()
+      return Promise.resolve();
     },
     onSuccess: () => {
-      logout()
-      queryClient.clear()
+      logout();
+      queryClient.clear();
     },
-  })
-}
+  });
+};

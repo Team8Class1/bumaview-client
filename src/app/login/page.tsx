@@ -23,8 +23,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { useToast } from "@/hooks/use-toast";
 import { useLogin } from "@/hooks/use-auth-queries";
+import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
   id: z.string().min(1, { message: "아이디를 입력해주세요." }),
@@ -114,7 +114,11 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loginMutation.isPending}
+              >
                 {loginMutation.isPending ? "로그인 중..." : "로그인"}
               </Button>
             </form>

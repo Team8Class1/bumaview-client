@@ -10,8 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 import { useUploadInterviewFile } from "@/hooks/use-interview-queries";
+import { useToast } from "@/hooks/use-toast";
 import { downloadSampleCSV, validateCSVFile } from "@/lib/utils/csv";
 
 export default function InterviewUploadPage() {
@@ -82,7 +82,7 @@ export default function InterviewUploadPage() {
               ? error.message
               : "파일 업로드 중 오류가 발생했습니다.",
         });
-      }
+      },
     });
   };
 

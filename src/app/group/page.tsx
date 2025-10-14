@@ -22,8 +22,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loading } from "@/components/ui/loading";
+import {
+  useCreateGroup,
+  useDeleteGroup,
+  useGroups,
+  useUpdateGroup,
+} from "@/hooks/use-group-queries";
 import { useToast } from "@/hooks/use-toast";
-import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup } from "@/hooks/use-group-queries";
 import type { Group } from "@/lib/api";
 
 export default function GroupPage() {
@@ -45,49 +50,55 @@ export default function GroupPage() {
   const handleCreateGroup = () => {
     if (!groupName.trim()) return;
 
-    createGroupMutation.mutate({ name: groupName }, {
-      onSuccess: () => {
-        toast({
-          title: "그룹 생성",
-          description: "그룹이 성공적으로 생성되었습니다.",
-        });
-        setShowCreateDialog(false);
-        setGroupName("");
+    createGroupMutation.mutate(
+      { name: groupName },
+      {
+        onSuccess: () => {
+          toast({
+            title: "그룹 생성",
+            description: "그룹이 성공적으로 생성되었습니다.",
+          });
+          setShowCreateDialog(false);
+          setGroupName("");
+        },
+        onError: () => {
+          toast({
+            variant: "destructive",
+            title: "그룹 생성 실패",
+            description: "그룹 생성에 실패했습니다.",
+          });
+        },
       },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          title: "그룹 생성 실패",
-          description: "그룹 생성에 실패했습니다.",
-        });
-      },
-    });
+    );
   };
 
   const handleUpdateGroup = () => {
     if (!selectedGroup || !groupName.trim()) return;
 
-    updateGroupMutation.mutate({
-      id: selectedGroup.groupId.toString(),
-      data: { name: groupName }
-    }, {
-      onSuccess: () => {
-        toast({
-          title: "그룹 수정",
-          description: "그룹이 성공적으로 수정되었습니다.",
-        });
-        setShowEditDialog(false);
-        setGroupName("");
-        setSelectedGroup(null);
+    updateGroupMutation.mutate(
+      {
+        id: selectedGroup.groupId.toString(),
+        data: { name: groupName },
       },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          title: "그룹 수정 실패",
-          description: "그룹 수정에 실패했습니다.",
-        });
+      {
+        onSuccess: () => {
+          toast({
+            title: "그룹 수정",
+            description: "그룹이 성공적으로 수정되었습니다.",
+          });
+          setShowEditDialog(false);
+          setGroupName("");
+          setSelectedGroup(null);
+        },
+        onError: () => {
+          toast({
+            variant: "destructive",
+            title: "그룹 수정 실패",
+            description: "그룹 수정에 실패했습니다.",
+          });
+        },
       },
-    });
+    );
   };
 
   const handleDeleteGroup = () => {
@@ -224,7 +235,11 @@ export default function GroupPage() {
                     handleCreateGroup();
                   }
                 }}
-                disabled={createGroupMutation.isPending || updateGroupMutation.isPending || deleteGroupMutation.isPending}
+                disabled={
+                  createGroupMutation.isPending ||
+                  updateGroupMutation.isPending ||
+                  deleteGroupMutation.isPending
+                }
                 autoFocus
               />
             </div>
@@ -236,7 +251,11 @@ export default function GroupPage() {
                 setShowCreateDialog(false);
                 setGroupName("");
               }}
-              disabled={createGroupMutation.isPending || updateGroupMutation.isPending || deleteGroupMutation.isPending}
+              disabled={
+                createGroupMutation.isPending ||
+                updateGroupMutation.isPending ||
+                deleteGroupMutation.isPending
+              }
             >
               취소
             </Button>
@@ -269,7 +288,11 @@ export default function GroupPage() {
                     handleUpdateGroup();
                   }
                 }}
-                disabled={createGroupMutation.isPending || updateGroupMutation.isPending || deleteGroupMutation.isPending}
+                disabled={
+                  createGroupMutation.isPending ||
+                  updateGroupMutation.isPending ||
+                  deleteGroupMutation.isPending
+                }
                 autoFocus
               />
             </div>
@@ -282,7 +305,11 @@ export default function GroupPage() {
                 setGroupName("");
                 setSelectedGroup(null);
               }}
-              disabled={createGroupMutation.isPending || updateGroupMutation.isPending || deleteGroupMutation.isPending}
+              disabled={
+                createGroupMutation.isPending ||
+                updateGroupMutation.isPending ||
+                deleteGroupMutation.isPending
+              }
             >
               취소
             </Button>
@@ -313,14 +340,22 @@ export default function GroupPage() {
                 setShowDeleteDialog(false);
                 setSelectedGroup(null);
               }}
-              disabled={createGroupMutation.isPending || updateGroupMutation.isPending || deleteGroupMutation.isPending}
+              disabled={
+                createGroupMutation.isPending ||
+                updateGroupMutation.isPending ||
+                deleteGroupMutation.isPending
+              }
             >
               취소
             </Button>
             <Button
               variant="destructive"
               onClick={handleDeleteGroup}
-              disabled={createGroupMutation.isPending || updateGroupMutation.isPending || deleteGroupMutation.isPending}
+              disabled={
+                createGroupMutation.isPending ||
+                updateGroupMutation.isPending ||
+                deleteGroupMutation.isPending
+              }
             >
               {deleteGroupMutation.isPending ? "삭제 중..." : "삭제"}
             </Button>

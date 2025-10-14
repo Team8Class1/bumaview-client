@@ -25,9 +25,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { InterestSelector } from "@/components/ui/interest-selector";
 import { PasswordInput } from "@/components/ui/password-input";
+import { useRegister } from "@/hooks/use-auth-queries";
 import { useInterestSelection } from "@/hooks/use-interest-selection";
 import { useToast } from "@/hooks/use-toast";
-import { useRegister } from "@/hooks/use-auth-queries";
 
 const registerSchema = z
   .object({
@@ -76,30 +76,33 @@ export default function RegisterPage() {
   const onSubmit = (data: RegisterFormValues) => {
     const interests = selectedInterests;
 
-    registerMutation.mutate({
-      email: data.email,
-      id: data.id,
-      password: data.password,
-      interest: interests,
-    }, {
-      onSuccess: () => {
-        toast({
-          title: "회원가입 성공",
-          description: "환영합니다! 자동으로 로그인되었습니다.",
-        });
-        router.push("/");
+    registerMutation.mutate(
+      {
+        email: data.email,
+        id: data.id,
+        password: data.password,
+        interest: interests,
       },
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "회원가입 실패",
-          description:
-            error instanceof Error
-              ? error.message
-              : "회원가입 중 오류가 발생했습니다.",
-        });
+      {
+        onSuccess: () => {
+          toast({
+            title: "회원가입 성공",
+            description: "환영합니다! 자동으로 로그인되었습니다.",
+          });
+          router.push("/");
+        },
+        onError: (error) => {
+          toast({
+            variant: "destructive",
+            title: "회원가입 실패",
+            description:
+              error instanceof Error
+                ? error.message
+                : "회원가입 중 오류가 발생했습니다.",
+          });
+        },
       },
-    });
+    );
   };
 
   return (
@@ -207,7 +210,11 @@ export default function RegisterPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={registerMutation.isPending}
+              >
                 {registerMutation.isPending ? "회원가입 중..." : "회원가입"}
               </Button>
             </form>

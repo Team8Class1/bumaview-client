@@ -20,14 +20,14 @@ async function fetchApi<T>(
   options?: RequestInit,
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
   // JWT 토큰 가져오기
   const token = useAuthStore.getState().token;
-  
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
-  
+
   // JWT 토큰이 있으면 Authorization 헤더에 추가
   if (token) {
     headers.Authorization = `Bearer ${token}`;
