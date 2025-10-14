@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useToast } from "@/hooks/use-toast";
-import { useAuthStore } from "@/stores/auth";
+import { useLogin } from "@/hooks/use-auth-queries";
 
 const loginSchema = z.object({
   id: z.string().min(1, { message: "아이디를 입력해주세요." }),
@@ -36,9 +35,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const login = useAuthStore((state) => state.login);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const loginMutation = useLogin();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -48,27 +46,26 @@ export default function LoginPage() {
     },
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
-    try {
-      await login(data.id, data.password);
-      toast({
-        title: "로그인 성공",
-        description: "환영합니다!",
-      });
-      router.push("/");
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "로그인 실패",
-        description:
-          error instanceof Error
-            ? error.message
-            : "아이디 또는 비밀번호가 올바르지 않습니다.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const onSubmit = (data: LoginFormValues) => {
+    loginMutation.mutate(data, {
+      onSuccess: () => {
+        toast({
+          title: "로그인 성공",
+          description: "환영합니다!",
+        });
+        router.push("/");
+      },
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "로그인 실패",
+          description:
+            error instanceof Error
+              ? error.message
+              : "아이디 또는 비밀번호가 올바르지 않습니다.",
+        });
+      },
+    });
   };
 
   return (
@@ -93,7 +90,7 @@ export default function LoginPage() {
                       <Input
                         placeholder="아이디를 입력하세요"
                         {...field}
-                        disabled={isLoading}
+                        disabled={loginMutation.isPending}
                       />
                     </FormControl>
                     <FormMessage />
@@ -110,15 +107,15 @@ export default function LoginPage() {
                       <PasswordInput
                         placeholder="비밀번호를 입력하세요"
                         {...field}
-                        disabled={isLoading}
+                        disabled={loginMutation.isPending}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "로그인 중..." : "로그인"}
+              <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+                {loginMutation.isPending ? "로그인 중..." : "로그인"}
               </Button>
             </form>
           </Form>

@@ -1,7 +1,7 @@
 "use client";
 
 import { Building2, ExternalLink, Plus } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,121 +22,97 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loading } from "@/components/ui/loading";
 import { useToast } from "@/hooks/use-toast";
-import {
-  type Company,
-  createCompany,
-  deleteCompany,
-  getCompanies,
-  updateCompany,
-} from "@/lib/api";
+import { useCompanies, useCreateCompany, useUpdateCompany, useDeleteCompany } from "@/hooks/use-company-queries";
+import type { Company } from "@/lib/api";
 
 export default function AdminCompanyPage() {
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [companyName, setCompanyName] = useState("");
   const [companyLink, setCompanyLink] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const fetchCompanies = useCallback(async () => {
-    try {
-      const response = await getCompanies();
-      setCompanies(response.data);
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "데이터 로드 실패",
-        description: "회사 목록을 불러오는데 실패했습니다.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast]);
+  // React Query hooks
+  const { data: companiesData, isLoading } = useCompanies();
+  const createCompanyMutation = useCreateCompany();
+  const updateCompanyMutation = useUpdateCompany();
+  const deleteCompanyMutation = useDeleteCompany();
 
-  useEffect(() => {
-    fetchCompanies();
-  }, [fetchCompanies]);
+  const companies = companiesData?.data || [];
 
-  const handleCreateCompany = async () => {
+
+  const handleCreateCompany = () => {
     if (!companyName.trim()) return;
 
-    setIsSubmitting(true);
-    try {
-      await createCompany({ companyName, link: companyLink });
-      toast({
-        title: "회사 생성",
-        description: "회사가 성공적으로 생성되었습니다.",
-      });
-      setShowCreateDialog(false);
-      setCompanyName("");
-      setCompanyLink("");
-      await fetchCompanies();
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "회사 생성 실패",
-        description: "회사 생성에 실패했습니다.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    createCompanyMutation.mutate({ companyName, link: companyLink }, {
+      onSuccess: () => {
+        toast({
+          title: "회사 생성",
+          description: "회사가 성공적으로 생성되었습니다.",
+        });
+        setShowCreateDialog(false);
+        setCompanyName("");
+        setCompanyLink("");
+      },
+      onError: () => {
+        toast({
+          variant: "destructive",
+          title: "회사 생성 실패",
+          description: "회사 생성에 실패했습니다.",
+        });
+      }
+    });
   };
 
-  const handleUpdateCompany = async () => {
+  const handleUpdateCompany = () => {
     if (!selectedCompany || !companyName.trim()) return;
 
-    setIsSubmitting(true);
-    try {
-      await updateCompany(selectedCompany.companyId, {
-        companyName,
-        link: companyLink,
-      });
-      toast({
-        title: "회사 수정",
-        description: "회사 정보가 성공적으로 수정되었습니다.",
-      });
-      setShowEditDialog(false);
-      setCompanyName("");
-      setCompanyLink("");
-      setSelectedCompany(null);
-      await fetchCompanies();
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "회사 수정 실패",
-        description: "회사 수정에 실패했습니다.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    updateCompanyMutation.mutate({
+      id: selectedCompany.companyId.toString(),
+      data: { companyName, link: companyLink }
+    }, {
+      onSuccess: () => {
+        toast({
+          title: "회사 수정",
+          description: "회사 정보가 성공적으로 수정되었습니다.",
+        });
+        setShowEditDialog(false);
+        setCompanyName("");
+        setCompanyLink("");
+        setSelectedCompany(null);
+      },
+      onError: () => {
+        toast({
+          variant: "destructive",
+          title: "회사 수정 실패",
+          description: "회사 수정에 실패했습니다.",
+        });
+      }
+    });
   };
 
-  const handleDeleteCompany = async () => {
+  const handleDeleteCompany = () => {
     if (!selectedCompany) return;
 
-    setIsSubmitting(true);
-    try {
-      await deleteCompany(selectedCompany.companyId);
-      toast({
-        title: "회사 삭제",
-        description: "회사가 삭제되었습니다.",
-      });
-      setShowDeleteDialog(false);
-      setSelectedCompany(null);
-      await fetchCompanies();
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "회사 삭제 실패",
-        description: "회사 삭제에 실패했습니다.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    deleteCompanyMutation.mutate(selectedCompany.companyId.toString(), {
+      onSuccess: () => {
+        toast({
+          title: "회사 삭제",
+          description: "회사가 삭제되었습니다.",
+        });
+        setShowDeleteDialog(false);
+        setSelectedCompany(null);
+      },
+      onError: () => {
+        toast({
+          variant: "destructive",
+          title: "회사 삭제 실패",
+          description: "회사 삭제에 실패했습니다.",
+        });
+      }
+    });
   };
 
   const openEditDialog = (company: Company) => {
@@ -256,7 +232,7 @@ export default function AdminCompanyPage() {
                     handleCreateCompany();
                   }
                 }}
-                disabled={isSubmitting}
+                disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
                 autoFocus
               />
             </div>
@@ -272,7 +248,7 @@ export default function AdminCompanyPage() {
                     handleCreateCompany();
                   }
                 }}
-                disabled={isSubmitting}
+                disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
               />
             </div>
           </div>
@@ -284,15 +260,15 @@ export default function AdminCompanyPage() {
                 setCompanyName("");
                 setCompanyLink("");
               }}
-              disabled={isSubmitting}
+              disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
             >
               취소
             </Button>
             <Button
               onClick={handleCreateCompany}
-              disabled={isSubmitting || !companyName.trim()}
+              disabled={createCompanyMutation.isPending || !companyName.trim()}
             >
-              {isSubmitting ? "추가 중..." : "추가"}
+              {createCompanyMutation.isPending ? "추가 중..." : "추가"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -317,7 +293,7 @@ export default function AdminCompanyPage() {
                     handleUpdateCompany();
                   }
                 }}
-                disabled={isSubmitting}
+                disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
                 autoFocus
               />
             </div>
@@ -332,7 +308,7 @@ export default function AdminCompanyPage() {
                     handleUpdateCompany();
                   }
                 }}
-                disabled={isSubmitting}
+                disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
               />
             </div>
           </div>
@@ -345,15 +321,15 @@ export default function AdminCompanyPage() {
                 setCompanyLink("");
                 setSelectedCompany(null);
               }}
-              disabled={isSubmitting}
+              disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
             >
               취소
             </Button>
             <Button
               onClick={handleUpdateCompany}
-              disabled={isSubmitting || !companyName.trim()}
+              disabled={updateCompanyMutation.isPending || !companyName.trim()}
             >
-              {isSubmitting ? "수정 중..." : "수정"}
+              {updateCompanyMutation.isPending ? "수정 중..." : "수정"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -376,16 +352,16 @@ export default function AdminCompanyPage() {
                 setShowDeleteDialog(false);
                 setSelectedCompany(null);
               }}
-              disabled={isSubmitting}
+              disabled={createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending}
             >
               취소
             </Button>
             <Button
               variant="destructive"
               onClick={handleDeleteCompany}
-              disabled={isSubmitting}
+              disabled={deleteCompanyMutation.isPending}
             >
-              {isSubmitting ? "삭제 중..." : "삭제"}
+              {deleteCompanyMutation.isPending ? "삭제 중..." : "삭제"}
             </Button>
           </DialogFooter>
         </DialogContent>

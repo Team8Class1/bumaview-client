@@ -2,7 +2,7 @@
 
 import { Folder, Plus } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,115 +23,93 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loading } from "@/components/ui/loading";
 import { useToast } from "@/hooks/use-toast";
-import {
-  createGroup,
-  deleteGroup,
-  type Group,
-  getGroups,
-  updateGroup,
-} from "@/lib/api";
+import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup } from "@/hooks/use-group-queries";
+import type { Group } from "@/lib/api";
 
 export default function GroupPage() {
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [groupName, setGroupName] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const fetchGroups = useCallback(async () => {
-    try {
-      const response = await getGroups();
-      setGroups(response.data);
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "데이터 로드 실패",
-        description: "그룹 목록을 불러오는데 실패했습니다.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast]);
+  // React Query hooks
+  const { data: groupData, isLoading } = useGroups();
+  const createGroupMutation = useCreateGroup();
+  const updateGroupMutation = useUpdateGroup();
+  const deleteGroupMutation = useDeleteGroup();
 
-  useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+  const groups = groupData?.data || [];
 
-  const handleCreateGroup = async () => {
+  const handleCreateGroup = () => {
     if (!groupName.trim()) return;
 
-    setIsSubmitting(true);
-    try {
-      await createGroup({ name: groupName });
-      toast({
-        title: "그룹 생성",
-        description: "그룹이 성공적으로 생성되었습니다.",
-      });
-      setShowCreateDialog(false);
-      setGroupName("");
-      await fetchGroups();
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "그룹 생성 실패",
-        description: "그룹 생성에 실패했습니다.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    createGroupMutation.mutate({ name: groupName }, {
+      onSuccess: () => {
+        toast({
+          title: "그룹 생성",
+          description: "그룹이 성공적으로 생성되었습니다.",
+        });
+        setShowCreateDialog(false);
+        setGroupName("");
+      },
+      onError: () => {
+        toast({
+          variant: "destructive",
+          title: "그룹 생성 실패",
+          description: "그룹 생성에 실패했습니다.",
+        });
+      },
+    });
   };
 
-  const handleUpdateGroup = async () => {
+  const handleUpdateGroup = () => {
     if (!selectedGroup || !groupName.trim()) return;
 
-    setIsSubmitting(true);
-    try {
-      await updateGroup(selectedGroup.groupId, { name: groupName });
-      toast({
-        title: "그룹 수정",
-        description: "그룹이 성공적으로 수정되었습니다.",
-      });
-      setShowEditDialog(false);
-      setGroupName("");
-      setSelectedGroup(null);
-      await fetchGroups();
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "그룹 수정 실패",
-        description: "그룹 수정에 실패했습니다.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    updateGroupMutation.mutate({
+      id: selectedGroup.groupId.toString(),
+      data: { name: groupName }
+    }, {
+      onSuccess: () => {
+        toast({
+          title: "그룹 수정",
+          description: "그룹이 성공적으로 수정되었습니다.",
+        });
+        setShowEditDialog(false);
+        setGroupName("");
+        setSelectedGroup(null);
+      },
+      onError: () => {
+        toast({
+          variant: "destructive",
+          title: "그룹 수정 실패",
+          description: "그룹 수정에 실패했습니다.",
+        });
+      },
+    });
   };
 
-  const handleDeleteGroup = async () => {
+  const handleDeleteGroup = () => {
     if (!selectedGroup) return;
 
-    setIsSubmitting(true);
-    try {
-      await deleteGroup(selectedGroup.groupId);
-      toast({
-        title: "그룹 삭제",
-        description: "그룹이 삭제되었습니다.",
-      });
-      setShowDeleteDialog(false);
-      setSelectedGroup(null);
-      await fetchGroups();
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "그룹 삭제 실패",
-        description: "그룹 삭제에 실패했습니다.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    deleteGroupMutation.mutate(selectedGroup.groupId.toString(), {
+      onSuccess: () => {
+        toast({
+          title: "그룹 삭제",
+          description: "그룹이 삭제되었습니다.",
+        });
+        setShowDeleteDialog(false);
+        setSelectedGroup(null);
+      },
+      onError: () => {
+        toast({
+          variant: "destructive",
+          title: "그룹 삭제 실패",
+          description: "그룹 삭제에 실패했습니다.",
+        });
+      },
+    });
   };
 
   const openEditDialog = (group: Group) => {
@@ -246,7 +224,7 @@ export default function GroupPage() {
                     handleCreateGroup();
                   }
                 }}
-                disabled={isSubmitting}
+                disabled={createGroupMutation.isPending || updateGroupMutation.isPending || deleteGroupMutation.isPending}
                 autoFocus
               />
             </div>
@@ -258,15 +236,15 @@ export default function GroupPage() {
                 setShowCreateDialog(false);
                 setGroupName("");
               }}
-              disabled={isSubmitting}
+              disabled={createGroupMutation.isPending || updateGroupMutation.isPending || deleteGroupMutation.isPending}
             >
               취소
             </Button>
             <Button
               onClick={handleCreateGroup}
-              disabled={isSubmitting || !groupName.trim()}
+              disabled={createGroupMutation.isPending || !groupName.trim()}
             >
-              {isSubmitting ? "생성 중..." : "생성"}
+              {createGroupMutation.isPending ? "생성 중..." : "생성"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -291,7 +269,7 @@ export default function GroupPage() {
                     handleUpdateGroup();
                   }
                 }}
-                disabled={isSubmitting}
+                disabled={createGroupMutation.isPending || updateGroupMutation.isPending || deleteGroupMutation.isPending}
                 autoFocus
               />
             </div>
@@ -304,15 +282,15 @@ export default function GroupPage() {
                 setGroupName("");
                 setSelectedGroup(null);
               }}
-              disabled={isSubmitting}
+              disabled={createGroupMutation.isPending || updateGroupMutation.isPending || deleteGroupMutation.isPending}
             >
               취소
             </Button>
             <Button
               onClick={handleUpdateGroup}
-              disabled={isSubmitting || !groupName.trim()}
+              disabled={updateGroupMutation.isPending || !groupName.trim()}
             >
-              {isSubmitting ? "수정 중..." : "수정"}
+              {updateGroupMutation.isPending ? "수정 중..." : "수정"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -335,16 +313,16 @@ export default function GroupPage() {
                 setShowDeleteDialog(false);
                 setSelectedGroup(null);
               }}
-              disabled={isSubmitting}
+              disabled={createGroupMutation.isPending || updateGroupMutation.isPending || deleteGroupMutation.isPending}
             >
               취소
             </Button>
             <Button
               variant="destructive"
               onClick={handleDeleteGroup}
-              disabled={isSubmitting}
+              disabled={createGroupMutation.isPending || updateGroupMutation.isPending || deleteGroupMutation.isPending}
             >
-              {isSubmitting ? "삭제 중..." : "삭제"}
+              {deleteGroupMutation.isPending ? "삭제 중..." : "삭제"}
             </Button>
           </DialogFooter>
         </DialogContent>

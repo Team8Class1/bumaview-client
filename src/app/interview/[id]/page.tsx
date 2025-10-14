@@ -37,206 +37,164 @@ import {
 import { Loading } from "@/components/ui/loading";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import {
-  createAnswer,
-  createAnswerReply,
-  deleteAnswer,
-  deleteInterview,
-  getInterviewDetail,
-  type InterviewAnswer,
-  type InterviewDetail,
-  likeAnswer,
-  updateAnswer,
-} from "@/lib/api";
+import { useInterview, useDeleteInterview } from "@/hooks/use-interview-queries";
+import { useCreateAnswer, useCreateAnswerReply, useDeleteAnswer, useUpdateAnswer, useLikeAnswer } from "@/hooks/use-answer-queries";
+import type { InterviewAnswer } from "@/lib/api";
 
 export default function InterviewDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const [interview, setInterview] = useState<InterviewDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // React Query hooks
+  const { data: interview, isLoading } = useInterview(params.id as string);
+  const deleteInterviewMutation = useDeleteInterview();
+  const createAnswerMutation = useCreateAnswer();
+  const createAnswerReplyMutation = useCreateAnswerReply();
+  const updateAnswerMutation = useUpdateAnswer();
+  const deleteAnswerMutation = useDeleteAnswer();
+  const likeAnswerMutation = useLikeAnswer();
 
   // Answer related states
   const [newAnswer, setNewAnswer] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
-  const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [editingAnswer, setEditingAnswer] = useState<number | null>(null);
   const [editAnswerText, setEditAnswerText] = useState("");
   const [editAnswerPrivate, setEditAnswerPrivate] = useState(false);
 
-  useEffect(() => {
-    const fetchInterview = async () => {
-      try {
-        const id = Number(params.id);
-        const data = await getInterviewDetail(id);
-        setInterview(data);
-      } catch (_error) {
-        toast({
-          variant: "destructive",
-          title: "로드 실패",
-          description: "면접 질문을 불러오는데 실패했습니다.",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const isSubmittingAnswer = createAnswerMutation.isPending || createAnswerReplyMutation.isPending;
 
-    fetchInterview();
-  }, [params.id, toast]);
-
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!interview) return;
 
-    setIsDeleting(true);
-    try {
-      await deleteInterview(interview.interviewId);
-      toast({
-        title: "삭제 완료",
-        description: "면접 질문이 삭제되었습니다.",
-      });
-      router.push("/interview");
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "삭제 실패",
-        description: "면접 질문 삭제에 실패했습니다.",
-      });
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteDialog(false);
-    }
+    deleteInterviewMutation.mutate(interview.interviewId.toString(), {
+      onSuccess: () => {
+        toast({
+          title: "삭제 완료",
+          description: "면접 질문이 삭제되었습니다.",
+        });
+        router.push("/interview");
+      },
+      onError: () => {
+        toast({
+          variant: "destructive",
+          title: "삭제 실패",
+          description: "면접 질문 삭제에 실패했습니다.",
+        });
+      },
+      onSettled: () => {
+        setShowDeleteDialog(false);
+      },
+    });
   };
 
-  const handleSubmitAnswer = async () => {
+  const handleSubmitAnswer = () => {
     if (!interview || !newAnswer.trim()) return;
 
-    setIsSubmittingAnswer(true);
-    try {
-      if (replyTo) {
-        await createAnswerReply({
+    const mutation = replyTo ? createAnswerReplyMutation : createAnswerMutation;
+    const data = replyTo
+      ? {
           interviewId: interview.interviewId,
           answer: newAnswer,
           isPrivate,
           parentAnswerId: replyTo,
-        });
-        toast({
-          title: "대댓글 등록",
-          description: "대댓글이 성공적으로 등록되었습니다.",
-        });
-      } else {
-        await createAnswer({
+        }
+      : {
           interviewId: interview.interviewId,
           answer: newAnswer,
           isPrivate,
-        });
-        toast({
-          title: "답변 등록",
-          description: "답변이 성공적으로 등록되었습니다.",
-        });
-      }
+        };
 
-      // 답변 등록 후 인터뷰 데이터 새로고침
-      const data = await getInterviewDetail(interview.interviewId);
-      setInterview(data);
-      setNewAnswer("");
-      setIsPrivate(false);
-      setReplyTo(null);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "등록 실패",
-        description:
-          error instanceof Error
-            ? error.message
-            : "답변 등록 중 오류가 발생했습니다.",
-      });
-    } finally {
-      setIsSubmittingAnswer(false);
-    }
+    mutation.mutate(data, {
+      onSuccess: () => {
+        toast({
+          title: replyTo ? "대댓글 등록" : "답변 등록",
+          description: replyTo
+            ? "대댓글이 성공적으로 등록되었습니다."
+            : "답변이 성공적으로 등록되었습니다.",
+        });
+        setNewAnswer("");
+        setIsPrivate(false);
+        setReplyTo(null);
+      },
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "등록 실패",
+          description:
+            error instanceof Error
+              ? error.message
+              : "답변 등록 중 오류가 발생했습니다.",
+        });
+      },
+    });
   };
 
-  const handleEditAnswer = async (answerId: number) => {
+  const handleEditAnswer = (answerId: number) => {
     if (!editAnswerText.trim()) return;
 
-    try {
-      await updateAnswer(answerId, {
+    updateAnswerMutation.mutate({
+      answerId: answerId.toString(),
+      data: {
         answer: editAnswerText,
         private: editAnswerPrivate,
-      });
-
-      toast({
-        title: "수정 완료",
-        description: "답변이 성공적으로 수정되었습니다.",
-      });
-
-      // 답변 수정 후 인터뷰 데이터 새로고침
-      if (interview) {
-        const data = await getInterviewDetail(interview.interviewId);
-        setInterview(data);
-      }
-      setEditingAnswer(null);
-      setEditAnswerText("");
-      setEditAnswerPrivate(false);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "수정 실패",
-        description:
-          error instanceof Error
-            ? error.message
-            : "답변 수정 중 오류가 발생했습니다.",
-      });
-    }
+      },
+    }, {
+      onSuccess: () => {
+        toast({
+          title: "수정 완료",
+          description: "답변이 성공적으로 수정되었습니다.",
+        });
+        setEditingAnswer(null);
+        setEditAnswerText("");
+        setEditAnswerPrivate(false);
+      },
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "수정 실패",
+          description:
+            error instanceof Error
+              ? error.message
+              : "답변 수정 중 오류가 발생했습니다.",
+        });
+      },
+    });
   };
 
-  const handleDeleteAnswer = async (answerId: number) => {
-    try {
-      await deleteAnswer(answerId);
-      toast({
-        title: "삭제 완료",
-        description: "답변이 삭제되었습니다.",
-      });
-
-      // 답변 삭제 후 인터뷰 데이터 새로고침
-      if (interview) {
-        const data = await getInterviewDetail(interview.interviewId);
-        setInterview(data);
-      }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "삭제 실패",
-        description:
-          error instanceof Error
-            ? error.message
-            : "답변 삭제 중 오류가 발생했습니다.",
-      });
-    }
+  const handleDeleteAnswer = (answerId: number) => {
+    deleteAnswerMutation.mutate(answerId.toString(), {
+      onSuccess: () => {
+        toast({
+          title: "삭제 완료",
+          description: "답변이 삭제되었습니다.",
+        });
+      },
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "삭제 실패",
+          description:
+            error instanceof Error
+              ? error.message
+              : "답변 삭제 중 오류가 발생했습니다.",
+        });
+      },
+    });
   };
 
-  const handleLikeAnswer = async (answer: InterviewAnswer) => {
-    if (!interview) return;
-
-    try {
-      await likeAnswer(answer.answerId, {
-        interviewId: interview.interviewId,
-        answer: answer.answer,
-        is_private: answer.isPrivate || false,
-      });
-
-      // 좋아요 후 인터뷰 데이터 새로고침
-      const data = await getInterviewDetail(interview.interviewId);
-      setInterview(data);
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "좋아요 실패",
-        description: "좋아요 처리 중 오류가 발생했습니다.",
-      });
-    }
+  const handleLikeAnswer = (answer: InterviewAnswer) => {
+    likeAnswerMutation.mutate(answer.answerId.toString(), {
+      onError: () => {
+        toast({
+          variant: "destructive",
+          title: "좋아요 실패",
+          description: "좋아요 처리 중 오류가 발생했습니다.",
+        });
+      },
+    });
   };
 
   const startEdit = (answer: InterviewAnswer) => {
@@ -729,16 +687,16 @@ export default function InterviewDetailPage() {
             <Button
               variant="outline"
               onClick={() => setShowDeleteDialog(false)}
-              disabled={isDeleting}
+              disabled={deleteInterviewMutation.isPending}
             >
               취소
             </Button>
             <Button
               variant="destructive"
               onClick={handleDelete}
-              disabled={isDeleting}
+              disabled={deleteInterviewMutation.isPending}
             >
-              {isDeleting ? "삭제 중..." : "삭제"}
+              {deleteInterviewMutation.isPending ? "삭제 중..." : "삭제"}
             </Button>
           </DialogFooter>
         </DialogContent>

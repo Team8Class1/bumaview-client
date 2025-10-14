@@ -11,14 +11,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { uploadInterviewFile } from "@/lib/api";
+import { useUploadInterviewFile } from "@/hooks/use-interview-queries";
 import { downloadSampleCSV, validateCSVFile } from "@/lib/utils/csv";
 
 export default function InterviewUploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
+
+  // React Query hooks
+  const uploadFileMutation = useUploadInterviewFile();
 
   const handleFileSelect = (file: File) => {
     const error = validateCSVFile(file);
@@ -60,35 +62,28 @@ export default function InterviewUploadPage() {
     }
   };
 
-  const handleUpload = async () => {
+  const handleUpload = () => {
     if (!selectedFile) return;
 
-    setIsUploading(true);
-    try {
-      const response = await uploadInterviewFile(selectedFile);
-
-      if (!response.ok) {
-        throw new Error("업로드 실패");
+    uploadFileMutation.mutate(selectedFile, {
+      onSuccess: () => {
+        toast({
+          title: "업로드 성공",
+          description: "면접 질문이 성공적으로 등록되었습니다.",
+        });
+        setSelectedFile(null);
+      },
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "업로드 실패",
+          description:
+            error instanceof Error
+              ? error.message
+              : "파일 업로드 중 오류가 발생했습니다.",
+        });
       }
-
-      toast({
-        title: "업로드 성공",
-        description: "면접 질문이 성공적으로 등록되었습니다.",
-      });
-
-      setSelectedFile(null);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "업로드 실패",
-        description:
-          error instanceof Error
-            ? error.message
-            : "파일 업로드 중 오류가 발생했습니다.",
-      });
-    } finally {
-      setIsUploading(false);
-    }
+    });
   };
 
   return (
@@ -112,7 +107,7 @@ export default function InterviewUploadPage() {
           <Button
             variant="outline"
             onClick={downloadSampleCSV}
-            disabled={isUploading}
+            disabled={uploadFileMutation.isPending}
           >
             <Download className="h-4 w-4 mr-2" />
             샘플 다운로드
@@ -151,7 +146,7 @@ export default function InterviewUploadPage() {
           <Button
             variant="secondary"
             className="mt-4 pointer-events-none"
-            disabled={isUploading}
+            disabled={uploadFileMutation.isPending}
           >
             파일 선택
           </Button>
@@ -175,7 +170,7 @@ export default function InterviewUploadPage() {
               variant="ghost"
               size="sm"
               onClick={() => setSelectedFile(null)}
-              disabled={isUploading}
+              disabled={uploadFileMutation.isPending}
             >
               제거
             </Button>
@@ -185,11 +180,11 @@ export default function InterviewUploadPage() {
         {/* 업로드 버튼 */}
         <Button
           onClick={handleUpload}
-          disabled={!selectedFile || isUploading}
+          disabled={!selectedFile || uploadFileMutation.isPending}
           className="w-full"
           size="lg"
         >
-          {isUploading ? "업로드 중..." : "업로드"}
+          {uploadFileMutation.isPending ? "업로드 중..." : "업로드"}
         </Button>
       </CardContent>
     </Card>
