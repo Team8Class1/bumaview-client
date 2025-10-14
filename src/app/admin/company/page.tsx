@@ -2,6 +2,7 @@
 
 import { Building2, ExternalLink, Plus } from "lucide-react";
 import { useState } from "react";
+import { RequireAdmin } from "@/components/auth/require-admin";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -31,6 +32,14 @@ import { useToast } from "@/hooks/use-toast";
 import type { Company } from "@/lib/api";
 
 export default function AdminCompanyPage() {
+  return (
+    <RequireAdmin>
+      <AdminCompanyContent />
+    </RequireAdmin>
+  );
+}
+
+function AdminCompanyContent() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
