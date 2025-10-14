@@ -1,7 +1,7 @@
 "use client";
 
-import { useRequireAdmin } from "@/hooks/use-require-admin";
 import { Loading } from "@/components/ui/loading";
+import { useRequireAdmin } from "@/hooks/use-require-admin";
 
 interface RequireAdminProps {
   children: React.ReactNode;
@@ -24,4 +24,3 @@ export function RequireAdmin({ children }: RequireAdminProps) {
 
   return <>{children}</>;
 }
-
