@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -26,9 +25,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { InterestSelector } from "@/components/ui/interest-selector";
 import { PasswordInput } from "@/components/ui/password-input";
+import { useRegister } from "@/hooks/use-auth-queries";
 import { useInterestSelection } from "@/hooks/use-interest-selection";
 import { useToast } from "@/hooks/use-toast";
-import { useAuthStore } from "@/stores/auth";
 
 const registerSchema = z
   .object({
@@ -54,9 +53,8 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
-  const register = useAuthStore((state) => state.register);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const registerMutation = useRegister();
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -75,35 +73,36 @@ export default function RegisterPage() {
     },
   );
 
-  const onSubmit = async (data: RegisterFormValues) => {
-    setIsLoading(true);
-    try {
-      const interests = selectedInterests;
+  const onSubmit = (data: RegisterFormValues) => {
+    const interests = selectedInterests;
 
-      await register({
+    registerMutation.mutate(
+      {
         email: data.email,
         id: data.id,
         password: data.password,
         interest: interests,
-      });
-
-      toast({
-        title: "회원가입 성공",
-        description: "환영합니다! 자동으로 로그인되었습니다.",
-      });
-      router.push("/");
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "회원가입 실패",
-        description:
-          error instanceof Error
-            ? error.message
-            : "회원가입 중 오류가 발생했습니다.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: "회원가입 성공",
+            description: "환영합니다! 자동으로 로그인되었습니다.",
+          });
+          router.push("/");
+        },
+        onError: (error) => {
+          toast({
+            variant: "destructive",
+            title: "회원가입 실패",
+            description:
+              error instanceof Error
+                ? error.message
+                : "회원가입 중 오류가 발생했습니다.",
+          });
+        },
+      },
+    );
   };
 
   return (
@@ -129,7 +128,7 @@ export default function RegisterPage() {
                         type="email"
                         placeholder="example@email.com"
                         {...field}
-                        disabled={isLoading}
+                        disabled={registerMutation.isPending}
                       />
                     </FormControl>
                     <FormMessage />
@@ -146,7 +145,7 @@ export default function RegisterPage() {
                       <Input
                         placeholder="아이디를 입력하세요"
                         {...field}
-                        disabled={isLoading}
+                        disabled={registerMutation.isPending}
                       />
                     </FormControl>
                     <FormDescription>
@@ -166,7 +165,7 @@ export default function RegisterPage() {
                       <PasswordInput
                         placeholder="비밀번호를 입력하세요"
                         {...field}
-                        disabled={isLoading}
+                        disabled={registerMutation.isPending}
                       />
                     </FormControl>
                     <FormDescription>
@@ -186,7 +185,7 @@ export default function RegisterPage() {
                       <PasswordInput
                         placeholder="비밀번호를 다시 입력하세요"
                         {...field}
-                        disabled={isLoading}
+                        disabled={registerMutation.isPending}
                       />
                     </FormControl>
                     <FormMessage />
@@ -205,14 +204,18 @@ export default function RegisterPage() {
                     <InterestSelector
                       selectedInterests={selectedInterests}
                       onToggleInterest={toggleInterest}
-                      disabled={isLoading}
+                      disabled={registerMutation.isPending}
                     />
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "회원가입 중..." : "회원가입"}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={registerMutation.isPending}
+              >
+                {registerMutation.isPending ? "회원가입 중..." : "회원가입"}
               </Button>
             </form>
           </Form>

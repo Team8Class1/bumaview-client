@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -30,12 +30,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 import {
-  createInterviewSingle,
-  getInterviewCreateData,
-  type InterviewCreateData,
-} from "@/lib/api";
+  useCreateInterview,
+  useInterviewCreateData,
+} from "@/hooks/use-interview-queries";
+import { useToast } from "@/hooks/use-toast";
 
 const interviewSchema = z.object({
   question: z
@@ -53,11 +52,12 @@ type InterviewFormValues = z.infer<typeof interviewSchema>;
 export default function InterviewCreatePage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [createData, setCreateData] = useState<InterviewCreateData | null>(
-    null,
-  );
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+
+  // React Query hooks
+  const { data: createData, isLoading: isLoadingData } =
+    useInterviewCreateData();
+  const createInterviewMutation = useCreateInterview();
 
   const form = useForm<InterviewFormValues>({
     resolver: zodResolver(interviewSchema),
@@ -69,23 +69,6 @@ export default function InterviewCreatePage() {
     },
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getInterviewCreateData();
-        setCreateData(data);
-      } catch (_error) {
-        toast({
-          variant: "destructive",
-          title: "데이터 로드 실패",
-          description: "회사 및 카테고리 목록을 불러오는데 실패했습니다.",
-        });
-      }
-    };
-
-    fetchData();
-  }, [toast]);
-
   const toggleCategory = (categoryId: number) => {
     const newCategories = selectedCategories.includes(categoryId)
       ? selectedCategories.filter((id) => id !== categoryId)
@@ -95,10 +78,9 @@ export default function InterviewCreatePage() {
     form.setValue("categoryList", newCategories, { shouldValidate: true });
   };
 
-  const onSubmit = async (data: InterviewFormValues) => {
-    setIsLoading(true);
-    try {
-      await createInterviewSingle({
+  const onSubmit = (data: InterviewFormValues) => {
+    createInterviewMutation.mutate(
+      {
         question: data.question,
         categoryList: selectedCategories,
         companyId:
@@ -106,31 +88,32 @@ export default function InterviewCreatePage() {
             ? Number(data.companyId)
             : null,
         questionAt: data.questionAt,
-      });
-
-      toast({
-        title: "등록 성공",
-        description: "면접 질문이 성공적으로 등록되었습니다.",
-      });
-
-      // 폼 초기화
-      form.reset();
-      setSelectedCategories([]);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "등록 실패",
-        description:
-          error instanceof Error
-            ? error.message
-            : "질문 등록 중 오류가 발생했습니다.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: "등록 성공",
+            description: "면접 질문이 성공적으로 등록되었습니다.",
+          });
+          // 폼 초기화
+          form.reset();
+          setSelectedCategories([]);
+        },
+        onError: (error) => {
+          toast({
+            variant: "destructive",
+            title: "등록 실패",
+            description:
+              error instanceof Error
+                ? error.message
+                : "질문 등록 중 오류가 발생했습니다.",
+          });
+        },
+      },
+    );
   };
 
-  if (!createData) {
+  if (isLoadingData || !createData) {
     return (
       <div className="container max-w-4xl py-8">
         <Card>
@@ -141,6 +124,8 @@ export default function InterviewCreatePage() {
       </div>
     );
   }
+
+  const isLoading = createInterviewMutation.isPending;
 
   return (
     <Card>

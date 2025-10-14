@@ -31,14 +31,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 import {
-  getInterviewCreateData,
-  getInterviewDetail,
-  type InterviewCreateData,
-  type InterviewDetail,
-  updateInterview,
-} from "@/lib/api";
+  useInterview,
+  useInterviewCreateData,
+  useUpdateInterview,
+} from "@/hooks/use-interview-queries";
+import { useToast } from "@/hooks/use-toast";
 
 const interviewSchema = z.object({
   question: z
@@ -57,13 +55,15 @@ export default function InterviewEditPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [interview, setInterview] = useState<InterviewDetail | null>(null);
-  const [createData, setCreateData] = useState<InterviewCreateData | null>(
-    null,
-  );
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+
+  // React Query hooks
+  const { data: interview, isLoading: isLoadingInterview } = useInterview(
+    params.id as string,
+  );
+  const { data: createData, isLoading: isLoadingData } =
+    useInterviewCreateData();
+  const updateInterviewMutation = useUpdateInterview();
 
   const form = useForm<InterviewFormValues>({
     resolver: zodResolver(interviewSchema),
@@ -75,46 +75,18 @@ export default function InterviewEditPage() {
     },
   });
 
+  // 인터뷰 데이터 로드 시 폼에 설정
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const interviewId = Number(params.id);
+    if (interview) {
+      form.setValue("question", interview.question);
+      form.setValue("questionAt", interview.questionAt);
+      form.setValue("companyId", interview.companyId?.toString() || "none");
 
-        // 병렬로 데이터 가져오기
-        const [interviewData, createDataResponse] = await Promise.all([
-          getInterviewDetail(interviewId),
-          getInterviewCreateData(),
-        ]);
-
-        setInterview(interviewData);
-        setCreateData(createDataResponse);
-
-        // 폼 초기값 설정
-        const categories = interviewData.categoryList.map(
-          (cat) => cat.categoryId,
-        );
-        setSelectedCategories(categories);
-
-        form.reset({
-          question: interviewData.question,
-          categoryList: categories,
-          companyId: interviewData.companyId?.toString() || "none",
-          questionAt: interviewData.questionAt,
-        });
-      } catch (_error) {
-        toast({
-          variant: "destructive",
-          title: "데이터 로드 실패",
-          description: "면접 질문 정보를 불러오는데 실패했습니다.",
-        });
-        router.push("/interview");
-      } finally {
-        setIsInitialLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [params.id, toast, form, router]);
+      const categoryIds = interview.categoryList.map((cat) => cat.categoryId);
+      setSelectedCategories(categoryIds);
+      form.setValue("categoryList", categoryIds);
+    }
+  }, [interview, form]);
 
   const toggleCategory = (categoryId: number) => {
     const newCategories = selectedCategories.includes(categoryId)
@@ -125,40 +97,43 @@ export default function InterviewEditPage() {
     form.setValue("categoryList", newCategories, { shouldValidate: true });
   };
 
-  const onSubmit = async (data: InterviewFormValues) => {
+  const onSubmit = (data: InterviewFormValues) => {
     if (!interview) return;
 
-    setIsLoading(true);
-    try {
-      await updateInterview(interview.interviewId, {
-        interviewId: interview.interviewId,
-        question: data.question,
-        category: selectedCategories,
-        companyId:
-          data.companyId && data.companyId !== "none"
-            ? Number(data.companyId)
-            : null,
-        questionAt: data.questionAt,
-      });
-
-      toast({
-        title: "수정 완료",
-        description: "면접 질문이 성공적으로 수정되었습니다.",
-      });
-
-      router.push(`/interview/${interview.interviewId}`);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "수정 실패",
-        description:
-          error instanceof Error
-            ? error.message
-            : "질문 수정 중 오류가 발생했습니다.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    updateInterviewMutation.mutate(
+      {
+        id: params.id as string,
+        data: {
+          interviewId: interview.interviewId,
+          question: data.question,
+          category: selectedCategories,
+          companyId:
+            data.companyId && data.companyId !== "none"
+              ? Number(data.companyId)
+              : null,
+          questionAt: data.questionAt,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: "수정 완료",
+            description: "면접 질문이 성공적으로 수정되었습니다.",
+          });
+          router.push(`/interview/${interview.interviewId}`);
+        },
+        onError: (error) => {
+          toast({
+            variant: "destructive",
+            title: "수정 실패",
+            description:
+              error instanceof Error
+                ? error.message
+                : "질문 수정 중 오류가 발생했습니다.",
+          });
+        },
+      },
+    );
   };
 
   return (
@@ -167,13 +142,13 @@ export default function InterviewEditPage() {
         <Button
           variant="outline"
           onClick={() => router.back()}
-          disabled={isInitialLoading}
+          disabled={isLoadingInterview || isLoadingData}
         >
           ← 돌아가기
         </Button>
       </div>
 
-      {isInitialLoading ? (
+      {isLoadingInterview || isLoadingData ? (
         <Loading />
       ) : !interview || !createData ? (
         <Card>
@@ -213,7 +188,7 @@ export default function InterviewEditPage() {
                           placeholder="면접 질문을 입력하세요"
                           className="w-full min-h-[120px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                           {...field}
-                          disabled={isLoading}
+                          disabled={updateInterviewMutation.isPending}
                         />
                       </FormControl>
                       <FormDescription>
@@ -245,7 +220,7 @@ export default function InterviewEditPage() {
                             }
                             size="sm"
                             onClick={() => toggleCategory(category.categoryId)}
-                            disabled={isLoading}
+                            disabled={updateInterviewMutation.isPending}
                             className="justify-start"
                           >
                             {category.categoryName}
@@ -266,7 +241,7 @@ export default function InterviewEditPage() {
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
-                        disabled={isLoading}
+                        disabled={updateInterviewMutation.isPending}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -303,7 +278,7 @@ export default function InterviewEditPage() {
                         <Input
                           type="date"
                           {...field}
-                          disabled={isLoading}
+                          disabled={updateInterviewMutation.isPending}
                           max={new Date().toISOString().split("T")[0]}
                         />
                       </FormControl>
@@ -318,17 +293,19 @@ export default function InterviewEditPage() {
                 <div className="flex gap-3">
                   <Button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={updateInterviewMutation.isPending}
                     className="flex-1"
                     size="lg"
                   >
-                    {isLoading ? "수정 중..." : "수정 완료"}
+                    {updateInterviewMutation.isPending
+                      ? "수정 중..."
+                      : "수정 완료"}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => router.back()}
-                    disabled={isLoading}
+                    disabled={updateInterviewMutation.isPending}
                     size="lg"
                   >
                     취소

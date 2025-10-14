@@ -1,7 +1,7 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,42 +17,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 import {
-  getInterviewCreateData,
-  type InterviewCreateData,
-  trimInterviewFile,
-  trimInterviewSingle,
-} from "@/lib/api";
+  useInterviewCreateData,
+  useTrimInterviewFile,
+  useTrimInterviewSingle,
+} from "@/hooks/use-interview-queries";
+import { useToast } from "@/hooks/use-toast";
 
 export default function InterviewTrimPage() {
   const [mode, setMode] = useState<"single" | "file">("single");
   const [question, setQuestion] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
   const [trimmedQuestion, setTrimmedQuestion] = useState("");
-  const [createData, setCreateData] = useState<InterviewCreateData | null>(
-    null,
-  );
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getInterviewCreateData();
-        setCreateData(data);
-      } catch (_error) {
-        toast({
-          variant: "destructive",
-          title: "데이터 로드 실패",
-          description: "카테고리 및 회사 정보를 불러오는데 실패했습니다.",
-        });
-      }
-    };
+  // React Query hooks
+  const { data: createData } = useInterviewCreateData();
+  const trimSingleMutation = useTrimInterviewSingle();
+  const trimFileMutation = useTrimInterviewFile();
 
-    fetchData();
-  }, [toast]);
-
-  const handleTrimSingle = async () => {
+  const handleTrimSingle = () => {
     if (!question.trim()) {
       toast({
         variant: "destructive",
@@ -62,50 +45,50 @@ export default function InterviewTrimPage() {
       return;
     }
 
-    setIsProcessing(true);
-    try {
-      const result = await trimInterviewSingle({
+    trimSingleMutation.mutate(
+      {
         question,
         category: createData?.categoryList || [],
         companyId: null,
         questionAt: new Date().toISOString().split("T")[0],
-      });
-
-      setTrimmedQuestion(result.question);
-      toast({
-        title: "다듬기 완료",
-        description: "질문이 정리되었습니다.",
-      });
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "처리 실패",
-        description: "질문 다듬기에 실패했습니다.",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
+      },
+      {
+        onSuccess: (result) => {
+          setTrimmedQuestion(result.question);
+          toast({
+            title: "다듬기 완료",
+            description: "질문이 정리되었습니다.",
+          });
+        },
+        onError: () => {
+          toast({
+            variant: "destructive",
+            title: "처리 실패",
+            description: "질문 다듬기에 실패했습니다.",
+          });
+        },
+      },
+    );
   };
 
-  const handleTrimFile = async (file: File) => {
+  const handleTrimFile = (file: File) => {
     if (!file) return;
 
-    setIsProcessing(true);
-    try {
-      await trimInterviewFile(file);
-      toast({
-        title: "파일 처리 완료",
-        description: "다듬은 파일이 다운로드됩니다.",
-      });
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "처리 실패",
-        description: "파일 처리에 실패했습니다.",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
+    trimFileMutation.mutate(file, {
+      onSuccess: () => {
+        toast({
+          title: "파일 처리 완료",
+          description: "다듬은 파일이 다운로드됩니다.",
+        });
+      },
+      onError: () => {
+        toast({
+          variant: "destructive",
+          title: "처리 실패",
+          description: "파일 처리에 실패했습니다.",
+        });
+      },
+    });
   };
 
   return (
@@ -156,17 +139,19 @@ export default function InterviewTrimPage() {
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder="다듬을 질문을 입력하세요..."
                 className="w-full min-h-[120px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={isProcessing}
+                disabled={
+                  trimSingleMutation.isPending || trimFileMutation.isPending
+                }
               />
             </div>
 
             <Button
               onClick={handleTrimSingle}
-              disabled={isProcessing || !question.trim()}
+              disabled={trimSingleMutation.isPending || !question.trim()}
               className="w-full"
             >
               <Sparkles className="h-4 w-4 mr-2" />
-              {isProcessing ? "처리 중..." : "질문 다듬기"}
+              {trimSingleMutation.isPending ? "처리 중..." : "질문 다듬기"}
             </Button>
 
             {trimmedQuestion && (
@@ -197,7 +182,9 @@ export default function InterviewTrimPage() {
               }}
               className="hidden"
               id="file-trim-upload"
-              disabled={isProcessing}
+              disabled={
+                trimSingleMutation.isPending || trimFileMutation.isPending
+              }
             />
             <label
               htmlFor="file-trim-upload"
@@ -213,9 +200,11 @@ export default function InterviewTrimPage() {
               <Button
                 variant="secondary"
                 className="mt-4 pointer-events-none"
-                disabled={isProcessing}
+                disabled={
+                  trimSingleMutation.isPending || trimFileMutation.isPending
+                }
               >
-                {isProcessing ? "처리 중..." : "파일 선택"}
+                {trimFileMutation.isPending ? "처리 중..." : "파일 선택"}
               </Button>
             </label>
 
