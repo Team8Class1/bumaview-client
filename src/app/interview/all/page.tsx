@@ -3,7 +3,7 @@
 import { Bookmark, FolderPlus, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,53 +29,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useBookmark } from "@/hooks/use-bookmark";
+import { useAddInterviewsToGroup, useGroups } from "@/hooks/use-group-queries";
+import { useInterviews } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
-import {
-  addInterviewsToGroup,
-  type Group,
-  getAllInterviews,
-  getBookmarks,
-  getGroups,
-  type InterviewItem,
-} from "@/lib/api";
+import type { InterviewItem } from "@/lib/api";
 
 export default function InterviewAllPage() {
   const router = useRouter();
-  const [interviews, setInterviews] = useState<InterviewItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { bookmarkedIds, setBookmarkedIds, handleToggleBookmark } =
-    useBookmark();
-  const [groups, setGroups] = useState<Group[]>([]);
+  const { bookmarkedIds, handleToggleBookmark } = useBookmark();
   const [showGroupDialog, setShowGroupDialog] = useState(false);
   const [selectedInterviewForGroup, setSelectedInterviewForGroup] =
     useState<InterviewItem | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
-  const [isAddingToGroup, setIsAddingToGroup] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [interviewResponse, bookmarkResponse, groupResponse] =
-          await Promise.all([getAllInterviews(), getBookmarks(), getGroups()]);
-        setInterviews(interviewResponse.data);
-        setBookmarkedIds(
-          new Set(bookmarkResponse.data.map((item) => item.interviewId)),
-        );
-        setGroups(groupResponse.data);
-      } catch (_error) {
-        toast({
-          variant: "destructive",
-          title: "데이터 로드 실패",
-          description: "면접 질문 목록을 불러오는데 실패했습니다.",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // React Query hooks
+  const { data: interviewsData, isLoading: isLoadingInterviews } =
+    useInterviews();
+  const { data: groupsData, isLoading: isLoadingGroups } = useGroups();
+  const addInterviewsToGroupMutation = useAddInterviewsToGroup();
 
-    fetchData();
-  }, [toast, setBookmarkedIds]);
+  const interviews = interviewsData?.data || [];
+  const groups = groupsData?.data || [];
+  const isLoading = isLoadingInterviews || isLoadingGroups;
 
   const openGroupDialog = (e: React.MouseEvent, interview: InterviewItem) => {
     e.preventDefault();
@@ -85,30 +61,33 @@ export default function InterviewAllPage() {
     setShowGroupDialog(true);
   };
 
-  const handleAddToGroup = async () => {
+  const handleAddToGroup = () => {
     if (!selectedInterviewForGroup || !selectedGroupId) return;
 
-    setIsAddingToGroup(true);
-    try {
-      await addInterviewsToGroup(Number(selectedGroupId), {
-        interviewIdList: [selectedInterviewForGroup.interviewId],
-      });
-      toast({
-        title: "그룹에 추가",
-        description: "질문이 그룹에 추가되었습니다.",
-      });
-      setShowGroupDialog(false);
-      setSelectedInterviewForGroup(null);
-      setSelectedGroupId("");
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "추가 실패",
-        description: "그룹에 질문을 추가하는데 실패했습니다.",
-      });
-    } finally {
-      setIsAddingToGroup(false);
-    }
+    addInterviewsToGroupMutation.mutate(
+      {
+        groupId: selectedGroupId,
+        data: { interviewIdList: [selectedInterviewForGroup.interviewId] },
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: "그룹에 추가",
+            description: "질문이 그룹에 추가되었습니다.",
+          });
+          setShowGroupDialog(false);
+          setSelectedInterviewForGroup(null);
+          setSelectedGroupId("");
+        },
+        onError: () => {
+          toast({
+            variant: "destructive",
+            title: "추가 실패",
+            description: "그룹에 질문을 추가하는데 실패했습니다.",
+          });
+        },
+      },
+    );
   };
 
   return (
@@ -271,17 +250,19 @@ export default function InterviewAllPage() {
                 setSelectedInterviewForGroup(null);
                 setSelectedGroupId("");
               }}
-              disabled={isAddingToGroup}
+              disabled={addInterviewsToGroupMutation.isPending}
             >
               취소
             </Button>
             <Button
               onClick={handleAddToGroup}
               disabled={
-                isAddingToGroup || !selectedGroupId || groups.length === 0
+                addInterviewsToGroupMutation.isPending ||
+                !selectedGroupId ||
+                groups.length === 0
               }
             >
-              {isAddingToGroup ? "추가 중..." : "추가"}
+              {addInterviewsToGroupMutation.isPending ? "추가 중..." : "추가"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -3,7 +3,7 @@
 import { Bookmark, MessageSquare, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,21 +23,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
 import { useBookmark } from "@/hooks/use-bookmark";
+import { useAddInterviewsToGroup, useGroup } from "@/hooks/use-group-queries";
+import { useInterviews } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
-import {
-  addInterviewsToGroup,
-  type GroupDetail,
-  getAllInterviews,
-  getGroupDetail,
-  type InterviewItem,
-} from "@/lib/api";
+import type { InterviewItem } from "@/lib/api";
 
 export default function GroupDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const [group, setGroup] = useState<GroupDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [availableInterviews, setAvailableInterviews] = useState<
     InterviewItem[]
@@ -46,74 +40,52 @@ export default function GroupDetailPage() {
   const [selectedInterviewIds, setSelectedInterviewIds] = useState<number[]>(
     [],
   );
-  const [isAdding, setIsAdding] = useState(false);
   const { bookmarkedIds, handleToggleBookmark } = useBookmark();
 
-  const fetchGroupDetail = useCallback(async () => {
-    try {
-      const id = Number(params.id);
-      const data = await getGroupDetail(id);
-      setGroup(data);
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "로드 실패",
-        description: "그룹 정보를 불러오는데 실패했습니다.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [params.id, toast]);
+  // React Query hooks
+  const { data: group, isLoading } = useGroup(params.id as string);
+  const { data: allInterviewsData } = useInterviews();
+  const addInterviewsToGroupMutation = useAddInterviewsToGroup();
 
-  useEffect(() => {
-    fetchGroupDetail();
-  }, [fetchGroupDetail]);
+  const openAddDialog = () => {
+    if (!allInterviewsData || !group) return;
 
-  const openAddDialog = async () => {
-    try {
-      const allInterviews = await getAllInterviews();
-      // 이미 그룹에 있는 질문 제외
-      const groupInterviewIds =
-        group?.interviews.map((i) => i.interviewId) || [];
-      const available = allInterviews.data.filter(
-        (interview) => !groupInterviewIds.includes(interview.interviewId),
-      );
-      setAvailableInterviews(available);
-      setShowAddDialog(true);
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "로드 실패",
-        description: "질문 목록을 불러오는데 실패했습니다.",
-      });
-    }
+    // 이미 그룹에 있는 질문 제외
+    const groupInterviewIds = group.interviews.map((i) => i.interviewId);
+    const available = allInterviewsData.data.filter(
+      (interview) => !groupInterviewIds.includes(interview.interviewId),
+    );
+    setAvailableInterviews(available);
+    setShowAddDialog(true);
   };
 
-  const handleAddInterviews = async () => {
+  const handleAddInterviews = () => {
     if (!group || selectedInterviewIds.length === 0) return;
 
-    setIsAdding(true);
-    try {
-      await addInterviewsToGroup(group.groupId, {
-        interviewIdList: selectedInterviewIds,
-      });
-      toast({
-        title: "질문 추가",
-        description: `${selectedInterviewIds.length}개의 질문이 그룹에 추가되었습니다.`,
-      });
-      setShowAddDialog(false);
-      setSelectedInterviewIds([]);
-      setSearchQuery("");
-      await fetchGroupDetail();
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "추가 실패",
-        description: "질문 추가에 실패했습니다.",
-      });
-    } finally {
-      setIsAdding(false);
-    }
+    addInterviewsToGroupMutation.mutate(
+      {
+        groupId: group.groupId.toString(),
+        data: { interviewIdList: selectedInterviewIds },
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: "질문 추가",
+            description: `${selectedInterviewIds.length}개의 질문이 그룹에 추가되었습니다.`,
+          });
+          setShowAddDialog(false);
+          setSelectedInterviewIds([]);
+          setSearchQuery("");
+        },
+        onError: () => {
+          toast({
+            variant: "destructive",
+            title: "추가 실패",
+            description: "질문 추가에 실패했습니다.",
+          });
+        },
+      },
+    );
   };
 
   const toggleInterviewSelection = (interviewId: number) => {
@@ -146,7 +118,10 @@ export default function GroupDetailPage() {
             {isLoading ? " " : `${group?.interviews.length}개의 질문`}
           </p>
         </div>
-        <Button onClick={openAddDialog} disabled={isLoading || !group}>
+        <Button
+          onClick={openAddDialog}
+          disabled={isLoading || !group || !allInterviewsData}
+        >
           <Plus className="h-4 w-4 mr-2" />
           질문 추가
         </Button>
@@ -341,15 +316,18 @@ export default function GroupDetailPage() {
                 setSelectedInterviewIds([]);
                 setSearchQuery("");
               }}
-              disabled={isAdding}
+              disabled={addInterviewsToGroupMutation.isPending}
             >
               취소
             </Button>
             <Button
               onClick={handleAddInterviews}
-              disabled={isAdding || selectedInterviewIds.length === 0}
+              disabled={
+                addInterviewsToGroupMutation.isPending ||
+                selectedInterviewIds.length === 0
+              }
             >
-              {isAdding
+              {addInterviewsToGroupMutation.isPending
                 ? "추가 중..."
                 : `${selectedInterviewIds.length}개 추가`}
             </Button>

@@ -2,7 +2,7 @@
 
 import { Bookmark } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,72 +13,47 @@ import {
 } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import { useBookmark } from "@/hooks/use-bookmark";
+import { useBookmarks, useToggleBookmark } from "@/hooks/use-bookmark-queries";
 import { useToast } from "@/hooks/use-toast";
-import { getBookmarks, type InterviewItem, toggleBookmark } from "@/lib/api";
 
 export default function BookmarkPage() {
-  const [interviews, setInterviews] = useState<InterviewItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { bookmarkedIds, setBookmarkedIds } = useBookmark();
   const { toast } = useToast();
 
-  const fetchBookmarks = useCallback(async () => {
-    try {
-      const response = await getBookmarks();
-      setInterviews(response.data);
-      setBookmarkedIds(new Set(response.data.map((item) => item.interviewId)));
-    } catch (_error) {
-      toast({
-        variant: "destructive",
-        title: "데이터 로드 실패",
-        description: "북마크 목록을 불러오는데 실패했습니다.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast, setBookmarkedIds]);
+  // React Query hooks
+  const { data: bookmarkData, isLoading } = useBookmarks();
+  const toggleBookmarkMutation = useToggleBookmark();
 
+  const interviews = bookmarkData?.data || [];
+
+  // Update bookmarked IDs when data changes
   useEffect(() => {
-    fetchBookmarks();
-  }, [fetchBookmarks]);
+    if (bookmarkData?.data) {
+      setBookmarkedIds(
+        new Set(bookmarkData.data.map((item) => item.interviewId)),
+      );
+    }
+  }, [bookmarkData?.data, setBookmarkedIds]);
 
-  const handleToggleBookmark = async (
-    e: React.MouseEvent,
-    interviewId: number,
-  ) => {
+  const handleToggleBookmark = (e: React.MouseEvent, interviewId: number) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Optimistic update
-    const newBookmarkedIds = new Set(bookmarkedIds);
-    if (newBookmarkedIds.has(interviewId)) {
-      newBookmarkedIds.delete(interviewId);
-    } else {
-      newBookmarkedIds.add(interviewId);
-    }
-    setBookmarkedIds(newBookmarkedIds);
-
-    // 즉시 목록에서 제거
-    setInterviews((prev) =>
-      prev.filter((item) => item.interviewId !== interviewId),
-    );
-
-    try {
-      await toggleBookmark(interviewId);
-      toast({
-        title: "북마크 해제",
-        description: "북마크가 해제되었습니다.",
-      });
-    } catch (_error) {
-      // 에러 시 롤백
-      setBookmarkedIds(bookmarkedIds);
-      await fetchBookmarks();
-      toast({
-        variant: "destructive",
-        title: "북마크 해제 실패",
-        description: "북마크 해제에 실패했습니다.",
-      });
-    }
+    toggleBookmarkMutation.mutate(interviewId.toString(), {
+      onSuccess: () => {
+        toast({
+          title: "북마크 해제",
+          description: "북마크가 해제되었습니다.",
+        });
+      },
+      onError: () => {
+        toast({
+          variant: "destructive",
+          title: "북마크 해제 실패",
+          description: "북마크 해제에 실패했습니다.",
+        });
+      },
+    });
   };
 
   return (

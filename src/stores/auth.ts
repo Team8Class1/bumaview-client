@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import * as api from "@/lib/api";
 
 interface User {
   id: string;
@@ -10,10 +9,11 @@ interface User {
 
 interface AuthState {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
-  login: (id: string, password: string) => Promise<void>;
-  register: (data: api.RegisterRequest) => Promise<void>;
+  login: (data: { token: string; user: User }) => void;
   setUser: (user: User | null) => void;
+  setToken: (token: string | null) => void;
   logout: () => void;
 }
 
@@ -21,30 +21,13 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
+      token: null,
       isAuthenticated: false,
 
-      login: async (id: string, password: string) => {
-        const response = await api.login({ id, password });
-
+      login: (data) => {
         set({
-          user: {
-            id: response.id,
-            email: response.email,
-            role: response.role,
-          },
-          isAuthenticated: true,
-        });
-      },
-
-      register: async (data: api.RegisterRequest) => {
-        const response = await api.register(data);
-
-        set({
-          user: {
-            id: response.id,
-            email: response.email,
-            role: response.role,
-          },
+          user: data.user,
+          token: data.token,
           isAuthenticated: true,
         });
       },
@@ -55,9 +38,15 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: !!user,
         }),
 
+      setToken: (token) =>
+        set({
+          token,
+        }),
+
       logout: () =>
         set({
           user: null,
+          token: null,
           isAuthenticated: false,
         }),
     }),
