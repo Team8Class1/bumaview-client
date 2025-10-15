@@ -1,7 +1,7 @@
 import ky from "ky";
 import { useAuthStore } from "@/stores/auth";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export class ApiError extends Error {
   constructor(

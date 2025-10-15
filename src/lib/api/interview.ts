@@ -1,6 +1,14 @@
 import { api } from "@/lib/http-client";
+import type {
+  DataListAllInterviewDto,
+  FileUploadRequest,
+  InterviewDto,
+  InterviewSearchParams,
+  ModifyInterviewDto,
+  UploadInterviewDto,
+} from "@/types/api";
 
-// Types
+// Legacy types for backward compatibility
 export interface InterviewCategory {
   categoryId: number;
   categoryName: string;
@@ -148,4 +156,57 @@ export const interviewAPI = {
 
     return api.post("api/interview/trim/file", { body: formData });
   },
+
+  // OpenAPI specification methods
+  // 단일 인터뷰 업로드 (새 스펙)
+  uploadSingle: (data: UploadInterviewDto): Promise<void> =>
+    api.post("api/interview/single", { json: data }).json(),
+
+  // CSV 파일 업로드 (새 스펙)
+  uploadFromFile: (data: FileUploadRequest): Promise<void> => {
+    const formData = new FormData();
+    formData.append("file", data.file);
+    return api.post("api/interview/file", { body: formData }).json();
+  },
+
+  // 인터뷰 수정 (새 스펙)
+  modify: (interviewId: number, data: ModifyInterviewDto): Promise<void> =>
+    api.patch(`api/interview/${interviewId}`, { json: data }).json(),
+
+  // 인터뷰 검색 (새 스펙)
+  searchByParams: (
+    params: InterviewSearchParams,
+  ): Promise<DataListAllInterviewDto> => {
+    const searchParams = new URLSearchParams();
+
+    if (params.questionAt) {
+      for (const date of params.questionAt) {
+        searchParams.append("questionAt", date.toString());
+      }
+    }
+    if (params.companyId) {
+      for (const id of params.companyId) {
+        searchParams.append("companyId", id.toString());
+      }
+    }
+    if (params.categoryId) {
+      for (const id of params.categoryId) {
+        searchParams.append("categoryId", id.toString());
+      }
+    }
+
+    return api.get(`api/interview/search?${searchParams.toString()}`).json();
+  },
+
+  // 모든 인터뷰 조회 (새 스펙과 기존 통합)
+  getAllBySpec: (): Promise<DataListAllInterviewDto> =>
+    api.get("api/interview/all").json(),
+
+  // 인터뷰 상세 조회 (새 스펙)
+  getByIdSpec: (interviewId: number): Promise<InterviewDto> =>
+    api.get(`api/interview/${interviewId}`).json(),
+
+  // 인터뷰 삭제 (새 스펙)
+  deleteByIdSpec: (interviewId: number): Promise<void> =>
+    api.delete(`api/interview/${interviewId}`).json(),
 };
