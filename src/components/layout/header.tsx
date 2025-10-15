@@ -36,8 +36,11 @@ const navigation = [
 
 export function Header() {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, _hasHydrated } = useAuth();
   const router = useRouter();
+
+  // 디버깅을 위한 콘솔 로그
+  console.log("Header render:", { user, _hasHydrated, isAuthenticated: !!user });
 
   const isActive = (href: string) => {
     if (href === "/") {
@@ -94,7 +97,10 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-4">
-          {user ? (
+          {!_hasHydrated ? (
+            // Hydration 중에는 빈 공간 표시 (깜빡임 방지)
+            <div className="h-9 w-[160px]" />
+          ) : user ? (
             <>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">{user.id}</span>

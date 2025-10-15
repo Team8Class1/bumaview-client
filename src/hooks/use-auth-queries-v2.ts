@@ -1,21 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { authAPI } from "@/lib/api/auth";
+import { TokenManager } from "@/lib/token-manager";
 import { useAuthStore } from "@/stores/auth";
-import type { JoinDto, LoginRequestDto } from "@/types/api";
-
-// Define login response type based on observed API behavior
-interface LoginResponse {
-  token?: string;
-  accessToken?: string;
-  userId?: string;
-  id?: string;
-  email?: string;
-  role?: string;
-  userSequenceId?: number;
-  birthday?: string;
-  favoriteList?: string[];
-}
+import type { JoinDto, LoginRequestDto, LoginResponse } from "@/types/api";
 
 // Query keys
 export const authKeys = {
@@ -35,42 +23,51 @@ export function useUser() {
 
 // Mutations
 export function useLoginMutation() {
-  const { loginWithUserInfo } = useAuthStore();
-  const queryClient = useQueryClient();
+  const { loginWithUserInfo, setHasHydrated, setToken } = useAuthStore();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: LoginRequestDto) => authAPI.login(data),
-    onSuccess: (response) => {
-      // The response structure might vary, adapt based on actual API response
-      if (response && typeof response === "object") {
-        const loginResp = response as LoginResponse;
-        // Extract token if present in the response
-        const token = loginResp.token || loginResp.accessToken;
+    onSuccess: async (response: any) => {
+      const token = response.accessToken;
 
-        // If response contains user info directly
-        if (loginResp.userId || loginResp.id) {
-          loginWithUserInfo({
-            token,
-            user: {
-              userSequenceId: loginResp.userSequenceId || 0,
-              userId: loginResp.userId || loginResp.id || "",
-              email: loginResp.email || "",
-              role: (loginResp.role as "ADMIN" | "BASIC") || "BASIC",
-              birthday: loginResp.birthday || "",
-              favoriteList: loginResp.favoriteList || [],
-            },
+      if (token) {
+        const bareToken = token.startsWith("Bearer ") ? token.slice(7) : token;
+
+        // Store the token immediately so subsequent API calls are authenticated
+        TokenManager.setTokens(bareToken);
+        setToken(bareToken);
+
+        try {
+          // Manually fetch user info using the new token
+          const user = await queryClient.fetchQuery({
+            queryKey: authKeys.user,
+            queryFn: authAPI.getUser,
           });
-        } else {
-          // If we only get a token, fetch user info separately
-          if (token) {
-            useAuthStore.getState().setToken(token);
-            queryClient.invalidateQueries({ queryKey: authKeys.user });
-          }
-        }
-      }
 
-      router.push("/");
+          if (user) {
+            loginWithUserInfo({
+              token: bareToken,
+              user,
+            });
+            setHasHydrated(true);
+            router.push("/");
+          } else {
+            console.error("Failed to fetch user info after login.");
+          }
+        } catch (error) {
+          console.error("Error fetching user info after login:", error);
+        }
+      } else {
+        console.error(
+          "Incomplete login response: accessToken not found in response.",
+          response,
+        );
+      }
+    },
+    onError: (error) => {
+      console.error("Login error:", error);
     },
   });
 }

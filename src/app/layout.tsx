@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { SessionManager } from "@/components/auth/session-manager";
 import { Footer, Header } from "@/components/layout";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/lib/providers";
@@ -31,6 +32,7 @@ export default function RootLayout({
             <Footer />
           </div>
           <Toaster />
+          <SessionManager />
         </Providers>
       </body>
     </html>
