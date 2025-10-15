@@ -4,7 +4,7 @@ import { useAuthStore } from "@/stores/auth";
 
 // Query keys
 export const bookmarkKeys = {
-  all: ["bookmarks"] as const,
+  all: ["bookmarks-v2"] as const,
   lists: () => [...bookmarkKeys.all, "list"] as const,
 };
 
@@ -13,7 +13,7 @@ export function useBookmarks() {
   const { isAuthenticated } = useAuthStore();
   return useQuery({
     queryKey: bookmarkKeys.lists(),
-    queryFn: () => bookmarkAPI.getAll(),
+    queryFn: bookmarkAPI.getAll,
     enabled: isAuthenticated,
   });
 }

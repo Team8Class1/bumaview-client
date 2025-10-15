@@ -14,7 +14,10 @@ import {
 } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import { useBookmark } from "@/hooks/use-bookmark";
-import { useBookmarks, useToggleBookmark } from "@/hooks/use-bookmark-queries";
+import {
+  useBookmarks,
+  useToggleBookmarkMutation,
+} from "@/hooks/use-bookmark-queries-v2";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/auth";
 
@@ -25,19 +28,23 @@ export default function BookmarkPage() {
   const { isAuthenticated, _hasHydrated } = useAuthStore();
 
   // React Query hooks
-  const { data: bookmarkData, isLoading } = useBookmarks();
-  const toggleBookmarkMutation = useToggleBookmark();
+  const {
+    data: bookmarkData,
+    isLoading,
+    error,
+  } = useBookmarks();
+  const toggleBookmarkMutation = useToggleBookmarkMutation();
 
-  const interviews = bookmarkData?.data || [];
+  const interviews = bookmarkData || [];
 
   // Update bookmarked IDs when data changes
   useEffect(() => {
-    if (bookmarkData?.data) {
+    if (bookmarkData) {
       setBookmarkedIds(
-        new Set(bookmarkData.data.map((item) => item.interviewId)),
+        new Set(bookmarkData.map((item) => item.interviewId)),
       );
     }
-  }, [bookmarkData?.data, setBookmarkedIds]);
+  }, [bookmarkData, setBookmarkedIds]);
 
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) {
@@ -54,7 +61,7 @@ export default function BookmarkPage() {
     e.preventDefault();
     e.stopPropagation();
 
-    toggleBookmarkMutation.mutate(interviewId.toString(), {
+    toggleBookmarkMutation.mutate(interviewId, {
       onSuccess: () => {
         toast({
           title: "북마크 해제",

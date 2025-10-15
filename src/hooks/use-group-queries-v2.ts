@@ -5,7 +5,7 @@ import type { AddGroupList, GroupDto } from "@/types/api";
 
 // Query keys
 export const groupKeys = {
-  all: ["groups"] as const,
+  all: ["groups-v2"] as const,
   lists: () => [...groupKeys.all, "list"] as const,
   details: () => [...groupKeys.all, "detail"] as const,
   detail: (id: number) => [...groupKeys.details(), id] as const,
