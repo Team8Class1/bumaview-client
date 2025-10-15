@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { useLoginMutation } from "@/hooks/use-auth-queries-v2";
+import { useLoginMutation } from "@/hooks/use-auth-queries";
 import { useToast } from "@/hooks/use-toast";
 import {
   AuthErrorType,

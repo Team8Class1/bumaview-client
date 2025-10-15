@@ -34,7 +34,7 @@ import {
 import {
   useInterview,
   useInterviewCreateData,
-  useUpdateInterview,
+  useUpdateInterviewMutation,
 } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
 
@@ -59,11 +59,11 @@ export default function InterviewEditPage() {
 
   // React Query hooks
   const { data: interview, isLoading: isLoadingInterview } = useInterview(
-    params.id as string,
+    Number(params.id),
   );
   const { data: createData, isLoading: isLoadingData } =
     useInterviewCreateData();
-  const updateInterviewMutation = useUpdateInterview();
+  const updateInterviewMutation = useUpdateInterviewMutation();
 
   const form = useForm<InterviewFormValues>({
     resolver: zodResolver(interviewSchema),
@@ -102,15 +102,14 @@ export default function InterviewEditPage() {
 
     updateInterviewMutation.mutate(
       {
-        id: params.id as string,
+        id: Number(params.id),
         data: {
-          interviewId: interview.interviewId,
           question: data.question,
           category: selectedCategories,
           companyId:
             data.companyId && data.companyId !== "none"
               ? Number(data.companyId)
-              : null,
+              : 0,
           questionAt: data.questionAt,
         },
       },

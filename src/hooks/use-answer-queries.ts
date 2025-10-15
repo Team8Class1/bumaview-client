@@ -1,80 +1,68 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type AnswerUpdateRequest, answerAPI } from "@/lib/api";
-import { interviewKeys } from "./use-interview-queries";
+import { answerAPI } from "@/lib/api/answer";
+import type { AnswerDto, CreateAnswerDto, ReplyDto } from "@/types/api";
 
 // Mutations
-export const useCreateAnswer = () => {
+export function useCreateAnswerMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: answerAPI.create,
-    onSuccess: (_, { interviewId }) => {
+    mutationFn: (data: CreateAnswerDto) => answerAPI.create(data),
+    onSuccess: (_, variables) => {
+      // Invalidate the specific interview query to refetch answers
       queryClient.invalidateQueries({
-        queryKey: interviewKeys.detail(interviewId.toString()),
+        queryKey: ["interviews", "detail", variables.interviewId],
       });
     },
   });
-};
+}
 
-export const useCreateAnswerReply = () => {
+export function useCreateReplyMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: answerAPI.createReply,
-    onSuccess: (_, { interviewId }) => {
+    mutationFn: (data: ReplyDto) => answerAPI.createReply(data),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: interviewKeys.detail(interviewId.toString()),
+        queryKey: ["interviews", "detail", variables.interviewId],
       });
     },
   });
-};
+}
 
-export const useUpdateAnswer = () => {
+export function useLikeAnswerMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      answerId,
-      data,
-    }: {
-      answerId: string;
-      data: AnswerUpdateRequest;
-    }) => answerAPI.update(answerId, data),
+    mutationFn: (answerId: number) => answerAPI.like(answerId),
     onSuccess: () => {
-      // 모든 인터뷰 상세 정보 갱신 (어떤 인터뷰의 답변인지 모르므로)
-      queryClient.invalidateQueries({ queryKey: interviewKeys.details() });
+      // Could invalidate specific interview or all interviews depending on UX needs
+      queryClient.invalidateQueries({ queryKey: ["interviews"] });
     },
   });
-};
+}
 
-export const useDeleteAnswer = () => {
+export function useUpdateAnswerMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (answerId: string | number) => {
-      // Support both string and number IDs for backward compatibility
-      const numericId =
-        typeof answerId === "string" ? parseInt(answerId, 10) : answerId;
-      return answerAPI.delete(numericId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: interviewKeys.details() });
+    mutationFn: ({ id, data }: { id: number; data: CreateAnswerDto }) =>
+      answerAPI.modify(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["interviews", "detail", variables.data.interviewId],
+      });
     },
   });
-};
+}
 
-export const useLikeAnswer = () => {
+export function useDeleteAnswerMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (answerId: string | number) => {
-      // Support both string and number IDs for backward compatibility
-      const numericId =
-        typeof answerId === "string" ? parseInt(answerId, 10) : answerId;
-      return answerAPI.like(numericId);
-    },
+    mutationFn: (answerId: number) => answerAPI.delete(answerId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: interviewKeys.details() });
+      queryClient.invalidateQueries({ queryKey: ["interviews"] });
     },
   });
-};
+}

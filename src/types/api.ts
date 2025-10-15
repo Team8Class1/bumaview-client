@@ -64,9 +64,22 @@ export interface CompanyDto {
 
 // Answer types
 export interface AnswerDto {
+  answerId: number;
+  userSequenceId: number;
+  userId: string;
   interviewId: number;
   answer: string;
   isPrivate: boolean;
+  like: number;
+  parentAnswerId?: number;
+  replies?: AnswerDto[];
+}
+
+export interface CreateAnswerDto {
+  interviewId: number;
+  answer: string;
+  isPrivate: boolean;
+  parentAnswerId?: number;
 }
 
 export interface ReplyDto {
@@ -79,6 +92,11 @@ export interface ReplyDto {
 // Group types
 export interface GroupDto {
   groupId: number;
+  name: string;
+  createdAt?: string;
+}
+
+export interface CreateGroupDto {
   name: string;
 }
 
@@ -115,7 +133,9 @@ export interface FileUploadRequest {
 
 // API Response types
 export interface LoginResponse {
-  token?: string;
+  accessToken: string;
+  refreshToken?: string;
+  expiresIn?: number;
   user?: UserInfoDto;
 }
 

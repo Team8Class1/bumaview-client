@@ -37,14 +37,14 @@ import {
 import { Loading } from "@/components/ui/loading";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  useCreateAnswer,
-  useCreateAnswerReply,
-  useDeleteAnswer,
-  useLikeAnswer,
-  useUpdateAnswer,
+  useCreateAnswerMutation,
+  useCreateReplyMutation,
+  useDeleteAnswerMutation,
+  useLikeAnswerMutation,
+  useUpdateAnswerMutation,
 } from "@/hooks/use-answer-queries";
 import {
-  useDeleteInterview,
+  useDeleteInterviewMutation,
   useInterview,
 } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
@@ -57,13 +57,13 @@ export default function InterviewDetailPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // React Query hooks
-  const { data: interview, isLoading } = useInterview(params.id as string);
-  const deleteInterviewMutation = useDeleteInterview();
-  const createAnswerMutation = useCreateAnswer();
-  const createAnswerReplyMutation = useCreateAnswerReply();
-  const updateAnswerMutation = useUpdateAnswer();
-  const deleteAnswerMutation = useDeleteAnswer();
-  const likeAnswerMutation = useLikeAnswer();
+  const { data: interview, isLoading } = useInterview(Number(params.id));
+  const deleteInterviewMutation = useDeleteInterviewMutation();
+  const createAnswerMutation = useCreateAnswerMutation();
+  const createAnswerReplyMutation = useCreateReplyMutation();
+  const updateAnswerMutation = useUpdateAnswerMutation();
+  const deleteAnswerMutation = useDeleteAnswerMutation();
+  const likeAnswerMutation = useLikeAnswerMutation();
 
   // Answer related states
   const [newAnswer, setNewAnswer] = useState("");
@@ -79,7 +79,7 @@ export default function InterviewDetailPage() {
   const handleDelete = () => {
     if (!interview) return;
 
-    deleteInterviewMutation.mutate(interview.interviewId.toString(), {
+    deleteInterviewMutation.mutate(interview.interviewId, {
       onSuccess: () => {
         toast({
           title: "삭제 완료",
@@ -149,14 +149,15 @@ export default function InterviewDetailPage() {
   };
 
   const handleEditAnswer = (answerId: number) => {
-    if (!editAnswerText.trim()) return;
+    if (!editAnswerText.trim() || !interview) return;
 
     updateAnswerMutation.mutate(
       {
-        answerId: answerId.toString(),
+        id: Number(answerId),
         data: {
+          interviewId: interview.interviewId,
           answer: editAnswerText,
-          private: editAnswerPrivate,
+          isPrivate: editAnswerPrivate,
         },
       },
       {
@@ -205,7 +206,7 @@ export default function InterviewDetailPage() {
   };
 
   const handleLikeAnswer = (answer: InterviewAnswer) => {
-    likeAnswerMutation.mutate(answer.answerId.toString(), {
+    likeAnswerMutation.mutate(answer.answerId, {
       onError: () => {
         toast({
           variant: "destructive",

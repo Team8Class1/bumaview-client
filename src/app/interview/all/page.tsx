@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useBookmark } from "@/hooks/use-bookmark";
-import { useAddInterviewsToGroup, useGroups } from "@/hooks/use-group-queries";
+import { useAddInterviewsToGroupMutation, useGroups } from "@/hooks/use-group-queries";
 import { useInterviews } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
 import type { InterviewItem } from "@/lib/api";
@@ -47,7 +47,7 @@ export default function InterviewAllPage() {
   const { data: interviewsData, isLoading: isLoadingInterviews } =
     useInterviews();
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups();
-  const addInterviewsToGroupMutation = useAddInterviewsToGroup();
+  const addInterviewsToGroupMutation = useAddInterviewsToGroupMutation();
 
   const interviews = interviewsData?.data || [];
   const groups = groupsData?.data || [];
@@ -66,7 +66,7 @@ export default function InterviewAllPage() {
 
     addInterviewsToGroupMutation.mutate(
       {
-        groupId: selectedGroupId,
+        groupId: Number(selectedGroupId),
         data: { interviewIdList: [selectedInterviewForGroup.interviewId] },
       },
       {

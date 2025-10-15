@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/select";
 import {
   useInterviewCreateData,
-  useTrimInterviewFile,
-  useTrimInterviewSingle,
+  useTrimInterviewFileMutation,
+  useTrimInterviewSingleMutation,
 } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
 
@@ -32,8 +32,8 @@ export default function InterviewTrimPage() {
 
   // React Query hooks
   const { data: createData } = useInterviewCreateData();
-  const trimSingleMutation = useTrimInterviewSingle();
-  const trimFileMutation = useTrimInterviewFile();
+  const trimSingleMutation = useTrimInterviewSingleMutation();
+  const trimFileMutation = useTrimInterviewFileMutation();
 
   const handleTrimSingle = () => {
     if (!question.trim()) {

@@ -2,8 +2,8 @@ import ky from "ky";
 import { useAuthStore } from "@/stores/auth";
 import { TokenManager } from "./token-manager";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true" || !API_BASE_URL;
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true" || !API_BASE_URL;
 
 export class ApiError extends Error {
   constructor(
@@ -62,11 +62,13 @@ export const api = ky.create({
       async (request) => {
         // 로그인, 회원가입, 비밀번호 재설정 요청은 토큰 없이 진행
         const url = request.url;
-        if (url.includes('/api/user/login') || 
-            url.includes('/api/user/register') || 
-            url.includes('/api/user/reset-password') ||
-            url.includes('/api/user/check-id/') ||
-            url.includes('/api/user/check-email/')) {
+        if (
+          url.includes("/api/user/login") ||
+          url.includes("/api/user/register") ||
+          url.includes("/api/user/reset-password") ||
+          url.includes("/api/user/check-id/") ||
+          url.includes("/api/user/check-email/")
+        ) {
           return;
         }
 

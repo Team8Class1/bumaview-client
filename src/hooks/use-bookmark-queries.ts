@@ -1,33 +1,33 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { bookmarkAPI } from "@/lib/api";
+import { bookmarkAPI } from "@/lib/api/bookmark";
 import { useAuthStore } from "@/stores/auth";
 
-// Query Keys
+// Query keys
 export const bookmarkKeys = {
   all: ["bookmarks"] as const,
-  list: () => [...bookmarkKeys.all, "list"] as const,
+  lists: () => [...bookmarkKeys.all, "list"] as const,
 };
 
 // Queries
-export const useBookmarks = () => {
+export function useBookmarks() {
   const { isAuthenticated } = useAuthStore();
   return useQuery({
-    queryKey: bookmarkKeys.list(),
-    queryFn: bookmarkAPI.getAllLegacy,
+    queryKey: bookmarkKeys.lists(),
+    queryFn: bookmarkAPI.getAll,
     enabled: isAuthenticated,
   });
-};
+}
 
 // Mutations
-export const useToggleBookmark = () => {
+export function useToggleBookmarkMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: bookmarkAPI.toggle,
+    mutationFn: (interviewId: number) => bookmarkAPI.update(interviewId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bookmarkKeys.list() });
-      // 인터뷰 목록도 갱신 (북마크 상태 변경)
+      queryClient.invalidateQueries({ queryKey: bookmarkKeys.lists() });
+      // Also invalidate interviews list to update bookmark status
       queryClient.invalidateQueries({ queryKey: ["interviews"] });
     },
   });
-};
+}

@@ -29,13 +29,14 @@ import {
 } from "@/components/ui/select";
 import { useBookmark } from "@/hooks/use-bookmark";
 import { useBookmarks } from "@/hooks/use-bookmark-queries";
-import { useAddInterviewsToGroup, useGroups } from "@/hooks/use-group-queries";
+import { useAddInterviewsToGroupMutation, useGroups } from "@/hooks/use-group-queries";
 import {
   useInterviewCreateData,
   useInterviewSearch,
 } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
 import type { InterviewFilterParams, InterviewItem } from "@/lib/api";
+import type { InterviewSearchParams } from "@/types/api";
 
 export default function InterviewPage() {
   const router = useRouter();
@@ -48,12 +49,18 @@ export default function InterviewPage() {
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const { toast } = useToast();
 
+  // Convert filters to search params
+  const searchParams: InterviewSearchParams = {
+    ...(filters.companyId && { companyId: [filters.companyId] }),
+    ...(filters.categoryId && { categoryId: [filters.categoryId] }),
+  };
+
   // React Query hooks
   const { data: createData } = useInterviewCreateData();
-  const { data: interviewData, isLoading } = useInterviewSearch(filters);
+  const { data: interviewData, isLoading } = useInterviewSearch(searchParams);
   const { data: bookmarkData } = useBookmarks();
   const { data: groupData } = useGroups();
-  const addToGroupMutation = useAddInterviewsToGroup();
+  const addToGroupMutation = useAddInterviewsToGroupMutation();
 
   const interviews = interviewData?.data || [];
   const companies = createData?.companyList || [];
@@ -62,12 +69,12 @@ export default function InterviewPage() {
 
   // Update bookmarked IDs when bookmark data changes
   useEffect(() => {
-    if (bookmarkData?.data) {
+    if (bookmarkData) {
       setBookmarkedIds(
-        new Set(bookmarkData.data.map((item) => item.interviewId)),
+        new Set(bookmarkData.map((item) => item.interviewId)),
       );
     }
-  }, [bookmarkData?.data, setBookmarkedIds]);
+  }, [bookmarkData, setBookmarkedIds]);
 
   const openGroupDialog = (e: React.MouseEvent, interview: InterviewItem) => {
     e.preventDefault();
@@ -82,7 +89,7 @@ export default function InterviewPage() {
 
     addToGroupMutation.mutate(
       {
-        groupId: selectedGroupId,
+        groupId: Number(selectedGroupId),
         data: {
           interviewIdList: [selectedInterviewForGroup.interviewId],
         },

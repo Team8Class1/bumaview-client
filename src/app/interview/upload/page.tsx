@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useUploadInterviewFile } from "@/hooks/use-interview-queries";
+import { useUploadInterviewFileMutation } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
 import { downloadSampleCSV, validateCSVFile } from "@/lib/utils/csv";
 
@@ -20,7 +20,7 @@ export default function InterviewUploadPage() {
   const { toast } = useToast();
 
   // React Query hooks
-  const uploadFileMutation = useUploadInterviewFile();
+  const uploadFileMutation = useUploadInterviewFileMutation();
 
   const handleFileSelect = (file: File) => {
     const error = validateCSVFile(file);
@@ -65,7 +65,7 @@ export default function InterviewUploadPage() {
   const handleUpload = () => {
     if (!selectedFile) return;
 
-    uploadFileMutation.mutate(selectedFile, {
+    uploadFileMutation.mutate({ file: selectedFile }, {
       onSuccess: () => {
         toast({
           title: "업로드 성공",

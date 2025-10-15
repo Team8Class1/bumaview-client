@@ -1,172 +1,126 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { authAPI } from "@/lib/api";
-import {
-  AuthErrorType,
-  classifyError,
-  isRetryableError,
-} from "@/lib/error-handling";
+import { useRouter } from "next/navigation";
+import { authAPI } from "@/lib/api/auth";
+import { TokenManager } from "@/lib/token-manager";
 import { useAuthStore } from "@/stores/auth";
-import type { UserInfoDto } from "@/types/api";
+import type { JoinDto, LoginRequestDto } from "@/types/api";
 
-// Query Keys
+// Query keys
 export const authKeys = {
-  all: ["auth"] as const,
-  user: () => [...authKeys.all, "user"] as const,
-  checkId: (id: string) => [...authKeys.all, "checkId", id] as const,
-  checkEmail: (email: string) =>
-    [...authKeys.all, "checkEmail", email] as const,
+  user: ["auth", "user"] as const,
 };
 
 // Queries
-export const useUser = () => {
-  const { token } = useAuthStore();
+export function useUser() {
+  const { isAuthenticated } = useAuthStore();
 
   return useQuery({
-    queryKey: authKeys.user(),
-    queryFn: authAPI.getUser,
-    enabled: !!token,
-    retry: (failureCount, error) => {
-      const { type } = classifyError(error);
-      // 토큰 만료나 인증 오류는 재시도하지 않음
-      if (
-        type === AuthErrorType.TOKEN_EXPIRED ||
-        type === AuthErrorType.UNAUTHORIZED
-      ) {
-        return false;
-      }
-      return isRetryableError(type) && failureCount < 2;
-    },
+    queryKey: authKeys.user,
+    queryFn: () => authAPI.getUser(),
+    enabled: isAuthenticated,
   });
-};
+}
 
-// Enhanced Login Hook
-export const useLogin = () => {
+// Mutations
+export function useLoginMutation() {
+  const { loginWithUserInfo, setHasHydrated, setToken } = useAuthStore();
+  const router = useRouter();
   const queryClient = useQueryClient();
-  const { loginWithUserInfo, setHasHydrated } = useAuthStore();
 
   return useMutation({
-    mutationFn: authAPI.login,
-    retry: (failureCount, error) => {
-      const { type } = classifyError(error);
-      return isRetryableError(type) && failureCount < 2;
-    },
-    onSuccess: (data) => {
-      // Handle unknown response type from OpenAPI spec
-      if (
-        data &&
-        typeof data === "object" &&
-        "user" in data &&
-        "token" in data
-      ) {
-        loginWithUserInfo(data as { token?: string; user: UserInfoDto });
-        queryClient.setQueryData(authKeys.user(), data);
-        
-        // Hydration 상태 업데이트
-        setHasHydrated(true);
+    mutationFn: (data: LoginRequestDto) => authAPI.login(data),
+    onSuccess: async (response: {
+      accessToken: string;
+      refreshToken?: string;
+      expiresIn?: number;
+    }) => {
+      const token = response.accessToken;
 
-        // 성공적인 로그인 후 검증 캐시 초기화
-        queryClient.removeQueries({ queryKey: authKeys.all });
+      if (token) {
+        const bareToken = token.startsWith("Bearer ") ? token.slice(7) : token;
+
+        // Store the token immediately so subsequent API calls are authenticated
+        TokenManager.setTokens(bareToken);
+        setToken(bareToken);
+
+        try {
+          // Manually fetch user info using the new token
+          const user = await queryClient.fetchQuery({
+            queryKey: authKeys.user,
+            queryFn: authAPI.getUser,
+          });
+
+          if (user) {
+            loginWithUserInfo({
+              token: bareToken,
+              user,
+            });
+            setHasHydrated(true);
+            router.push("/");
+          } else {
+            console.error("Failed to fetch user info after login.");
+          }
+        } catch (error) {
+          console.error("Error fetching user info after login:", error);
+        }
+      } else {
+        console.error(
+          "Incomplete login response: accessToken not found in response.",
+          response,
+        );
       }
     },
     onError: (error) => {
-      const { type } = classifyError(error);
-
-      // 로그인 실패시 특정 에러 타입에 따른 추가 처리
-      if (type === AuthErrorType.RATE_LIMITED) {
-        // Rate limit 에러시 더 긴 재시도 지연
-        setTimeout(() => {
-          // 필요시 추가 로직
-        }, 60000);
-      }
+      console.error("Login error:", error);
     },
   });
-};
+}
 
-// Enhanced Register Hook
-export const useRegister = () => {
-  const queryClient = useQueryClient();
-  const { loginWithUserInfo } = useAuthStore();
+export function useRegisterMutation() {
+  const router = useRouter();
 
   return useMutation({
-    mutationFn: authAPI.register,
-    retry: (failureCount, error) => {
-      const { type } = classifyError(error);
-      // 중복 에러나 검증 에러는 재시도하지 않음
-      if (
-        type === AuthErrorType.EMAIL_ALREADY_EXISTS ||
-        type === AuthErrorType.ID_ALREADY_EXISTS ||
-        type === AuthErrorType.VALIDATION_ERROR
-      ) {
-        return false;
-      }
-      return isRetryableError(type) && failureCount < 2;
-    },
-    onSuccess: (data) => {
-      // Handle unknown response type from OpenAPI spec
-      if (
-        data &&
-        typeof data === "object" &&
-        "user" in data &&
-        "token" in data
-      ) {
-        loginWithUserInfo(data as { token?: string; user: UserInfoDto });
-        queryClient.setQueryData(authKeys.user(), data);
-
-        // 성공적인 회원가입 후 검증 캐시 초기화
-        queryClient.removeQueries({ queryKey: authKeys.all });
-      }
+    mutationFn: (data: JoinDto) => authAPI.register(data),
+    onSuccess: () => {
+      // After successful registration, redirect to login
+      router.push("/login");
     },
   });
-};
+}
 
-// Enhanced Logout Hook
-export const useLogout = () => {
-  const queryClient = useQueryClient();
+export function useLogoutMutation() {
   const { logout } = useAuthStore();
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: async () => {
-      // API 로그아웃이 있다면 여기서 호출
+      // The API doesn't have a logout endpoint, so just clear local state
       return Promise.resolve();
     },
     onSuccess: () => {
       logout();
       queryClient.clear();
-    },
-    onError: () => {
-      // 로그아웃 실패시에도 로컬 상태는 초기화
-      logout();
-      queryClient.clear();
+      router.push("/login");
     },
   });
-};
+}
 
-// Password Reset Hook
-export const usePasswordReset = () => {
+// Hook to sync user info from API with store
+export function usePasswordResetMutation() {
   return useMutation({
-    mutationFn: authAPI.requestPasswordReset,
-    retry: (failureCount, error) => {
-      const { type } = classifyError(error);
-      return isRetryableError(type) && failureCount < 2;
-    },
+    mutationFn: (email: string) => authAPI.requestPasswordReset(email),
   });
-};
+}
 
-// Change Password Hook
-export const useChangePassword = () => {
-  const { logout } = useAuthStore();
-  const queryClient = useQueryClient();
+export function useSyncUserInfo() {
+  const { setUserInfo } = useAuthStore();
+  const { data: userInfo } = useUser();
 
-  return useMutation({
-    mutationFn: authAPI.changePassword,
-    retry: (failureCount, error) => {
-      const { type } = classifyError(error);
-      return isRetryableError(type) && failureCount < 2;
-    },
-    onSuccess: () => {
-      // 비밀번호 변경 후 보안을 위해 로그아웃
-      logout();
-      queryClient.clear();
-    },
-  });
-};
+  // Sync user info to store when it changes
+  if (userInfo && userInfo !== useAuthStore.getState().userInfo) {
+    setUserInfo(userInfo);
+  }
+
+  return userInfo;
+}

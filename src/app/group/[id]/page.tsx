@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
 import { useBookmark } from "@/hooks/use-bookmark";
-import { useAddInterviewsToGroup, useGroup } from "@/hooks/use-group-queries";
+import { useAddInterviewsToGroupMutation, useGroup, useGroups } from "@/hooks/use-group-queries";
 import { useInterviews } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
 import type { InterviewItem } from "@/lib/api";
@@ -45,15 +45,19 @@ export default function GroupDetailPage() {
   const { isAuthenticated, _hasHydrated } = useAuthStore();
 
   // React Query hooks
-  const { data: group, isLoading } = useGroup(params.id as string);
+  const { data: groupInterviews, isLoading } = useGroup(params.id as string);
+  const { data: groupsData } = useGroups();
   const { data: allInterviewsData } = useInterviews();
-  const addInterviewsToGroupMutation = useAddInterviewsToGroup();
+  const addInterviewsToGroupMutation = useAddInterviewsToGroupMutation();
+
+  // Find current group info from groups list
+  const group = groupsData?.data?.find((g) => g.groupId === Number(params.id));
 
   const openAddDialog = () => {
-    if (!allInterviewsData || !group) return;
+    if (!allInterviewsData || !groupInterviews) return;
 
     // 이미 그룹에 있는 질문 제외
-    const groupInterviewIds = group.interviews.map((i) => i.interviewId);
+    const groupInterviewIds = groupInterviews.data.map((i) => i.interviewId);
     const available = allInterviewsData.data.filter(
       (interview) => !groupInterviewIds.includes(interview.interviewId),
     );
@@ -66,7 +70,7 @@ export default function GroupDetailPage() {
 
     addInterviewsToGroupMutation.mutate(
       {
-        groupId: group.groupId.toString(),
+        groupId: Number(params.id),
         data: { interviewIdList: selectedInterviewIds },
       },
       {
@@ -121,23 +125,15 @@ export default function GroupDetailPage() {
     <>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <Button
-            variant="outline"
-            onClick={() => router.back()}
-          >
+          <Button variant="outline" onClick={() => router.back()}>
             ← 돌아가기
           </Button>
-          <h1 className="text-3xl font-bold mt-4">
-            {group?.name}
-          </h1>
+          <h1 className="text-3xl font-bold mt-4">{group?.name}</h1>
           <p className="text-muted-foreground mt-2">
-            {`${group?.interviews.length}개의 질문`}
+            {`${groupInterviews?.data?.length || 0}개의 질문`}
           </p>
         </div>
-        <Button
-          onClick={openAddDialog}
-          disabled={!group || !allInterviewsData}
-        >
+        <Button onClick={openAddDialog} disabled={!group || !allInterviewsData}>
           <Plus className="h-4 w-4 mr-2" />
           질문 추가
         </Button>
@@ -156,7 +152,7 @@ export default function GroupDetailPage() {
             </Button>
           </CardContent>
         </Card>
-      ) : group.interviews.length === 0 ? (
+      ) : !groupInterviews?.data || groupInterviews.data.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -170,7 +166,7 @@ export default function GroupDetailPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {group.interviews.map((interview) => (
+          {groupInterviews?.data?.map((interview) => (
             <Card
               key={interview.interviewId}
               className="hover:shadow-md transition-shadow"

@@ -1,55 +1,60 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type CompanyUpdateRequest, companyAPI } from "@/lib/api";
+import { companyAPI } from "@/lib/api/company";
+import { interviewAPI } from "@/lib/api/interview";
+import type { CompanyDto } from "@/types/api";
 
-// Query Keys
+// Query keys
 export const companyKeys = {
   all: ["companies"] as const,
-  list: () => [...companyKeys.all, "list"] as const,
+  lists: () => [...companyKeys.all, "list"] as const,
 };
 
 // Queries
-export const useCompanies = () => {
+export function useCompanies() {
   return useQuery({
-    queryKey: companyKeys.list(),
-    queryFn: companyAPI.getAll,
+    queryKey: companyKeys.lists(),
+    queryFn: async () => {
+      const data = await interviewAPI.getCreateData();
+      return { data: data.companyList };
+    },
   });
-};
+}
 
 // Mutations
-export const useCreateCompany = () => {
+export function useCreateCompanyMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: companyAPI.createLegacy,
+    mutationFn: (data: CompanyDto) => companyAPI.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: companyKeys.list() });
+      queryClient.invalidateQueries({ queryKey: companyKeys.lists() });
+      // Also invalidate interview create data as it includes company list
+      queryClient.invalidateQueries({ queryKey: ["interviews", "createData"] });
     },
   });
-};
+}
 
-export const useUpdateCompany = () => {
+export function useUpdateCompanyMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: CompanyUpdateRequest }) =>
-      companyAPI.update(id, data),
+    mutationFn: ({ id, data }: { id: number; data: CompanyDto }) =>
+      companyAPI.modify(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: companyKeys.list() });
+      queryClient.invalidateQueries({ queryKey: companyKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ["interviews"] });
     },
   });
-};
+}
 
-export const useDeleteCompany = () => {
+export function useDeleteCompanyMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string | number) => {
-      // Support both string and number IDs for backward compatibility
-      const numericId = typeof id === "string" ? parseInt(id, 10) : id;
-      return companyAPI.delete(numericId);
-    },
+    mutationFn: (id: number) => companyAPI.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: companyKeys.list() });
+      queryClient.invalidateQueries({ queryKey: companyKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ["interviews"] });
     },
   });
-};
+}

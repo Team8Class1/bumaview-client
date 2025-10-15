@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  useCreateInterview,
+  useCreateInterviewMutation,
   useInterviewCreateData,
 } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
@@ -57,7 +57,7 @@ export default function InterviewCreatePage() {
   // React Query hooks
   const { data: createData, isLoading: isLoadingData } =
     useInterviewCreateData();
-  const createInterviewMutation = useCreateInterview();
+  const createInterviewMutation = useCreateInterviewMutation();
 
   const form = useForm<InterviewFormValues>({
     resolver: zodResolver(interviewSchema),
@@ -86,7 +86,7 @@ export default function InterviewCreatePage() {
         companyId:
           data.companyId && data.companyId !== "none"
             ? Number(data.companyId)
-            : null,
+            : 0,
         questionAt: data.questionAt,
       },
       {

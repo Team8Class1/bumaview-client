@@ -17,7 +17,7 @@ import { useBookmark } from "@/hooks/use-bookmark";
 import {
   useBookmarks,
   useToggleBookmarkMutation,
-} from "@/hooks/use-bookmark-queries-v2";
+} from "@/hooks/use-bookmark-queries";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/auth";
 
@@ -28,11 +28,7 @@ export default function BookmarkPage() {
   const { isAuthenticated, _hasHydrated } = useAuthStore();
 
   // React Query hooks
-  const {
-    data: bookmarkData,
-    isLoading,
-    error,
-  } = useBookmarks();
+  const { data: bookmarkData, isLoading } = useBookmarks();
   const toggleBookmarkMutation = useToggleBookmarkMutation();
 
   const interviews = bookmarkData || [];
@@ -40,9 +36,7 @@ export default function BookmarkPage() {
   // Update bookmarked IDs when data changes
   useEffect(() => {
     if (bookmarkData) {
-      setBookmarkedIds(
-        new Set(bookmarkData.map((item) => item.interviewId)),
-      );
+      setBookmarkedIds(new Set(bookmarkData.map((item) => item.interviewId)));
     }
   }, [bookmarkData, setBookmarkedIds]);
 

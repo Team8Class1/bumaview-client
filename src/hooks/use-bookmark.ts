@@ -26,7 +26,7 @@ export function useBookmark() {
     setBookmarkedIds(newBookmarkedIds);
 
     try {
-      await bookmarkAPI.toggle(interviewId.toString());
+      await bookmarkAPI.update(interviewId);
       const isBookmarked = newBookmarkedIds.has(interviewId);
       toast({
         title: isBookmarked ? "북마크 추가" : "북마크 해제",
@@ -38,9 +38,9 @@ export function useBookmark() {
       // 에러 시 롤백 및 최신 북마크 목록 재조회
       setBookmarkedIds(prevBookmarkedIds);
       try {
-        const bookmarkResponse = await bookmarkAPI.getAllLegacy();
+        const bookmarkResponse = await bookmarkAPI.getAll();
         setBookmarkedIds(
-          new Set(bookmarkResponse.data.map((item) => item.interviewId)),
+          new Set(bookmarkResponse.map((item) => item.interviewId)),
         );
       } catch {
         // 재조회 실패 시 이전 상태 유지

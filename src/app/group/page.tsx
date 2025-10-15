@@ -24,20 +24,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loading } from "@/components/ui/loading";
 import {
-  useCreateGroup,
-  useDeleteGroup,
+  useCreateGroupMutation,
+  useDeleteGroupMutation,
   useGroups,
-  useUpdateGroup,
+  useUpdateGroupMutation,
 } from "@/hooks/use-group-queries";
 import { useToast } from "@/hooks/use-toast";
-import type { Group } from "@/lib/api";
+import type { GroupDto } from "@/types/api";
 import { useAuthStore } from "@/stores/auth";
 
 export default function GroupPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<GroupDto | null>(null);
   const [groupName, setGroupName] = useState("");
   const { toast } = useToast();
   const router = useRouter();
@@ -45,9 +45,9 @@ export default function GroupPage() {
 
   // React Query hooks
   const { data: groupData, isLoading } = useGroups();
-  const createGroupMutation = useCreateGroup();
-  const updateGroupMutation = useUpdateGroup();
-  const deleteGroupMutation = useDeleteGroup();
+  const createGroupMutation = useCreateGroupMutation();
+  const updateGroupMutation = useUpdateGroupMutation();
+  const deleteGroupMutation = useDeleteGroupMutation();
 
   const groups = groupData?.data || [];
 
@@ -81,7 +81,7 @@ export default function GroupPage() {
 
     updateGroupMutation.mutate(
       {
-        id: selectedGroup.groupId.toString(),
+        id: selectedGroup.groupId,
         data: { name: groupName },
       },
       {
@@ -108,7 +108,7 @@ export default function GroupPage() {
   const handleDeleteGroup = () => {
     if (!selectedGroup) return;
 
-    deleteGroupMutation.mutate(selectedGroup.groupId.toString(), {
+    deleteGroupMutation.mutate(selectedGroup.groupId, {
       onSuccess: () => {
         toast({
           title: "그룹 삭제",
@@ -127,13 +127,13 @@ export default function GroupPage() {
     });
   };
 
-  const openEditDialog = (group: Group) => {
+  const openEditDialog = (group: GroupDto) => {
     setSelectedGroup(group);
     setGroupName(group.name);
     setShowEditDialog(true);
   };
 
-  const openDeleteDialog = (group: Group) => {
+  const openDeleteDialog = (group: GroupDto) => {
     setSelectedGroup(group);
     setShowDeleteDialog(true);
   };

@@ -86,8 +86,7 @@ export interface InterviewTrimSingleResponse {
 // API Functions
 export const interviewAPI = {
   // 전체 인터뷰 조회
-  getAll: (): Promise<InterviewListResponse> =>
-    api.get("interview/all").json(),
+  getAll: (): Promise<InterviewListResponse> => api.get("interview/all").json(),
 
   // 조건별 검색
   search: (params?: InterviewFilterParams): Promise<InterviewListResponse> => {
@@ -123,8 +122,7 @@ export const interviewAPI = {
     api.patch(`interview/${id}`, { json: data }).json(),
 
   // 단건 삭제
-  delete: (id: string): Promise<void> =>
-    api.delete(`interview/${id}`).json(),
+  delete: (id: string): Promise<void> => api.delete(`interview/${id}`).json(),
 
   // CSV 파일 업로드
   uploadFile: async (file: File): Promise<Response> => {
@@ -144,9 +142,7 @@ export const interviewAPI = {
       queryParams.append("companyId", data.companyId.toString());
     queryParams.append("questionAt", data.questionAt);
 
-    return api
-      .get(`interview/trim/single?${queryParams.toString()}`)
-      .json();
+    return api.get(`interview/trim/single?${queryParams.toString()}`).json();
   },
 
   // 파일 일괄 다듬기

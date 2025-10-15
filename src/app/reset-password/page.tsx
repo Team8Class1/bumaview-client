@@ -22,7 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { usePasswordReset } from "@/hooks/use-auth-queries";
+import { usePasswordResetMutation } from "@/hooks/use-auth-queries";
 import { useToast } from "@/hooks/use-toast";
 import { AuthErrorType, classifyError } from "@/lib/error-handling";
 import {
@@ -32,7 +32,7 @@ import {
 
 export default function ResetPasswordPage() {
   const { toast } = useToast();
-  const resetMutation = usePasswordReset();
+  const resetMutation = usePasswordResetMutation();
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 

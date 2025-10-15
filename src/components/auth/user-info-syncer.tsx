@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useUser } from "@/hooks/use-auth-queries-v2";
+import { useUser } from "@/hooks/use-auth-queries";
 import { useAuthStore } from "@/stores/auth";
 
 /**
@@ -10,15 +10,23 @@ import { useAuthStore } from "@/stores/auth";
  * always up-to-date across the application.
  */
 export function UserInfoSyncer() {
-  const { isAuthenticated, setUserInfo, userInfo: storedUserInfo } = useAuthStore();
+  const {
+    isAuthenticated,
+    setUserInfo,
+    userInfo: storedUserInfo,
+  } = useAuthStore();
   const { data: fetchedUserInfo, isError } = useUser();
 
   useEffect(() => {
-    if (isAuthenticated && fetchedUserInfo && fetchedUserInfo !== storedUserInfo) {
+    if (
+      isAuthenticated &&
+      fetchedUserInfo &&
+      fetchedUserInfo !== storedUserInfo
+    ) {
       setUserInfo(fetchedUserInfo);
     }
   }, [isAuthenticated, fetchedUserInfo, storedUserInfo, setUserInfo]);
-  
+
   useEffect(() => {
     if (isError) {
       // It might be useful to handle token validation errors here,
@@ -26,7 +34,6 @@ export function UserInfoSyncer() {
       console.error("Failed to sync user info, token might be invalid.");
     }
   }, [isError]);
-
 
   return null; // This component does not render anything
 }

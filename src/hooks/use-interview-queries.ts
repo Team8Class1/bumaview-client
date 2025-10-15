@@ -1,106 +1,111 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  type InterviewFilterParams,
-  type InterviewUpdateRequest,
-  interviewAPI,
-} from "@/lib/api";
+import { interviewAPI } from "@/lib/api/interview";
+import type {
+  FileUploadRequest,
+  InterviewSearchParams,
+  ModifyInterviewDto,
+  UploadInterviewDto,
+} from "@/types/api";
+import type { InterviewTrimSingleRequest } from "@/lib/api/interview";
 
-// Query Keys
+// Query keys
 export const interviewKeys = {
   all: ["interviews"] as const,
   lists: () => [...interviewKeys.all, "list"] as const,
-  list: (filters: InterviewFilterParams) =>
+  list: (filters: InterviewSearchParams) =>
     [...interviewKeys.lists(), { filters }] as const,
   details: () => [...interviewKeys.all, "detail"] as const,
-  detail: (id: string) => [...interviewKeys.details(), id] as const,
-  createData: () => [...interviewKeys.all, "create-data"] as const,
+  detail: (id: number) => [...interviewKeys.details(), id] as const,
+  createData: () => [...interviewKeys.all, "createData"] as const,
 };
 
 // Queries
-export const useInterviews = () => {
+export function useInterviews() {
   return useQuery({
     queryKey: interviewKeys.lists(),
-    queryFn: interviewAPI.getAll,
+    queryFn: () => interviewAPI.getAllBySpec(),
   });
-};
+}
 
-export const useInterviewSearch = (params?: InterviewFilterParams) => {
+export function useInterviewSearch(params: InterviewSearchParams) {
   return useQuery({
-    queryKey: interviewKeys.list(params || {}),
-    queryFn: () => interviewAPI.search(params),
+    queryKey: interviewKeys.list(params),
+    queryFn: () => interviewAPI.searchByParams(params),
+    enabled: Object.keys(params).length > 0,
   });
-};
+}
 
-export const useInterview = (id: string) => {
+export function useInterview(id: number) {
   return useQuery({
     queryKey: interviewKeys.detail(id),
-    queryFn: () => interviewAPI.getById(id),
+    queryFn: () => interviewAPI.getByIdSpec(id),
     enabled: !!id,
   });
-};
+}
 
-export const useInterviewCreateData = () => {
+export function useInterviewCreateData() {
   return useQuery({
     queryKey: interviewKeys.createData(),
-    queryFn: interviewAPI.getCreateData,
+    queryFn: () => interviewAPI.getCreateData(),
   });
-};
+}
 
 // Mutations
-export const useCreateInterview = () => {
+export function useCreateInterviewMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: interviewAPI.create,
+    mutationFn: (data: UploadInterviewDto) => interviewAPI.uploadSingle(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: interviewKeys.lists() });
     },
   });
-};
+}
 
-export const useUpdateInterview = () => {
+export function useUploadInterviewFileMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: InterviewUpdateRequest }) =>
-      interviewAPI.update(id, data),
+    mutationFn: (data: FileUploadRequest) => interviewAPI.uploadFromFile(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: interviewKeys.lists() });
+    },
+  });
+}
+
+export function useUpdateInterviewMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: ModifyInterviewDto }) =>
+      interviewAPI.modify(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: interviewKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: interviewKeys.lists() });
     },
   });
-};
+}
 
-export const useDeleteInterview = () => {
+export function useDeleteInterviewMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: interviewAPI.delete,
+    mutationFn: (id: number) => interviewAPI.deleteByIdSpec(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: interviewKeys.lists() });
     },
   });
-};
+}
 
-export const useUploadInterviewFile = () => {
-  const queryClient = useQueryClient();
-
+export function useTrimInterviewSingleMutation() {
   return useMutation({
-    mutationFn: interviewAPI.uploadFile,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: interviewKeys.lists() });
-    },
+    mutationFn: (data: InterviewTrimSingleRequest) =>
+      interviewAPI.trimSingle(data),
   });
-};
+}
 
-export const useTrimInterviewSingle = () => {
+export function useTrimInterviewFileMutation() {
   return useMutation({
-    mutationFn: interviewAPI.trimSingle,
+    mutationFn: (file: File) => interviewAPI.trimFile(file),
   });
-};
-
-export const useTrimInterviewFile = () => {
-  return useMutation({
-    mutationFn: interviewAPI.trimFile,
-  });
-};
+}

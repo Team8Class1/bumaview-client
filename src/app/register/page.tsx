@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { InterestSelector } from "@/components/ui/interest-selector";
 import { PasswordInput } from "@/components/ui/password-input";
 import { PasswordStrength } from "@/components/ui/password-strength";
-import { useRegister } from "@/hooks/use-auth-queries";
+import { useRegisterMutation } from "@/hooks/use-auth-queries";
 import { useInterestSelection } from "@/hooks/use-interest-selection";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -45,7 +45,7 @@ import { type RegisterFormValues, registerSchema } from "@/lib/validation/auth";
 export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const registerMutation = useRegister();
+  const registerMutation = useRegisterMutation();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const form = useForm<RegisterFormValues>({

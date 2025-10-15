@@ -1,13 +1,12 @@
 "use client";
 
-import { Building2, ExternalLink, Plus } from "lucide-react";
+import { Building2, Plus } from "lucide-react";
 import { useState } from "react";
 import { RequireAdmin } from "@/components/auth/require-admin";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -24,12 +23,22 @@ import { Label } from "@/components/ui/label";
 import { Loading } from "@/components/ui/loading";
 import {
   useCompanies,
-  useCreateCompany,
-  useDeleteCompany,
-  useUpdateCompany,
+  useCreateCompanyMutation,
+  useDeleteCompanyMutation,
+  useUpdateCompanyMutation,
 } from "@/hooks/use-company-queries";
 import { useToast } from "@/hooks/use-toast";
-import type { Company } from "@/lib/api";
+
+type Company = {
+  companyId: number;
+  companyName: string;
+  link?: string;
+};
+
+type CompanyListItem = {
+  companyId: number;
+  companyName: string;
+};
 
 export default function AdminCompanyPage() {
   return (
@@ -50,11 +59,11 @@ function AdminCompanyContent() {
 
   // React Query hooks
   const { data: companiesData, isLoading } = useCompanies();
-  const createCompanyMutation = useCreateCompany();
-  const updateCompanyMutation = useUpdateCompany();
-  const deleteCompanyMutation = useDeleteCompany();
+  const createCompanyMutation = useCreateCompanyMutation();
+  const updateCompanyMutation = useUpdateCompanyMutation();
+  const deleteCompanyMutation = useDeleteCompanyMutation();
 
-  const companies = companiesData?.data || [];
+  const companies: CompanyListItem[] = companiesData?.data || [];
 
   const handleCreateCompany = () => {
     if (!companyName.trim()) return;
@@ -87,7 +96,7 @@ function AdminCompanyContent() {
 
     updateCompanyMutation.mutate(
       {
-        id: selectedCompany.companyId.toString(),
+        id: selectedCompany.companyId,
         data: { companyName, link: companyLink },
       },
       {
@@ -137,7 +146,7 @@ function AdminCompanyContent() {
   const openEditDialog = (company: Company) => {
     setSelectedCompany(company);
     setCompanyName(company.companyName);
-    setCompanyLink(company.link);
+    setCompanyLink(company.link || "");
     setShowEditDialog(true);
   };
 
@@ -189,20 +198,7 @@ function AdminCompanyContent() {
                     </CardTitle>
                   </div>
                 </div>
-                {company.link && (
-                  <CardDescription className="flex items-center gap-1 mt-2 min-w-0">
-                    <ExternalLink className="h-3 w-3 shrink-0" />
-                    <a
-                      href={company.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs hover:underline truncate block"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {company.link}
-                    </a>
-                  </CardDescription>
-                )}
+                {/* Link display temporarily disabled since company list doesn't include links */}
               </CardHeader>
               <CardContent>
                 <div className="flex gap-2">

@@ -17,22 +17,18 @@ export const useCheckEmailAvailable = (email: string, enabled = true) => {
   return useQuery({
     queryKey: ["checkEmail", email],
     queryFn: async () => {
-      const response: any = await authAPI.checkEmailAvailable(email);
+      const response: { available: boolean } | boolean =
+        await authAPI.checkEmailAvailable(email);
       console.log(`Email check response for ${email}:`, response);
 
-      // 서버 응답이 data 프로퍼티로 감싸져 있는지 확인
-      if (response && typeof response.data === 'boolean') {
-        return { available: response.data };
-      }
-      
       // 직접적인 boolean 응답 처리
-      if (typeof response === 'boolean') {
+      if (typeof response === "boolean") {
         return { available: response };
       }
 
-      // 호환성을 위해 기존 객체 형식도 확인
-      if (response && typeof response.available === 'boolean') {
-        return response;
+      // 객체 형식 응답 처리
+      if (response && typeof response === "object") {
+        return response as { available: boolean };
       }
 
       // 예상치 못한 형식일 경우 기본값 반환 또는 에러 처리
