@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authAPI } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
+import type { UserInfoDto } from "@/types/api";
 
 // Query Keys
 export const authKeys = {
@@ -22,20 +23,19 @@ export const useUser = () => {
 // Mutations
 export const useLogin = () => {
   const queryClient = useQueryClient();
-  const { login: setAuth } = useAuthStore();
+  const { loginWithUserInfo } = useAuthStore();
 
   return useMutation({
     mutationFn: authAPI.login,
     onSuccess: (data) => {
-      if (data.token) {
-        setAuth({
-          token: data.token,
-          user: {
-            id: data.id,
-            email: data.email,
-            role: data.role,
-          },
-        });
+      // Handle unknown response type from OpenAPI spec
+      if (
+        data &&
+        typeof data === "object" &&
+        "user" in data &&
+        "token" in data
+      ) {
+        loginWithUserInfo(data as { token?: string; user: UserInfoDto });
         queryClient.setQueryData(authKeys.user(), data);
       }
     },
@@ -44,20 +44,19 @@ export const useLogin = () => {
 
 export const useRegister = () => {
   const queryClient = useQueryClient();
-  const { login: setAuth } = useAuthStore();
+  const { loginWithUserInfo } = useAuthStore();
 
   return useMutation({
     mutationFn: authAPI.register,
     onSuccess: (data) => {
-      if (data.token) {
-        setAuth({
-          token: data.token,
-          user: {
-            id: data.id,
-            email: data.email,
-            role: data.role,
-          },
-        });
+      // Handle unknown response type from OpenAPI spec
+      if (
+        data &&
+        typeof data === "object" &&
+        "user" in data &&
+        "token" in data
+      ) {
+        loginWithUserInfo(data as { token?: string; user: UserInfoDto });
         queryClient.setQueryData(authKeys.user(), data);
       }
     },
