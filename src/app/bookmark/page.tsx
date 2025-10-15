@@ -2,6 +2,7 @@
 
 import { Bookmark } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,10 +16,13 @@ import { Loading } from "@/components/ui/loading";
 import { useBookmark } from "@/hooks/use-bookmark";
 import { useBookmarks, useToggleBookmark } from "@/hooks/use-bookmark-queries";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/stores/auth";
 
 export default function BookmarkPage() {
   const { setBookmarkedIds } = useBookmark();
   const { toast } = useToast();
+  const router = useRouter();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
 
   // React Query hooks
   const { data: bookmarkData, isLoading } = useBookmarks();
@@ -34,6 +38,17 @@ export default function BookmarkPage() {
       );
     }
   }, [bookmarkData?.data, setBookmarkedIds]);
+
+  useEffect(() => {
+    if (_hasHydrated && !isAuthenticated) {
+      toast({
+        title: "로그인 필요",
+        description: "로그인이 필요한 서비스입니다.",
+        variant: "destructive",
+      });
+      router.replace("/login");
+    }
+  }, [_hasHydrated, isAuthenticated, router, toast]);
 
   const handleToggleBookmark = (e: React.MouseEvent, interviewId: number) => {
     e.preventDefault();
@@ -56,6 +71,10 @@ export default function BookmarkPage() {
     });
   };
 
+  if (!_hasHydrated || isLoading) {
+    return <Loading />;
+  }
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -65,14 +84,12 @@ export default function BookmarkPage() {
             즐겨찾기로 저장한 면접 질문들을 확인하세요.
           </p>
         </div>
-        <Button asChild disabled={isLoading}>
+        <Button asChild>
           <Link href="/interview">질문 검색</Link>
         </Button>
       </div>
 
-      {isLoading ? (
-        <Loading />
-      ) : interviews.length === 0 ? (
+      {interviews.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

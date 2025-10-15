@@ -4,6 +4,7 @@ import {
   type GroupUpdateRequest,
   groupAPI,
 } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth";
 
 // Query Keys
 export const groupKeys = {
@@ -15,17 +16,20 @@ export const groupKeys = {
 
 // Queries
 export const useGroups = () => {
+  const { isAuthenticated } = useAuthStore();
   return useQuery({
     queryKey: groupKeys.lists(),
     queryFn: groupAPI.getAllLegacy,
+    enabled: isAuthenticated,
   });
 };
 
 export const useGroup = (id: string) => {
+  const { isAuthenticated } = useAuthStore();
   return useQuery({
     queryKey: groupKeys.detail(id),
     queryFn: () => groupAPI.getById(id),
-    enabled: !!id,
+    enabled: !!id && isAuthenticated,
   });
 };
 

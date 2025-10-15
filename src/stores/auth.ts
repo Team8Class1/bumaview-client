@@ -74,20 +74,16 @@ export const useAuthStore = create<AuthState>()(
           );
         }
 
-        const userData = {
-          id: data.user.userId,
-          email: data.user.email,
-          role: data.user.role,
-        };
-
-        console.log("loginWithUserInfo called:", { data, userData });
-
         set({
           userInfo: data.user,
           token: data.token || null,
           isAuthenticated: true,
           // Also set legacy user format for backward compatibility
-          user: userData,
+          user: {
+            id: data.user.userId,
+            email: data.user.email,
+            role: data.user.role?.toLowerCase(),
+          },
         });
       },
 
@@ -106,7 +102,7 @@ export const useAuthStore = create<AuthState>()(
             ? {
                 id: userInfo.userId,
                 email: userInfo.email,
-                role: userInfo.role,
+                role: userInfo.role?.toLowerCase(),
               }
             : null,
         }),

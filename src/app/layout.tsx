@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { SessionManager } from "@/components/auth/session-manager";
+import { UserInfoSyncer } from "@/components/auth/user-info-syncer";
 import { Footer, Header } from "@/components/layout";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/lib/providers";
@@ -22,6 +23,7 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <body className={inter.className}>
         <Providers>
+          <UserInfoSyncer />
           <div className="min-h-screen flex flex-col">
             <Header />
             <main className="flex-1 bg-background">

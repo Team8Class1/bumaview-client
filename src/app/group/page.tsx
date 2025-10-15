@@ -2,7 +2,8 @@
 
 import { Folder, Plus } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,6 +31,7 @@ import {
 } from "@/hooks/use-group-queries";
 import { useToast } from "@/hooks/use-toast";
 import type { Group } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth";
 
 export default function GroupPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -38,6 +40,8 @@ export default function GroupPage() {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [groupName, setGroupName] = useState("");
   const { toast } = useToast();
+  const router = useRouter();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
 
   // React Query hooks
   const { data: groupData, isLoading } = useGroups();
@@ -134,6 +138,21 @@ export default function GroupPage() {
     setShowDeleteDialog(true);
   };
 
+  useEffect(() => {
+    if (_hasHydrated && !isAuthenticated) {
+      toast({
+        title: "로그인 필요",
+        description: "로그인이 필요한 서비스입니다.",
+        variant: "destructive",
+      });
+      router.replace("/login");
+    }
+  }, [_hasHydrated, isAuthenticated, router, toast]);
+
+  if (!_hasHydrated || isLoading) {
+    return <Loading />;
+  }
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -143,14 +162,12 @@ export default function GroupPage() {
             면접 질문을 그룹으로 관리하세요.
           </p>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)} disabled={isLoading}>
+        <Button onClick={() => setShowCreateDialog(true)}>
           <Plus className="h-4 w-4 mr-2" />새 그룹
         </Button>
       </div>
 
-      {isLoading ? (
-        <Loading />
-      ) : groups.length === 0 ? (
+      {groups.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Folder className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

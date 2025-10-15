@@ -16,8 +16,31 @@ export const useCheckIdAvailable = (id: string, enabled = true) => {
 export const useCheckEmailAvailable = (email: string, enabled = true) => {
   return useQuery({
     queryKey: ["checkEmail", email],
-    queryFn: () => authAPI.checkEmailAvailable(email),
-    enabled: enabled && email.includes("@"), // 이메일 형식일 때만 검사
+    queryFn: async () => {
+      const response: any = await authAPI.checkEmailAvailable(email);
+      console.log(`Email check response for ${email}:`, response);
+
+      // 서버 응답이 data 프로퍼티로 감싸져 있는지 확인
+      if (response && typeof response.data === 'boolean') {
+        return { available: response.data };
+      }
+      
+      // 직접적인 boolean 응답 처리
+      if (typeof response === 'boolean') {
+        return { available: response };
+      }
+
+      // 호환성을 위해 기존 객체 형식도 확인
+      if (response && typeof response.available === 'boolean') {
+        return response;
+      }
+
+      // 예상치 못한 형식일 경우 기본값 반환 또는 에러 처리
+      console.error("Unexpected email check response format:", response);
+      // 기본적으로는 사용 불가능하다고 처리하여 보안 위험을 줄임
+      return { available: false };
+    },
+    enabled: enabled && email.includes("@") && email.length > 5, // 이메일 형식일 때만 검사
     staleTime: 30000, // 30초간 캐시
     retry: 1,
   });

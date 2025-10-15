@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { groupAPI } from "@/lib/api/group";
+import { useAuthStore } from "@/stores/auth";
 import type { AddGroupList, GroupDto } from "@/types/api";
 
 // Query keys
@@ -13,17 +14,20 @@ export const groupKeys = {
 
 // Queries
 export function useGroups() {
+  const { isAuthenticated } = useAuthStore();
   return useQuery({
     queryKey: groupKeys.lists(),
     queryFn: () => groupAPI.getAll(),
+    enabled: isAuthenticated,
   });
 }
 
 export function useGroupInterviews(groupId: number) {
+  const { isAuthenticated } = useAuthStore();
   return useQuery({
     queryKey: groupKeys.interviews(groupId),
     queryFn: () => groupAPI.getInterviews(groupId),
-    enabled: !!groupId,
+    enabled: !!groupId && isAuthenticated,
   });
 }
 

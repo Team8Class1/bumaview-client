@@ -39,9 +39,6 @@ export function Header() {
   const { user, logout, _hasHydrated } = useAuth();
   const router = useRouter();
 
-  // 디버깅을 위한 콘솔 로그
-  console.log("Header render:", { user, _hasHydrated, isAuthenticated: !!user });
-
   const isActive = (href: string) => {
     if (href === "/") {
       return pathname === href;

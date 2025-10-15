@@ -26,29 +26,29 @@ export interface CompanyUpdateRequest {
 export const companyAPI = {
   // 회사 등록 (OpenAPI 스펙)
   create: (data: CompanyDto): Promise<void> =>
-    api.post("api/company", { json: data }).json(),
+    api.post("company", { json: data }).json(),
 
   // 회사 삭제 (OpenAPI 스펙)
   delete: (companyId: number): Promise<void> =>
-    api.delete(`api/company/${companyId}`).json(),
+    api.delete(`company/${companyId}`).json(),
 
   // 회사 수정 (OpenAPI 스펙)
   modify: (companyId: number, data: CompanyDto): Promise<void> =>
-    api.patch(`api/company/${companyId}`, { json: data }).json(),
+    api.patch(`company/${companyId}`, { json: data }).json(),
 
   // Legacy methods for backward compatibility
   // 모든 회사 조회 (기존 - 스펙에 없음)
-  getAll: (): Promise<CompanyListResponse> => api.get("api/company").json(),
+  getAll: (): Promise<CompanyListResponse> => api.get("company").json(),
 
   // 회사 등록 (기존)
   createLegacy: (data: CompanyCreateRequest): Promise<Company> =>
-    api.post("api/company", { json: data }).json(),
+    api.post("company", { json: data }).json(),
 
   // 회사 수정 (기존)
   update: (companyId: string, data: CompanyUpdateRequest): Promise<void> =>
-    api.patch(`api/company/${companyId}`, { json: data }).json(),
+    api.patch(`company/${companyId}`, { json: data }).json(),
 
   // 회사 삭제 (기존)
   deleteLegacy: (companyId: string): Promise<void> =>
-    api.delete(`api/company/${companyId}`).json(),
+    api.delete(`company/${companyId}`).json(),
 };
