@@ -17,7 +17,7 @@ import { useBookmarks, useToggleBookmark } from "@/hooks/use-bookmark-queries";
 import { useToast } from "@/hooks/use-toast";
 
 export default function BookmarkPage() {
-  const { bookmarkedIds, setBookmarkedIds } = useBookmark();
+  const { setBookmarkedIds } = useBookmark();
   const { toast } = useToast();
 
   // React Query hooks

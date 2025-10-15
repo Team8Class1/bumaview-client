@@ -115,7 +115,7 @@ function AdminCompanyContent() {
   const handleDeleteCompany = () => {
     if (!selectedCompany) return;
 
-    deleteCompanyMutation.mutate(selectedCompany.companyId.toString(), {
+    deleteCompanyMutation.mutate(selectedCompany.companyId, {
       onSuccess: () => {
         toast({
           title: "회사 삭제",

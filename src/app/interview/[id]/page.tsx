@@ -184,7 +184,7 @@ export default function InterviewDetailPage() {
   };
 
   const handleDeleteAnswer = (answerId: number) => {
-    deleteAnswerMutation.mutate(answerId.toString(), {
+    deleteAnswerMutation.mutate(answerId, {
       onSuccess: () => {
         toast({
           title: "삭제 완료",
