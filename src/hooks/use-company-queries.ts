@@ -20,7 +20,7 @@ export const useCreateCompany = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: companyAPI.create,
+    mutationFn: companyAPI.createLegacy,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: companyKeys.list() });
     },
@@ -43,7 +43,11 @@ export const useDeleteCompany = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: companyAPI.delete,
+    mutationFn: (id: string | number) => {
+      // Support both string and number IDs for backward compatibility
+      const numericId = typeof id === "string" ? parseInt(id, 10) : id;
+      return companyAPI.delete(numericId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: companyKeys.list() });
     },

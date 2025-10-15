@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { bookmarkAPI } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth";
 
 // Query Keys
 export const bookmarkKeys = {
@@ -9,9 +10,11 @@ export const bookmarkKeys = {
 
 // Queries
 export const useBookmarks = () => {
+  const { isAuthenticated } = useAuthStore();
   return useQuery({
     queryKey: bookmarkKeys.list(),
-    queryFn: bookmarkAPI.getAll,
+    queryFn: bookmarkAPI.getAllLegacy,
+    enabled: isAuthenticated,
   });
 };
 

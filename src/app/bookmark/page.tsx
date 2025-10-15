@@ -2,6 +2,7 @@
 
 import { Bookmark } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,33 +14,54 @@ import {
 } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import { useBookmark } from "@/hooks/use-bookmark";
-import { useBookmarks, useToggleBookmark } from "@/hooks/use-bookmark-queries";
+import {
+  useBookmarks,
+  useToggleBookmarkMutation,
+} from "@/hooks/use-bookmark-queries-v2";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/stores/auth";
 
 export default function BookmarkPage() {
-  const { bookmarkedIds, setBookmarkedIds } = useBookmark();
+  const { setBookmarkedIds } = useBookmark();
   const { toast } = useToast();
+  const router = useRouter();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
 
   // React Query hooks
-  const { data: bookmarkData, isLoading } = useBookmarks();
-  const toggleBookmarkMutation = useToggleBookmark();
+  const {
+    data: bookmarkData,
+    isLoading,
+    error,
+  } = useBookmarks();
+  const toggleBookmarkMutation = useToggleBookmarkMutation();
 
-  const interviews = bookmarkData?.data || [];
+  const interviews = bookmarkData || [];
 
   // Update bookmarked IDs when data changes
   useEffect(() => {
-    if (bookmarkData?.data) {
+    if (bookmarkData) {
       setBookmarkedIds(
-        new Set(bookmarkData.data.map((item) => item.interviewId)),
+        new Set(bookmarkData.map((item) => item.interviewId)),
       );
     }
-  }, [bookmarkData?.data, setBookmarkedIds]);
+  }, [bookmarkData, setBookmarkedIds]);
+
+  useEffect(() => {
+    if (_hasHydrated && !isAuthenticated) {
+      toast({
+        title: "로그인 필요",
+        description: "로그인이 필요한 서비스입니다.",
+        variant: "destructive",
+      });
+      router.replace("/login");
+    }
+  }, [_hasHydrated, isAuthenticated, router, toast]);
 
   const handleToggleBookmark = (e: React.MouseEvent, interviewId: number) => {
     e.preventDefault();
     e.stopPropagation();
 
-    toggleBookmarkMutation.mutate(interviewId.toString(), {
+    toggleBookmarkMutation.mutate(interviewId, {
       onSuccess: () => {
         toast({
           title: "북마크 해제",
@@ -56,6 +78,10 @@ export default function BookmarkPage() {
     });
   };
 
+  if (!_hasHydrated || isLoading) {
+    return <Loading />;
+  }
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -65,14 +91,12 @@ export default function BookmarkPage() {
             즐겨찾기로 저장한 면접 질문들을 확인하세요.
           </p>
         </div>
-        <Button asChild disabled={isLoading}>
+        <Button asChild>
           <Link href="/interview">질문 검색</Link>
         </Button>
       </div>
 
-      {isLoading ? (
-        <Loading />
-      ) : interviews.length === 0 ? (
+      {interviews.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

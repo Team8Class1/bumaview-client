@@ -1,87 +1,83 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  type GroupAddInterviewsRequest,
-  type GroupUpdateRequest,
-  groupAPI,
-} from "@/lib/api";
+import { groupAPI } from "@/lib/api/group";
 import { useAuthStore } from "@/stores/auth";
+import type { AddGroupList, GroupDto } from "@/types/api";
 
-// Query Keys
+// Query keys
 export const groupKeys = {
-  all: ["groups"] as const,
+  all: ["groups-v2"] as const,
   lists: () => [...groupKeys.all, "list"] as const,
   details: () => [...groupKeys.all, "detail"] as const,
-  detail: (id: string) => [...groupKeys.details(), id] as const,
+  detail: (id: number) => [...groupKeys.details(), id] as const,
+  interviews: (id: number) => [...groupKeys.detail(id), "interviews"] as const,
 };
 
 // Queries
-export const useGroups = () => {
+export function useGroups() {
   const { isAuthenticated } = useAuthStore();
   return useQuery({
     queryKey: groupKeys.lists(),
-    queryFn: groupAPI.getAllLegacy,
+    queryFn: () => groupAPI.getAll(),
     enabled: isAuthenticated,
   });
-};
+}
 
-export const useGroup = (id: string) => {
+export function useGroupInterviews(groupId: number) {
   const { isAuthenticated } = useAuthStore();
   return useQuery({
-    queryKey: groupKeys.detail(id),
-    queryFn: () => groupAPI.getById(id),
-    enabled: !!id && isAuthenticated,
+    queryKey: groupKeys.interviews(groupId),
+    queryFn: () => groupAPI.getInterviews(groupId),
+    enabled: !!groupId && isAuthenticated,
   });
-};
+}
 
 // Mutations
-export const useCreateGroup = () => {
+export function useCreateGroupMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: groupAPI.createLegacy,
+    mutationFn: (data: GroupDto) => groupAPI.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
     },
   });
-};
+}
 
-export const useUpdateGroup = () => {
+export function useUpdateGroupMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: GroupUpdateRequest }) =>
-      groupAPI.updateLegacy(id, data),
+    mutationFn: ({ id, data }: { id: number; data: GroupDto }) =>
+      groupAPI.update(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
     },
   });
-};
+}
 
-export const useDeleteGroup = () => {
+export function useDeleteGroupMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (groupId: string) => groupAPI.deleteLegacy(groupId),
+    mutationFn: (id: number) => groupAPI.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
     },
   });
-};
+}
 
-export const useAddInterviewsToGroup = () => {
+export function useAddInterviewsToGroupMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      groupId,
-      data,
-    }: {
-      groupId: string;
-      data: GroupAddInterviewsRequest;
-    }) => groupAPI.addInterviewsLegacy(groupId, data),
+    mutationFn: ({ groupId, data }: { groupId: number; data: AddGroupList }) =>
+      groupAPI.addInterviews(groupId, data),
     onSuccess: (_, { groupId }) => {
+      queryClient.invalidateQueries({
+        queryKey: groupKeys.interviews(groupId),
+      });
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
     },
   });
-};
+}

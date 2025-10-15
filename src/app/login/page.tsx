@@ -3,8 +3,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,20 +24,20 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { useLogin } from "@/hooks/use-auth-queries";
+import { useLoginMutation } from "@/hooks/use-auth-queries-v2";
 import { useToast } from "@/hooks/use-toast";
-
-const loginSchema = z.object({
-  id: z.string().min(1, { message: "아이디를 입력해주세요." }),
-  password: z.string().min(1, { message: "비밀번호를 입력해주세요." }),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+import {
+  AuthErrorType,
+  classifyError,
+  getFieldError,
+} from "@/lib/error-handling";
+import { type LoginFormValues, loginSchema } from "@/lib/validation/auth";
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const loginMutation = useLogin();
+  const loginMutation = useLoginMutation();
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -47,6 +48,8 @@ export default function LoginPage() {
   });
 
   const onSubmit = (data: LoginFormValues) => {
+    setServerError(null);
+
     loginMutation.mutate(data, {
       onSuccess: () => {
         toast({
@@ -56,14 +59,28 @@ export default function LoginPage() {
         router.push("/");
       },
       onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "로그인 실패",
-          description:
-            error instanceof Error
-              ? error.message
-              : "아이디 또는 비밀번호가 올바르지 않습니다.",
-        });
+        const { type, message } = classifyError(error);
+        const fieldError = getFieldError(type);
+
+        // 특정 필드 에러가 있는 경우 해당 필드에 설정
+        if (fieldError.field && fieldError.message) {
+          form.setError(fieldError.field as keyof LoginFormValues, {
+            type: "server",
+            message: fieldError.message,
+          });
+        } else {
+          // 일반적인 서버 에러는 폼 상단에 표시
+          setServerError(message);
+        }
+
+        // Rate limit 에러는 토스트로도 표시
+        if (type === AuthErrorType.RATE_LIMITED) {
+          toast({
+            variant: "destructive",
+            title: "요청 제한",
+            description: message,
+          });
+        }
       },
     });
   };
@@ -78,6 +95,12 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {serverError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{serverError}</AlertDescription>
+            </Alert>
+          )}
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -91,6 +114,7 @@ export default function LoginPage() {
                         placeholder="아이디를 입력하세요"
                         {...field}
                         disabled={loginMutation.isPending}
+                        autoComplete="username"
                       />
                     </FormControl>
                     <FormMessage />
@@ -108,12 +132,24 @@ export default function LoginPage() {
                         placeholder="비밀번호를 입력하세요"
                         {...field}
                         disabled={loginMutation.isPending}
+                        autoComplete="current-password"
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* 비밀번호 재설정 링크 */}
+              <div className="text-right">
+                <Link
+                  href="/reset-password"
+                  className="text-sm text-muted-foreground hover:text-primary hover:underline"
+                >
+                  비밀번호를 잊으셨나요?
+                </Link>
+              </div>
+
               <Button
                 type="submit"
                 className="w-full"

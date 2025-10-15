@@ -3,7 +3,7 @@
 import { Bookmark, MessageSquare, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,6 +27,7 @@ import { useAddInterviewsToGroup, useGroup } from "@/hooks/use-group-queries";
 import { useInterviews } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
 import type { InterviewItem } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth";
 
 export default function GroupDetailPage() {
   const params = useParams();
@@ -41,6 +42,7 @@ export default function GroupDetailPage() {
     [],
   );
   const { bookmarkedIds, handleToggleBookmark } = useBookmark();
+  const { isAuthenticated, _hasHydrated } = useAuthStore();
 
   // React Query hooks
   const { data: group, isLoading } = useGroup(params.id as string);
@@ -100,6 +102,21 @@ export default function GroupDetailPage() {
     interview.question.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  useEffect(() => {
+    if (_hasHydrated && !isAuthenticated) {
+      toast({
+        title: "로그인 필요",
+        description: "로그인이 필요한 서비스입니다.",
+        variant: "destructive",
+      });
+      router.replace("/login");
+    }
+  }, [_hasHydrated, isAuthenticated, router, toast]);
+
+  if (!_hasHydrated || isLoading) {
+    return <Loading />;
+  }
+
   return (
     <>
       <div className="flex items-center justify-between mb-6">
@@ -107,29 +124,26 @@ export default function GroupDetailPage() {
           <Button
             variant="outline"
             onClick={() => router.back()}
-            disabled={isLoading}
           >
             ← 돌아가기
           </Button>
           <h1 className="text-3xl font-bold mt-4">
-            {isLoading ? "로딩 중..." : group?.name}
+            {group?.name}
           </h1>
           <p className="text-muted-foreground mt-2">
-            {isLoading ? " " : `${group?.interviews.length}개의 질문`}
+            {`${group?.interviews.length}개의 질문`}
           </p>
         </div>
         <Button
           onClick={openAddDialog}
-          disabled={isLoading || !group || !allInterviewsData}
+          disabled={!group || !allInterviewsData}
         >
           <Plus className="h-4 w-4 mr-2" />
           질문 추가
         </Button>
       </div>
 
-      {isLoading ? (
-        <Loading />
-      ) : !group ? (
+      {!group ? (
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">그룹을 찾을 수 없습니다.</p>

@@ -1,40 +1,41 @@
 import { api } from "@/lib/http-client";
-
-// Types
-export interface LoginRequest {
-  id: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  email: string;
-  id: string;
-  password: string;
-  interest: string[];
-}
-
-export interface AuthResponse {
-  id: string;
-  email?: string;
-  role?: string;
-  token?: string;
-}
+import type {
+  JoinDto,
+  LoginRequestDto,
+  LoginResponse,
+  UserInfoDto,
+} from "@/types/api";
 
 // API Functions
 export const authAPI = {
   // 로그인
-  login: (data: LoginRequest): Promise<AuthResponse> => {
-    const params = new URLSearchParams({
-      id: data.id,
-      password: data.password,
-    });
-    return api.get(`api/user/login?${params.toString()}`).json();
+  login: (data: LoginRequestDto): Promise<LoginResponse> => {
+    return api.post("user/login", { json: data }).json();
   },
 
   // 회원가입
-  register: (data: RegisterRequest): Promise<AuthResponse> =>
-    api.post("api/user/register", { json: data }).json(),
+  register: (data: JoinDto): Promise<string> =>
+    api.post("user/register", { json: data }).json(),
 
   // 유저 정보 조회
-  getUser: (): Promise<AuthResponse> => api.get("api/user").json(),
+  getUser: (): Promise<UserInfoDto> => api.get("user").json(),
+
+  // 아이디 중복 검사
+  checkIdAvailable: (id: string): Promise<{ available: boolean }> =>
+    api.get(`user/check-id/${encodeURIComponent(id)}`).json(),
+
+  // 이메일 중복 검사
+  checkEmailAvailable: (email: string): Promise<{ available: boolean }> =>
+    api.get(`user/check-email/${encodeURIComponent(email)}`).json(),
+
+  // 비밀번호 재설정 요청
+  requestPasswordReset: (email: string): Promise<{ message: string }> =>
+    api.post("user/reset-password", { json: { email } }).json(),
+
+  // 비밀번호 변경
+  changePassword: (data: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<{ message: string }> =>
+    api.patch("user/password", { json: data }).json(),
 };
