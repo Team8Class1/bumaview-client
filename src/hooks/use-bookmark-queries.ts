@@ -11,7 +11,7 @@ export const bookmarkKeys = {
 export const useBookmarks = () => {
   return useQuery({
     queryKey: bookmarkKeys.list(),
-    queryFn: bookmarkAPI.getAll,
+    queryFn: bookmarkAPI.getAllLegacy,
   });
 };
 

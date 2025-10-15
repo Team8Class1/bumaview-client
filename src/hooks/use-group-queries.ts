@@ -17,7 +17,7 @@ export const groupKeys = {
 export const useGroups = () => {
   return useQuery({
     queryKey: groupKeys.lists(),
-    queryFn: groupAPI.getAll,
+    queryFn: groupAPI.getAllLegacy,
   });
 };
 
@@ -34,7 +34,7 @@ export const useCreateGroup = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: groupAPI.create,
+    mutationFn: groupAPI.createLegacy,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
     },
@@ -46,7 +46,7 @@ export const useUpdateGroup = () => {
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: GroupUpdateRequest }) =>
-      groupAPI.update(id, data),
+      groupAPI.updateLegacy(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
@@ -58,7 +58,7 @@ export const useDeleteGroup = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (groupId: string) => groupAPI.delete(groupId),
+    mutationFn: (groupId: string) => groupAPI.deleteLegacy(groupId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
     },
@@ -75,7 +75,7 @@ export const useAddInterviewsToGroup = () => {
     }: {
       groupId: string;
       data: GroupAddInterviewsRequest;
-    }) => groupAPI.addInterviews(groupId, data),
+    }) => groupAPI.addInterviewsLegacy(groupId, data),
     onSuccess: (_, { groupId }) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
     },

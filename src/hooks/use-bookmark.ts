@@ -38,7 +38,7 @@ export function useBookmark() {
       // 에러 시 롤백 및 최신 북마크 목록 재조회
       setBookmarkedIds(prevBookmarkedIds);
       try {
-        const bookmarkResponse = await bookmarkAPI.getAll();
+        const bookmarkResponse = await bookmarkAPI.getAllLegacy();
         setBookmarkedIds(
           new Set(bookmarkResponse.data.map((item) => item.interviewId)),
         );

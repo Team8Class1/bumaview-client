@@ -51,7 +51,12 @@ export const useDeleteAnswer = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: answerAPI.delete,
+    mutationFn: (answerId: string | number) => {
+      // Support both string and number IDs for backward compatibility
+      const numericId =
+        typeof answerId === "string" ? parseInt(answerId, 10) : answerId;
+      return answerAPI.delete(numericId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: interviewKeys.details() });
     },
@@ -62,7 +67,12 @@ export const useLikeAnswer = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: answerAPI.like,
+    mutationFn: (answerId: string | number) => {
+      // Support both string and number IDs for backward compatibility
+      const numericId =
+        typeof answerId === "string" ? parseInt(answerId, 10) : answerId;
+      return answerAPI.like(numericId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: interviewKeys.details() });
     },
