@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -37,7 +35,6 @@ import {
   useInterviewCreateData,
 } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
-import { AddCompanyDialog } from "@/components/interview/add-company-dialog";
 import { useTrimQuestionMutation } from "@/hooks/use-gemini-queries";
 
 const formSchema = z.object({
@@ -63,7 +60,6 @@ export default function InterviewCreatePage() {
     },
   });
   const { toast } = useToast();
-  const [isAddCompanyOpen, setIsAddCompanyOpen] = useState(false);
 
   const { data: createData } = useInterviewCreateData();
   const createInterviewMutation = useCreateInterviewMutation();
@@ -246,15 +242,6 @@ export default function InterviewCreatePage() {
                 </FormItem>
               )}
             />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsAddCompanyOpen(true)}
-              className="mt-2"
-            >
-              새 회사 추가
-            </Button>
             <FormField
               control={form.control}
               name="questionAt"
@@ -298,15 +285,6 @@ export default function InterviewCreatePage() {
             </div>
           </form>
         </Form>
-        <AddCompanyDialog
-          open={isAddCompanyOpen}
-          onOpenChange={setIsAddCompanyOpen}
-          onCompanyAdded={(newCompany) => {
-            form.setValue("companyId", newCompany.companyId, {
-              shouldValidate: true,
-            });
-          }}
-        />
       </CardContent>
     </Card>
   );

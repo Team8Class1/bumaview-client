@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -38,7 +37,6 @@ import {
   useUpdateInterviewMutation,
 } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
-import { AddCompanyDialog } from "@/components/interview/add-company-dialog";
 
 const formSchema = z.object({
   question: z.string().min(1, "질문을 입력해주세요."),
@@ -52,8 +50,6 @@ export default function InterviewEditPage() {
   const id = params.id as string;
   const router = useRouter();
   const { toast } = useToast();
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [isAddCompanyOpen, setIsAddCompanyOpen] = useState(false);
 
   // React Query hooks
   const { data: interview, isLoading: isLoadingInterview } = useInterview(
@@ -250,15 +246,6 @@ export default function InterviewEditPage() {
                     </FormItem>
                   )}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsAddCompanyOpen(true)}
-                  className="mt-2"
-                >
-                  새 회사 추가
-                </Button>
 
                 <FormField
                   control={form.control}
@@ -303,15 +290,6 @@ export default function InterviewEditPage() {
                 </div>
               </form>
             </Form>
-            <AddCompanyDialog
-              open={isAddCompanyOpen}
-              onOpenChange={setIsAddCompanyOpen}
-              onCompanyAdded={(newCompany) => {
-                form.setValue("companyId", newCompany.companyId, {
-                  shouldValidate: true,
-                });
-              }}
-            />
           </CardContent>
         </Card>
       )}
