@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Filter, FolderPlus, MessageSquare, X } from "lucide-react";
+import { Bookmark, Filter, FolderPlus, MessageSquare, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { useBookmarks } from "@/hooks/use-bookmark-queries";
 import { BookmarkButton } from "@/components/bookmark/bookmark-button";
+import { UploadModal } from "@/components/interview/upload-modal";
 import {
   useAddInterviewsToGroupMutation,
   useGroups,
@@ -45,6 +46,7 @@ export default function InterviewPage() {
   const router = useRouter();
   const [filters, setFilters] = useState<InterviewFilterParams>({});
   const [showGroupDialog, setShowGroupDialog] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedInterviewForGroup, setSelectedInterviewForGroup] =
     useState<InterviewItem | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
@@ -145,9 +147,18 @@ export default function InterviewPage() {
             원하는 조건으로 면접 질문을 검색하세요.
           </p>
         </div>
-        <Button asChild>
-          <Link href="/interview/create">질문 등록</Link>
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={() => setShowUploadModal(true)}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            파일 업로드
+          </Button>
+          <Button asChild>
+            <Link href="/interview/create">질문 등록</Link>
+          </Button>
+        </div>
       </div>
 
       {/* 필터 */}
@@ -415,6 +426,12 @@ export default function InterviewPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 파일 업로드 모달 */}
+      <UploadModal
+        open={showUploadModal}
+        onOpenChange={setShowUploadModal}
+      />
     </>
   );
 }

@@ -65,9 +65,19 @@ export function useUploadInterviewFileMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: FileUploadRequest) => interviewAPI.uploadFromFile(data),
+    // 임시로 uploadFromFile 함수 사용해보기
+    mutationFn: (data: FileUploadRequest) => {
+      console.log("🔄 uploadFromFile 함수 사용 시도");
+      return interviewAPI.uploadFromFile(data);
+    },
     onSuccess: () => {
+      console.log("🎉 파일 업로드 성공, 캐시 무효화");
       queryClient.invalidateQueries({ queryKey: interviewKeys.lists() });
+    },
+    onError: (error) => {
+      console.error("❌ 파일 업로드 뮤테이션 실패:", error);
+      console.log("🔄 uploadFile 함수로 다시 시도");
+      // 실패 시 원래 함수로 재시도는 여기서 할 수 없으므로 로그만
     },
   });
 }

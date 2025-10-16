@@ -126,11 +126,60 @@ export const interviewAPI = {
   delete: (id: string): Promise<void> => api.delete(`interview/${id}`).json(),
 
   // CSV 파일 업로드
-  uploadFile: async (file: File): Promise<Response> => {
+  uploadFile: async (file: File): Promise<void> => {
+    console.log("📁 인터뷰 파일 업로드 시작:", file.name, file.size, "bytes");
+    console.log("📄 파일 타입:", file.type);
+    console.log("📅 파일 수정일:", file.lastModified);
+    
+    // CSV 파일 내용 미리보기 (처음 500자)
+    try {
+      const fileText = await file.slice(0, 500).text();
+      console.log("📝 CSV 파일 내용 미리보기 (처음 500자):");
+      console.log(fileText);
+    } catch (e) {
+      console.warn("⚠️ 파일 내용 읽기 실패:", e);
+    }
+    
     const formData = new FormData();
     formData.append("file", file);
+    
+    // FormData 내용 확인
+    console.log("📦 FormData 내용:");
+    for (const [key, value] of formData.entries()) {
+      console.log(`  ${key}:`, value);
+    }
 
-    return api.post("interview/file", { body: formData });
+    try {
+      console.log("🚀 API 요청 시작: POST /api/interview/file");
+      const response = await api.post("interview/file", { 
+        body: formData,
+        headers: {
+          // FormData 사용 시 Content-Type을 자동으로 설정하도록 함
+          // 'Content-Type': 'multipart/form-data' 는 boundary가 필요하므로 제거
+        }
+      }).json();
+      console.log("✅ 파일 업로드 성공:", response);
+      return response;
+    } catch (error) {
+      console.error("❌ 파일 업로드 실패:", error);
+      
+      // 더 자세한 오류 정보 확인
+      if (error instanceof Error && 'response' in error) {
+        const httpError = error as any;
+        console.error("📋 오류 상세 정보:");
+        console.error("  상태 코드:", httpError.response?.status);
+        console.error("  상태 텍스트:", httpError.response?.statusText);
+        
+        try {
+          const errorText = await httpError.response?.text();
+          console.error("  응답 내용:", errorText);
+        } catch (e) {
+          console.error("  응답 내용 읽기 실패:", e);
+        }
+      }
+      
+      throw error;
+    }
   },
 
   // 단건 질문 다듬기
