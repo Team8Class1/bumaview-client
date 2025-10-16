@@ -43,44 +43,27 @@ export const api = ky.create({
         // }
       },
     ],
-    afterResponse: [
-      async (_request, _options, response) => {
-        // 401 응답시 로그아웃 처리
-        if (response.status === 401) {
-          console.log("인증 실패 - 로그아웃 처리");
-          useAuthStore.getState().logout();
+    afterResponse: async (request, options, response) => {
+      if (!response.ok) {
+        let errorMessage = "요청이 실패했습니다";
+        const contentType = response.headers.get("Content-Type");
+
+        try {
+          if (contentType?.includes("application/json")) {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorData.error || "JSON 오류 발생";
+          } else {
+            const text = await response.text();
+            errorMessage = text || `HTTP ${response.status}: ${response.statusText}`; // 빈 응답 시 기본 메시지
+          }
+        } catch (e) {
+          errorMessage = `응답 파싱 오류: ${e.message}`;
         }
 
-        if (!response.ok) {
-          let errorMessage = "요청이 실패했습니다";
-          try {
-            const errorText = await response.text();
-            try {
-              const errorJson = JSON.parse(errorText);
-              if (
-                errorJson &&
-                typeof errorJson === "object" &&
-                "message" in errorJson &&
-                typeof errorJson.message === "string"
-              ) {
-                errorMessage = errorJson.message;
-              } else {
-                errorMessage = errorText;
-              }
-            } catch {
-              // Not a JSON, so the text is the error message
-              errorMessage = errorText;
-            }
-          } catch {
-            // Could not read the response body
-          }
-          throw new ApiError(
-            response.status,
-            errorMessage.trim() || "요청이 실패했습니다",
-          );
-        }
-      },
-    ],
+        throw new ApiError(errorMessage, response.status);
+      }
+      return response;
+    },
   },
 });
 

@@ -1,10 +1,8 @@
 "use client";
 
-import { Bookmark } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -13,33 +11,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
-import { useBookmark } from "@/hooks/use-bookmark";
-import {
-  useBookmarks,
-  useToggleBookmarkMutation,
-} from "@/hooks/use-bookmark-queries";
+import { BookmarkButton } from "@/components/bookmark/bookmark-button";
+import { useBookmarks } from "@/hooks/use-bookmark-queries";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/auth";
+import type { AllInterviewDto } from "@/types/api";
 
 export default function BookmarkPage() {
-  const { setBookmarkedIds } = useBookmark();
   const { toast } = useToast();
   const router = useRouter();
   const { isAuthenticated, _hasHydrated } = useAuthStore();
 
   // React Query hooks
-  const { data: bookmarkData, isLoading } = useBookmarks();
-  const toggleBookmarkMutation = useToggleBookmarkMutation();
+  const { data: bookmarks, isLoading, isError, error } = useBookmarks();
 
-  const interviews = bookmarkData || [];
-
-  // Update bookmarked IDs when data changes
-  useEffect(() => {
-    if (bookmarkData) {
-      setBookmarkedIds(new Set(bookmarkData.map((item) => item.interviewId)));
-    }
-  }, [bookmarkData, setBookmarkedIds]);
-
+  // 인증 체크
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) {
       toast({
@@ -51,120 +37,109 @@ export default function BookmarkPage() {
     }
   }, [_hasHydrated, isAuthenticated, router, toast]);
 
-  const handleToggleBookmark = (e: React.MouseEvent, interviewId: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    toggleBookmarkMutation.mutate(interviewId, {
-      onSuccess: () => {
-        toast({
-          title: "북마크 해제",
-          description: "북마크가 해제되었습니다.",
-        });
-      },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          title: "북마크 해제 실패",
-          description: "북마크 해제에 실패했습니다.",
-        });
-      },
-    });
-  };
-
+  // 로딩 상태
   if (!_hasHydrated || isLoading) {
     return <Loading />;
   }
 
-  return (
-    <>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">즐겨찾기</h1>
-          <p className="text-muted-foreground mt-2">
-            즐겨찾기로 저장한 면접 질문들을 확인하세요.
+  // 오류 상태
+  if (isError) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">북마크 로딩 실패</h1>
+          <p className="text-muted-foreground mb-4">
+            {error?.message || "북마크 목록을 불러오지 못했습니다."}
           </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="text-primary hover:underline"
+          >
+            다시 시도
+          </button>
         </div>
-        <Button asChild>
-          <Link href="/interview">질문 검색</Link>
-        </Button>
+      </div>
+    );
+  }
+
+  const interviews: AllInterviewDto[] = bookmarks || [];
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">북마크</h1>
+        <p className="text-muted-foreground">
+          총 {interviews.length}개의 북마크
+        </p>
       </div>
 
       {interviews.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">북마크한 질문이 없습니다.</p>
-            <Button asChild className="mt-4">
-              <Link href="/interview">질문 검색하기</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">📚</div>
+          <h2 className="text-xl font-semibold mb-2">북마크가 없습니다</h2>
+          <p className="text-muted-foreground mb-6">
+            관심 있는 면접 질문을 북마크해보세요.
+          </p>
+          <Link 
+            href="/interview" 
+            className="text-primary hover:underline font-medium"
+          >
+            면접 질문 둘러보기 →
+          </Link>
+        </div>
       ) : (
         <div className="space-y-4">
           {interviews.map((interview) => (
             <Card
               key={interview.interviewId}
-              className="hover:shadow-md transition-shadow"
+              className="hover:shadow-md transition-shadow relative"
             >
-              <Link href={`/interview/${interview.interviewId}`}>
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 pr-4">
+                    <CardTitle className="text-lg leading-relaxed">
+                      <Link 
+                        href={`/interview/${interview.interviewId}`}
+                        className="hover:text-primary transition-colors"
+                      >
                         {interview.question}
-                      </CardTitle>
-                      <CardDescription className="mt-2 flex flex-wrap gap-2">
-                        {interview.categoryList.map((cat) => (
-                          <span
-                            key={cat.categoryId}
-                            className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
-                          >
-                            {cat.categoryName}
-                          </span>
-                        ))}
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) =>
-                        handleToggleBookmark(e, interview.interviewId)
-                      }
-                      className="shrink-0"
-                      aria-label="북마크 해제"
-                    >
-                      <Bookmark className="h-5 w-5 fill-current" />
-                    </Button>
+                      </Link>
+                    </CardTitle>
+                    <CardDescription className="mt-2 flex flex-wrap gap-2">
+                      {interview.categoryList.map((cat) => (
+                        <span
+                          key={cat.categoryId}
+                          className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
+                        >
+                          {cat.categoryName}
+                        </span>
+                      ))}
+                    </CardDescription>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    {interview.companyName && (
-                      <span className="font-medium text-foreground">
-                        {interview.companyName}
-                      </span>
-                    )}
-                    <span>
-                      {new Date(interview.questionAt).toLocaleDateString("ko-KR", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </span>
-                  </div>
-                </CardContent>
-              </Link>
+                  
+                  <BookmarkButton 
+                    interviewId={interview.interviewId}
+                    className="shrink-0"
+                  />
+                </div>
+              </CardHeader>
+              
+              <CardContent className="pt-0">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>{interview.companyName}</span>
+                  <span>
+                    {new Date(interview.questionAt).toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </span>
+                </div>
+              </CardContent>
             </Card>
           ))}
         </div>
       )}
-
-      {interviews.length > 0 && (
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          총 {interviews.length}개의 북마크
-        </div>
-      )}
-    </>
+    </div>
   );
 }

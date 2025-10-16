@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useBookmark } from "@/hooks/use-bookmark";
+import { BookmarkButton } from "@/components/bookmark/bookmark-button";
 import {
   useAddInterviewsToGroupMutation,
   useGroups,
@@ -39,7 +39,7 @@ import type { InterviewItem } from "@/lib/api";
 
 export default function InterviewAllPage() {
   const router = useRouter();
-  const { bookmarkedIds, handleToggleBookmark } = useBookmark();
+  // 북마크 기능은 BookmarkButton 컴포넌트에서 처리
   const [showGroupDialog, setShowGroupDialog] = useState(false);
   const [selectedInterviewForGroup, setSelectedInterviewForGroup] =
     useState<InterviewItem | null>(null);
@@ -147,27 +147,10 @@ export default function InterviewAllPage() {
                       </CardDescription>
                     </div>
                     <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) =>
-                          handleToggleBookmark(e, interview.interviewId)
-                        }
+                      <BookmarkButton 
+                        interviewId={interview.interviewId}
                         className="shrink-0"
-                        aria-label={
-                          bookmarkedIds.has(interview.interviewId)
-                            ? "북마크 해제"
-                            : "북마크 추가"
-                        }
-                      >
-                        <Bookmark
-                          className={`h-5 w-5 ${
-                            bookmarkedIds.has(interview.interviewId)
-                              ? "fill-current"
-                              : ""
-                          }`}
-                        />
-                      </Button>
+                      />
                       <Button
                         variant="ghost"
                         size="icon"

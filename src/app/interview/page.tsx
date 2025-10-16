@@ -27,8 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useBookmark } from "@/hooks/use-bookmark";
 import { useBookmarks } from "@/hooks/use-bookmark-queries";
+import { BookmarkButton } from "@/components/bookmark/bookmark-button";
 import {
   useAddInterviewsToGroupMutation,
   useGroups,
@@ -44,8 +44,6 @@ import type { InterviewSearchParams } from "@/types/api";
 export default function InterviewPage() {
   const router = useRouter();
   const [filters, setFilters] = useState<InterviewFilterParams>({});
-  const { bookmarkedIds, setBookmarkedIds, handleToggleBookmark } =
-    useBookmark();
   const [showGroupDialog, setShowGroupDialog] = useState(false);
   const [selectedInterviewForGroup, setSelectedInterviewForGroup] =
     useState<InterviewItem | null>(null);
@@ -70,12 +68,7 @@ export default function InterviewPage() {
   const categories = createData?.categoryList || [];
   const groups = groupData?.data || [];
 
-  // Update bookmarked IDs when bookmark data changes
-  useEffect(() => {
-    if (bookmarkData?.data) {
-      setBookmarkedIds(new Set(bookmarkData.data.map((item) => item.interviewId)));
-    }
-  }, [bookmarkData, setBookmarkedIds]);
+  // 북마크 데이터는 새로운 훅에서 자동으로 관리됨
 
   const openGroupDialog = (e: React.MouseEvent, interview: InterviewItem) => {
     e.preventDefault();
@@ -308,27 +301,10 @@ export default function InterviewPage() {
                       </CardDescription>
                     </div>
                     <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) =>
-                          handleToggleBookmark(e, interview.interviewId)
-                        }
+                      <BookmarkButton 
+                        interviewId={interview.interviewId}
                         className="shrink-0"
-                        aria-label={
-                          bookmarkedIds.has(interview.interviewId)
-                            ? "북마크 해제"
-                            : "북마크 추가"
-                        }
-                      >
-                        <Bookmark
-                          className={`h-5 w-5 ${
-                            bookmarkedIds.has(interview.interviewId)
-                              ? "fill-current"
-                              : ""
-                          }`}
-                        />
-                      </Button>
+                      />
                       <Button
                         variant="ghost"
                         size="icon"

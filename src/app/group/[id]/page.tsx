@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
-import { useBookmark } from "@/hooks/use-bookmark";
+import { BookmarkButton } from "@/components/bookmark/bookmark-button";
 import {
   useAddInterviewsToGroupMutation,
   useGroup,
@@ -45,7 +45,7 @@ export default function GroupDetailPage() {
   const [selectedInterviewIds, setSelectedInterviewIds] = useState<number[]>(
     [],
   );
-  const { bookmarkedIds, handleToggleBookmark } = useBookmark();
+  // 북마크 기능은 BookmarkButton 컴포넌트에서 처리
   const { isAuthenticated, _hasHydrated } = useAuthStore();
 
   // React Query hooks
@@ -193,27 +193,10 @@ export default function GroupDetailPage() {
                         ))}
                       </CardDescription>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) =>
-                        handleToggleBookmark(e, interview.interviewId)
-                      }
+                    <BookmarkButton 
+                      interviewId={interview.interviewId}
                       className="shrink-0"
-                      aria-label={
-                        bookmarkedIds.has(interview.interviewId)
-                          ? "북마크 해제"
-                          : "북마크 추가"
-                      }
-                    >
-                      <Bookmark
-                        className={`h-5 w-5 ${
-                          bookmarkedIds.has(interview.interviewId)
-                            ? "fill-current"
-                            : ""
-                        }`}
-                      />
-                    </Button>
+                    />
                   </div>
                 </CardHeader>
                 <CardContent>
