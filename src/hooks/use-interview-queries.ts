@@ -31,7 +31,6 @@ export function useInterviewSearch(params: InterviewSearchParams) {
   return useQuery({
     queryKey: interviewKeys.list(params),
     queryFn: () => interviewAPI.searchByParams(params),
-    enabled: Object.keys(params).length > 0,
   });
 }
 
