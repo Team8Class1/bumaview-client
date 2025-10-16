@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -37,6 +38,7 @@ import {
 } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
 import { AddCompanyDialog } from "@/components/interview/add-company-dialog";
+import { useTrimQuestionMutation } from "@/hooks/use-gemini-queries";
 
 const formSchema = z.object({
   question: z
@@ -65,6 +67,7 @@ export default function InterviewCreatePage() {
 
   const { data: createData } = useInterviewCreateData();
   const createInterviewMutation = useCreateInterviewMutation();
+  const trimQuestionMutation = useTrimQuestionMutation();
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     createInterviewMutation.mutate(
@@ -97,6 +100,25 @@ export default function InterviewCreatePage() {
     );
   }
 
+  const handleTrimQuestion = () => {
+    const currentQuestion = form.getValues("question");
+    
+    if (!currentQuestion.trim()) {
+      toast({
+        variant: "destructive",
+        title: "질문을 입력해주세요",
+        description: "다듬을 질문을 먼저 입력해주세요.",
+      });
+      return;
+    }
+
+    trimQuestionMutation.mutate(currentQuestion, {
+      onSuccess: (trimmedQuestion) => {
+        form.setValue("question", trimmedQuestion, { shouldValidate: true });
+      },
+    });
+  };
+
   if (!createData) {
     return (
       <div className="container max-w-4xl py-8">
@@ -127,7 +149,20 @@ export default function InterviewCreatePage() {
               name="question"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>질문</FormLabel>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>질문</FormLabel>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleTrimQuestion}
+                      disabled={isLoading || trimQuestionMutation.isPending || !field.value?.trim()}
+                      className="h-8"
+                    >
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      {trimQuestionMutation.isPending ? "AI 다듬는 중..." : "AI로 다듬기"}
+                    </Button>
+                  </div>
                   <FormControl>
                     <textarea
                       placeholder="면접 질문을 입력하세요"
@@ -137,7 +172,7 @@ export default function InterviewCreatePage() {
                     />
                   </FormControl>
                   <FormDescription>
-                    실제 면접에서 받은 질문을 입력해주세요.
+                    실제 면접에서 받은 질문을 입력해주세요. AI로 다듬기 버튼을 눌러 질문을 개선할 수 있습니다.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
