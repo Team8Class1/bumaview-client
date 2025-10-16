@@ -66,25 +66,21 @@ export default function InterviewEditPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
-    defaultValues: {
-      question: "",
-      categoryId: undefined,
-      companyId: undefined,
-      questionAt: "",
-    },
+    // Use `values` instead of `defaultValues` to handle async data
+    values: interview
+      ? {
+          question: interview.question,
+          categoryId: interview.categoryList[0]?.categoryId,
+          companyId: interview.companyId,
+          questionAt: interview.questionAt.substring(0, 10),
+        }
+      : {
+          question: "",
+          categoryId: undefined,
+          companyId: undefined,
+          questionAt: "",
+        },
   });
-
-  // 인터뷰 데이터 로드 시 폼에 설정
-  useEffect(() => {
-    if (interview) {
-      form.reset({
-        question: interview.question,
-        categoryId: interview.categoryList[0]?.categoryId,
-        companyId: interview.companyId,
-        questionAt: interview.questionAt,
-      });
-    }
-  }, [interview, form]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     updateInterviewMutation.mutate(
@@ -223,9 +219,7 @@ export default function InterviewEditPage() {
                     <FormItem>
                       <FormLabel>회사명</FormLabel>
                       <Select
-                        onValueChange={(value) =>
-                          field.onChange(value ? Number(value) : null)
-                        }
+                        onValueChange={(value) => field.onChange(Number(value))}
                         value={field.value?.toString()}
                       >
                         <FormControl>
