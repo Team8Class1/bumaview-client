@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Building2, MessageSquare, Users, UserCheck } from "lucide-react";
+import { Bookmark, Building2, MessageSquare, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -32,12 +32,6 @@ const navigation = [
     icon: Building2,
     role: ["admin"],
   },
-  {
-    name: "유저 관리",
-    href: "/admin/users",
-    icon: UserCheck,
-    role: ["admin"],
-  },
 ];
 
 export function Header() {
@@ -55,7 +49,16 @@ export function Header() {
   const canAccess = (roles: string[]) => {
     // 로그인하지 않았어도 basic 권한 메뉴는 보이게 함
     if (!user) return roles.includes("basic");
-    return roles.includes(user.role || "basic");
+    
+    const userRole = user.role || "basic";
+    
+    // ADMIN은 모든 권한을 가짐 (basic + admin) - 대소문자 구분 없이
+    if (userRole.toLowerCase() === "admin") {
+      return true;
+    }
+    
+    // 그 외에는 정확한 역할만 체크
+    return roles.includes(userRole);
   };
 
   const handleLogout = async () => {
@@ -107,7 +110,7 @@ export function Header() {
             <>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">{user.id}</span>
-                {user.role === "admin" && (
+                {user.role?.toLowerCase() === "admin" && (
                   <span className="px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-full">
                     관리자
                   </span>

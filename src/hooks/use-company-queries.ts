@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { companyAPI } from "@/lib/api/company";
 import { useAuthStore } from "@/stores/auth";
 import { useToast } from "@/hooks/use-toast";
+import { interviewKeys } from "@/hooks/use-interview-queries";
 import type { CompanyDto, CompanyWithId, Data } from "@/types/api";
 
 // Query keys
@@ -12,24 +13,8 @@ export const companyKeys = {
   detail: (id: number) => [...companyKeys.details(), id] as const,
 };
 
-// Queries
-export function useCompanies() {
-  const { isAuthenticated } = useAuthStore();
-  return useQuery<Data<CompanyWithId[]>>({
-    queryKey: companyKeys.lists(),
-    queryFn: () => companyAPI.getAll(),
-    enabled: isAuthenticated,
-  });
-}
-
-export function useCompany(companyId: number) {
-  const { isAuthenticated } = useAuthStore();
-  return useQuery<Data<CompanyWithId>>({
-    queryKey: companyKeys.detail(companyId),
-    queryFn: () => companyAPI.getById(companyId),
-    enabled: !!companyId && isAuthenticated,
-  });
-}
+// 회사 목록은 useInterviewCreateData()에서 가져옴
+// 별도의 회사 조회 API가 없음
 
 // Mutations
 export function useCreateCompanyMutation() {
@@ -40,6 +25,7 @@ export function useCreateCompanyMutation() {
     mutationFn: (data: CompanyDto) => companyAPI.create(data),
     onSuccess: (newCompany) => {
       queryClient.invalidateQueries({ queryKey: companyKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: interviewKeys.createData() });
       toast({
         title: "회사 추가 완료",
         description: `${newCompany.companyName} 회사가 추가되었습니다.`,
@@ -67,6 +53,7 @@ export function useUpdateCompanyMutation() {
     onSuccess: (_, { companyId }) => {
       queryClient.invalidateQueries({ queryKey: companyKeys.lists() });
       queryClient.invalidateQueries({ queryKey: companyKeys.detail(companyId) });
+      queryClient.invalidateQueries({ queryKey: interviewKeys.createData() });
       toast({
         title: "회사 수정 완료",
         description: "회사 정보가 성공적으로 수정되었습니다.",
@@ -92,6 +79,7 @@ export function useDeleteCompanyMutation() {
     mutationFn: (companyId: number) => companyAPI.delete(companyId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: companyKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: interviewKeys.createData() });
       toast({
         title: "회사 삭제 완료",
         description: "회사가 성공적으로 삭제되었습니다.",

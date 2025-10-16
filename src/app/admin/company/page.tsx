@@ -32,11 +32,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { RequireAdmin } from "@/components/auth/require-admin";
 import {
-  useCompanies,
   useCreateCompanyMutation,
   useUpdateCompanyMutation,
   useDeleteCompanyMutation,
 } from "@/hooks/use-company-queries";
+import { useInterviewCreateData } from "@/hooks/use-interview-queries";
 import type { CompanyDto, CompanyWithId } from "@/types/api";
 
 export default function CompanyManagePage() {
@@ -47,7 +47,8 @@ export default function CompanyManagePage() {
   const [selectedCompany, setSelectedCompany] = useState<CompanyWithId | null>(null);
   const [formData, setFormData] = useState<CompanyDto>({ companyName: "", link: "" });
 
-  const { data: companiesData, isLoading, error } = useCompanies();
+  const { data: createData, isLoading, error } = useInterviewCreateData();
+  const companiesData = createData ? { data: createData.companyList } : null;
   const createCompanyMutation = useCreateCompanyMutation();
   const updateCompanyMutation = useUpdateCompanyMutation();
   const deleteCompanyMutation = useDeleteCompanyMutation();
@@ -77,8 +78,8 @@ export default function CompanyManagePage() {
     if (!formData.companyName.trim()) return;
 
     createCompanyMutation.mutate(formData, {
-      onSuccess: () => {
-        setShowCreateDialog(false);
+        onSuccess: () => {
+          setShowCreateDialog(false);
         setFormData({ companyName: "", link: "" });
       },
     });
@@ -136,20 +137,20 @@ export default function CompanyManagePage() {
       <div className="container mx-auto px-4 py-8">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-8">
-          <div>
+        <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Building2 className="h-8 w-8" />
               회사 관리
             </h1>
-            <p className="text-muted-foreground mt-2">
+          <p className="text-muted-foreground mt-2">
               면접 질문에 사용할 회사 정보를 관리할 수 있습니다.
-            </p>
-          </div>
-          <Button onClick={handleCreate}>
-            <Plus className="h-4 w-4 mr-2" />
-            회사 추가
-          </Button>
+          </p>
         </div>
+          <Button onClick={handleCreate}>
+          <Plus className="h-4 w-4 mr-2" />
+          회사 추가
+        </Button>
+      </div>
 
         {/* 검색 */}
         <Card className="mb-6">
@@ -194,16 +195,16 @@ export default function CompanyManagePage() {
         </div>
 
         {/* 회사 목록 */}
-        {isLoading ? (
+      {isLoading ? (
           <Card>
             <CardContent className="py-12">
-              <Loading />
+        <Loading />
             </CardContent>
           </Card>
         ) : !companiesData?.data || companiesData.data.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground mb-4">등록된 회사가 없습니다.</p>
               <Button onClick={handleCreate}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -224,11 +225,11 @@ export default function CompanyManagePage() {
                 className="mt-4"
               >
                 검색 초기화
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredCompanies.map((company) => (
               <Card key={company.companyId} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
@@ -254,130 +255,130 @@ export default function CompanyManagePage() {
                     </div>
                   </div>
                   
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
                       onClick={() => handleEdit(company)}
-                      className="flex-1"
-                    >
+                    className="flex-1"
+                  >
                       <Edit className="h-4 w-4 mr-1" />
-                      수정
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    수정
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                       onClick={() => handleDelete(company)}
                       className="text-destructive hover:text-destructive"
-                    >
+                  >
                       <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
-        {/* 회사 생성 다이얼로그 */}
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogContent>
-            <DialogHeader>
+      {/* 회사 생성 다이얼로그 */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent>
+          <DialogHeader>
               <DialogTitle>새 회사 추가</DialogTitle>
-              <DialogDescription>
+            <DialogDescription>
                 면접 질문에 사용할 새로운 회사를 추가합니다.
-              </DialogDescription>
-            </DialogHeader>
+            </DialogDescription>
+          </DialogHeader>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="name">회사명 *</Label>
-                <Input
+              <Input
                   id="name"
                   placeholder="회사명을 입력하세요"
-                  value={formData.companyName}
+                  value={formData.companyName || ""}
                   onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                   disabled={createCompanyMutation.isPending}
-                />
-              </div>
+              />
+            </div>
               <div>
                 <Label htmlFor="link">웹사이트 (선택사항)</Label>
-                <Input
+              <Input
                   id="link"
                   placeholder="https://example.com"
-                  value={formData.link}
+                  value={formData.link || ""}
                   onChange={(e) => setFormData({ ...formData, link: e.target.value })}
                   disabled={createCompanyMutation.isPending}
-                />
-              </div>
+              />
             </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
                 onClick={() => setShowCreateDialog(false)}
                 disabled={createCompanyMutation.isPending}
-              >
-                취소
-              </Button>
-              <Button
+            >
+              취소
+            </Button>
+            <Button
                 onClick={handleSubmitCreate}
                 disabled={createCompanyMutation.isPending || !formData.companyName.trim()}
-              >
-                {createCompanyMutation.isPending ? "추가 중..." : "추가"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            >
+              {createCompanyMutation.isPending ? "추가 중..." : "추가"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        {/* 회사 수정 다이얼로그 */}
-        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>회사 정보 수정</DialogTitle>
+      {/* 회사 수정 다이얼로그 */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>회사 정보 수정</DialogTitle>
               <DialogDescription>
                 {selectedCompany?.companyName} 회사의 정보를 수정합니다.
               </DialogDescription>
-            </DialogHeader>
+          </DialogHeader>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="edit-name">회사명 *</Label>
-                <Input
+              <Input
                   id="edit-name"
                   placeholder="회사명을 입력하세요"
-                  value={formData.companyName}
+                  value={formData.companyName || ""}
                   onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                   disabled={updateCompanyMutation.isPending}
-                />
-              </div>
+              />
+            </div>
               <div>
                 <Label htmlFor="edit-link">웹사이트 (선택사항)</Label>
-                <Input
+              <Input
                   id="edit-link"
                   placeholder="https://example.com"
-                  value={formData.link}
+                  value={formData.link || ""}
                   onChange={(e) => setFormData({ ...formData, link: e.target.value })}
                   disabled={updateCompanyMutation.isPending}
-                />
-              </div>
+              />
             </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
                 onClick={() => setShowEditDialog(false)}
                 disabled={updateCompanyMutation.isPending}
-              >
-                취소
-              </Button>
-              <Button
+            >
+              취소
+            </Button>
+            <Button
                 onClick={handleSubmitEdit}
                 disabled={updateCompanyMutation.isPending || !formData.companyName.trim()}
-              >
-                {updateCompanyMutation.isPending ? "수정 중..." : "수정"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            >
+              {updateCompanyMutation.isPending ? "수정 중..." : "수정"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        {/* 회사 삭제 확인 다이얼로그 */}
+      {/* 회사 삭제 확인 다이얼로그 */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -385,7 +386,7 @@ export default function CompanyManagePage() {
               <AlertDialogDescription>
                 <strong>{selectedCompany?.companyName}</strong> 회사를 삭제하시겠습니까?
                 <br />
-                이 작업은 되돌릴 수 없습니다.
+              이 작업은 되돌릴 수 없습니다.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -394,10 +395,10 @@ export default function CompanyManagePage() {
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleConfirmDelete}
-                disabled={deleteCompanyMutation.isPending}
+              disabled={deleteCompanyMutation.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {deleteCompanyMutation.isPending ? "삭제 중..." : "삭제"}
+            >
+              {deleteCompanyMutation.isPending ? "삭제 중..." : "삭제"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

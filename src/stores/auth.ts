@@ -46,7 +46,7 @@ export const useAuthStore = create<AuthState>()(
           user: {
             id: data.userId,
             email: data.email,
-            role: data.role?.toLowerCase(),
+            role: data.role?.toLowerCase(), // 백엔드에서 ADMIN으로 와도 admin으로 저장
           },
         });
       },
@@ -60,7 +60,7 @@ export const useAuthStore = create<AuthState>()(
             ? {
                 id: userInfo.userId,
                 email: userInfo.email,
-                role: userInfo.role?.toLowerCase(),
+                role: userInfo.role?.toLowerCase(), // 백엔드에서 ADMIN으로 와도 admin으로 저장
               }
             : null,
         }),

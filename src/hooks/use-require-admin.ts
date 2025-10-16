@@ -14,6 +14,7 @@ export function useRequireAdmin() {
   const router = useRouter();
   const { toast } = useToast();
 
+
   useEffect(() => {
     // 로그인하지 않은 경우
     if (!isAuthenticated || !user) {
@@ -26,8 +27,8 @@ export function useRequireAdmin() {
       return;
     }
 
-    // 어드민 권한이 없는 경우
-    if (user.role !== "admin") {
+    // 어드민 권한이 없는 경우 (대소문자 구분 없이)
+    if (user.role?.toLowerCase() !== "admin") {
       toast({
         variant: "destructive",
         title: "접근 권한 없음",
@@ -38,7 +39,7 @@ export function useRequireAdmin() {
   }, [user, isAuthenticated, router, toast]);
 
   return {
-    isAdmin: user?.role === "admin",
+    isAdmin: user?.role?.toLowerCase() === "admin",
     isLoading: !user,
   };
 }
