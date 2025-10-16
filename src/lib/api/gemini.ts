@@ -15,14 +15,16 @@ export const geminiAPI = {
   // 단일 질문 다듬기
   trimSingle: async (question: string): Promise<string> => {
     console.log("🤖 Gemini AI 질문 다듬기 시작:", question);
-    
+
     try {
-      const response = await geminiApi.post("api/interview/trim/single", {
-        json: { question } as TrimQuestionRequest
-      }).json<TrimQuestionResponse>();
-      
+      const response = await geminiApi
+        .post("api/interview/trim/single", {
+          json: { question } as TrimQuestionRequest,
+        })
+        .json<TrimQuestionResponse>();
+
       console.log("✅ Gemini AI 응답:", response);
-      
+
       // modified_question 필드에서 다듬어진 질문 바로 사용
       return response.modified_question;
     } catch (error) {

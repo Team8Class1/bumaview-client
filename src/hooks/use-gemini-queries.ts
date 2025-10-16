@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import { geminiAPI } from "@/lib/api/gemini";
 import { useToast } from "@/hooks/use-toast";
+import { geminiAPI } from "@/lib/api/gemini";
 
 // Gemini AI 질문 다듬기 뮤테이션
 export function useTrimQuestionMutation() {
@@ -20,7 +20,8 @@ export function useTrimQuestionMutation() {
       toast({
         variant: "destructive",
         title: "질문 다듬기 실패",
-        description: error?.message || "AI 질문 다듬기에 실패했습니다. 다시 시도해주세요.",
+        description:
+          error?.message || "AI 질문 다듬기에 실패했습니다. 다시 시도해주세요.",
       });
     },
   });

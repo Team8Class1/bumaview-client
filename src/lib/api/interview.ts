@@ -1,5 +1,5 @@
-import { api } from "@/lib/http-client";
 import { geminiApi } from "@/lib/gemini-http-client";
+import { api } from "@/lib/http-client";
 import type {
   DataListAllInterviewDto,
   FileUploadRequest,
@@ -130,7 +130,7 @@ export const interviewAPI = {
     console.log("📁 인터뷰 파일 업로드 시작:", file.name, file.size, "bytes");
     console.log("📄 파일 타입:", file.type);
     console.log("📅 파일 수정일:", file.lastModified);
-    
+
     // CSV 파일 내용 미리보기 (처음 500자)
     try {
       const fileText = await file.slice(0, 500).text();
@@ -139,10 +139,10 @@ export const interviewAPI = {
     } catch (e) {
       console.warn("⚠️ 파일 내용 읽기 실패:", e);
     }
-    
+
     const formData = new FormData();
     formData.append("file", file);
-    
+
     // FormData 내용 확인
     console.log("📦 FormData 내용:");
     for (const [key, value] of formData.entries()) {
@@ -156,18 +156,18 @@ export const interviewAPI = {
       console.log("  URL: /api/interview/file");
       console.log("  Body: FormData");
       console.log("  Credentials: include");
-      
+
       // 여러 엔드포인트 시도
       const endpoints = [
         "/api/interview/file",
-        "/api/interview/upload", 
+        "/api/interview/upload",
         "/api/interview/csv",
-        "/api/file/upload"
+        "/api/file/upload",
       ];
-      
+
       let response;
       let lastError;
-      
+
       for (const endpoint of endpoints) {
         try {
           console.log(`🎯 엔드포인트 시도: ${endpoint}`);
@@ -176,12 +176,14 @@ export const interviewAPI = {
             body: formData,
             credentials: "include",
           });
-          
+
           if (response.ok) {
             console.log(`✅ 성공한 엔드포인트: ${endpoint}`);
             break;
           } else {
-            console.log(`❌ 실패한 엔드포인트: ${endpoint} (${response.status})`);
+            console.log(
+              `❌ 실패한 엔드포인트: ${endpoint} (${response.status})`,
+            );
             lastError = await response.text();
           }
         } catch (error) {
@@ -189,24 +191,27 @@ export const interviewAPI = {
           lastError = error;
         }
       }
-      
+
       if (!response || !response.ok) {
         throw new Error(`모든 엔드포인트 실패. 마지막 오류: ${lastError}`);
       }
-      
+
       console.log("📡 응답 상태:", response.status, response.statusText);
-      console.log("📡 응답 헤더:", Object.fromEntries(response.headers.entries()));
-      
+      console.log(
+        "📡 응답 헤더:",
+        Object.fromEntries(response.headers.entries()),
+      );
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error("📡 응답 내용:", errorText);
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
-      
+
       // 응답 본문 확인
       const responseText = await response.text();
       console.log("📡 응답 본문:", responseText);
-      
+
       let result;
       if (responseText.trim()) {
         try {
@@ -220,18 +225,18 @@ export const interviewAPI = {
         console.log("✅ 파일 업로드 성공 (빈 응답)");
         result = { message: "업로드 성공" };
       }
-      
+
       return result;
     } catch (error) {
       console.error("❌ 파일 업로드 실패:", error);
-      
+
       // 더 자세한 오류 정보 확인
-      if (error instanceof Error && 'response' in error) {
+      if (error instanceof Error && "response" in error) {
         const httpError = error as any;
         console.error("📋 오류 상세 정보:");
         console.error("  상태 코드:", httpError.response?.status);
         console.error("  상태 텍스트:", httpError.response?.statusText);
-        
+
         try {
           const errorText = await httpError.response?.text();
           console.error("  응답 내용:", errorText);
@@ -239,7 +244,7 @@ export const interviewAPI = {
           console.error("  응답 내용 읽기 실패:", e);
         }
       }
-      
+
       throw error;
     }
   },

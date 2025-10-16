@@ -9,26 +9,34 @@ export const companyAPI = {
   create: (data: CompanyDto): Promise<CompanyWithId> => {
     console.log("🏢 회사 생성 시작:", data);
     console.log("🏢 API 호출: POST /api/company");
-    return api.post("company", { json: data }).json().then(result => {
-      console.log("🏢 회사 생성 성공:", result);
-      return result;
-    }).catch(error => {
-      console.error("🏢 회사 생성 실패:", error);
-      throw error;
-    });
+    return api
+      .post("company", { json: data })
+      .json()
+      .then((result) => {
+        console.log("🏢 회사 생성 성공:", result);
+        return result;
+      })
+      .catch((error) => {
+        console.error("🏢 회사 생성 실패:", error);
+        throw error;
+      });
   },
 
   // 회사 수정 (OpenAPI 스펙)
   modify: (companyId: number, data: CompanyDto): Promise<void> => {
     console.log(`🏢 회사 수정 시작: companyId=${companyId}`, data);
     console.log(`🏢 API 호출: PATCH /api/company/${companyId}`);
-    return api.patch(`company/${companyId}`, { json: data }).json().then(result => {
-      console.log("🏢 회사 수정 성공:", result);
-      return result;
-    }).catch(error => {
-      console.error("🏢 회사 수정 실패:", error);
-      throw error;
-    });
+    return api
+      .patch(`company/${companyId}`, { json: data })
+      .json()
+      .then((result) => {
+        console.log("🏢 회사 수정 성공:", result);
+        return result;
+      })
+      .catch((error) => {
+        console.error("🏢 회사 수정 실패:", error);
+        throw error;
+      });
   },
 
   // 회사 삭제 (OpenAPI 스펙)

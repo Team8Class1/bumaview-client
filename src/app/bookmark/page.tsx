@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { BookmarkButton } from "@/components/bookmark/bookmark-button";
 import {
   Card,
   CardContent,
@@ -11,7 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
-import { BookmarkButton } from "@/components/bookmark/bookmark-button";
 import { useBookmarks } from "@/hooks/use-bookmark-queries";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/auth";
@@ -51,8 +51,8 @@ export default function BookmarkPage() {
           <p className="text-muted-foreground mb-4">
             {error?.message || "북마크 목록을 불러오지 못했습니다."}
           </p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="text-primary hover:underline"
           >
             다시 시도
@@ -80,8 +80,8 @@ export default function BookmarkPage() {
           <p className="text-muted-foreground mb-6">
             관심 있는 면접 질문을 북마크해보세요.
           </p>
-          <Link 
-            href="/interview" 
+          <Link
+            href="/interview"
             className="text-primary hover:underline font-medium"
           >
             면접 질문 둘러보기 →
@@ -98,7 +98,7 @@ export default function BookmarkPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1 pr-4">
                     <CardTitle className="text-lg leading-relaxed">
-                      <Link 
+                      <Link
                         href={`/interview/${interview.interviewId}`}
                         className="hover:text-primary transition-colors"
                       >
@@ -116,20 +116,18 @@ export default function BookmarkPage() {
                       ))}
                     </CardDescription>
                   </div>
-                  
-                  <BookmarkButton 
+
+                  <BookmarkButton
                     interviewId={interview.interviewId}
                     className="shrink-0"
                   />
                 </div>
               </CardHeader>
-              
+
               <CardContent className="pt-0">
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>{interview.companyName}</span>
-                  <span>
-                    {new Date(interview.questionAt).getFullYear()}년
-                  </span>
+                  <span>{new Date(interview.questionAt).getFullYear()}년</span>
                 </div>
               </CardContent>
             </Card>

@@ -2,7 +2,10 @@
 
 import { Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToggleBookmarkMutation, useBookmarkStatus } from "@/hooks/use-bookmark-queries";
+import {
+  useBookmarkStatus,
+  useToggleBookmarkMutation,
+} from "@/hooks/use-bookmark-queries";
 import { cn } from "@/lib/utils";
 
 interface BookmarkButtonProps {
@@ -12,11 +15,11 @@ interface BookmarkButtonProps {
   variant?: "ghost" | "outline" | "default";
 }
 
-export function BookmarkButton({ 
-  interviewId, 
+export function BookmarkButton({
+  interviewId,
   className,
   size = "icon",
-  variant = "ghost"
+  variant = "ghost",
 }: BookmarkButtonProps) {
   const { isBookmarked } = useBookmarkStatus(interviewId);
   const toggleBookmarkMutation = useToggleBookmarkMutation();
@@ -24,9 +27,11 @@ export function BookmarkButton({
   const handleToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    console.log(`🖱️ 북마크 버튼 클릭: interviewId=${interviewId}, 현재상태=${isBookmarked}`);
-    
+
+    console.log(
+      `🖱️ 북마크 버튼 클릭: interviewId=${interviewId}, 현재상태=${isBookmarked}`,
+    );
+
     toggleBookmarkMutation.mutate(interviewId);
   };
 
@@ -42,10 +47,8 @@ export function BookmarkButton({
       <Bookmark
         className={cn(
           "h-5 w-5",
-          isBookmarked 
-            ? "fill-primary text-primary" 
-            : "text-muted-foreground",
-          toggleBookmarkMutation.isPending && "opacity-50"
+          isBookmarked ? "fill-primary text-primary" : "text-muted-foreground",
+          toggleBookmarkMutation.isPending && "opacity-50",
         )}
       />
     </Button>

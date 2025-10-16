@@ -114,8 +114,13 @@ export function useAddUsersToGroupMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ groupId, data }: { groupId: number; data: AddGroupUsersDto }) =>
-      groupAPI.addUsers(groupId, data),
+    mutationFn: ({
+      groupId,
+      data,
+    }: {
+      groupId: number;
+      data: AddGroupUsersDto;
+    }) => groupAPI.addUsers(groupId, data),
     onSuccess: (_, { groupId }) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.users(groupId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });

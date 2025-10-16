@@ -1,9 +1,18 @@
 "use client";
 
-import { Bookmark, Filter, FolderPlus, MessageSquare, Upload, X } from "lucide-react";
+import {
+  Bookmark,
+  Filter,
+  FolderPlus,
+  MessageSquare,
+  Upload,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BookmarkButton } from "@/components/bookmark/bookmark-button";
+import { UploadModal } from "@/components/interview/upload-modal";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,8 +37,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useBookmarks } from "@/hooks/use-bookmark-queries";
-import { BookmarkButton } from "@/components/bookmark/bookmark-button";
-import { UploadModal } from "@/components/interview/upload-modal";
 import {
   useAddInterviewsToGroupMutation,
   useGroups,
@@ -148,10 +155,7 @@ export default function InterviewPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={() => setShowUploadModal(true)}
-          >
+          <Button variant="outline" onClick={() => setShowUploadModal(true)}>
             <Upload className="h-4 w-4 mr-2" />
             파일 업로드
           </Button>
@@ -312,7 +316,7 @@ export default function InterviewPage() {
                       </CardDescription>
                     </div>
                     <div className="flex gap-1">
-                      <BookmarkButton 
+                      <BookmarkButton
                         interviewId={interview.interviewId}
                         className="shrink-0"
                       />
@@ -424,10 +428,7 @@ export default function InterviewPage() {
       </Dialog>
 
       {/* 파일 업로드 모달 */}
-      <UploadModal
-        open={showUploadModal}
-        onOpenChange={setShowUploadModal}
-      />
+      <UploadModal open={showUploadModal} onOpenChange={setShowUploadModal} />
     </>
   );
 }

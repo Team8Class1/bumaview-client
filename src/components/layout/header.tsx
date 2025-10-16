@@ -49,14 +49,14 @@ export function Header() {
   const canAccess = (roles: string[]) => {
     // 로그인하지 않았어도 basic 권한 메뉴는 보이게 함
     if (!user) return roles.includes("basic");
-    
+
     const userRole = user.role || "basic";
-    
+
     // ADMIN은 모든 권한을 가짐 (basic + admin) - 대소문자 구분 없이
     if (userRole.toLowerCase() === "admin") {
       return true;
     }
-    
+
     // 그 외에는 정확한 역할만 체크
     return roles.includes(userRole);
   };

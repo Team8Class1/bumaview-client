@@ -51,10 +51,12 @@ export const api = ky.create({
         try {
           if (contentType?.includes("application/json")) {
             const errorData = await response.json();
-            errorMessage = errorData.message || errorData.error || "JSON 오류 발생";
+            errorMessage =
+              errorData.message || errorData.error || "JSON 오류 발생";
           } else {
             const text = await response.text();
-            errorMessage = text || `HTTP ${response.status}: ${response.statusText}`; // 빈 응답 시 기본 메시지
+            errorMessage =
+              text || `HTTP ${response.status}: ${response.statusText}`; // 빈 응답 시 기본 메시지
           }
         } catch (e) {
           errorMessage = `응답 파싱 오류: ${e.message}`;

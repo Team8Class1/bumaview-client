@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { interviewKeys } from "@/hooks/use-interview-queries";
+import { useToast } from "@/hooks/use-toast";
 import { companyAPI } from "@/lib/api/company";
 import { useAuthStore } from "@/stores/auth";
-import { useToast } from "@/hooks/use-toast";
-import { interviewKeys } from "@/hooks/use-interview-queries";
 import type { CompanyDto, CompanyWithId, Data } from "@/types/api";
 
 // Query keys
@@ -35,9 +35,10 @@ export function useCreateCompanyMutation() {
       toast({
         variant: "destructive",
         title: "회사 추가 실패",
-        description: error instanceof Error 
-          ? error.message 
-          : "회사 추가 중 오류가 발생했습니다.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "회사 추가 중 오류가 발생했습니다.",
       });
     },
   });
@@ -48,11 +49,18 @@ export function useUpdateCompanyMutation() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ companyId, data }: { companyId: number; data: CompanyDto }) =>
-      companyAPI.modify(companyId, data),
+    mutationFn: ({
+      companyId,
+      data,
+    }: {
+      companyId: number;
+      data: CompanyDto;
+    }) => companyAPI.modify(companyId, data),
     onSuccess: (_, { companyId }) => {
       queryClient.invalidateQueries({ queryKey: companyKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: companyKeys.detail(companyId) });
+      queryClient.invalidateQueries({
+        queryKey: companyKeys.detail(companyId),
+      });
       queryClient.invalidateQueries({ queryKey: interviewKeys.createData() });
       toast({
         title: "회사 수정 완료",
@@ -63,9 +71,10 @@ export function useUpdateCompanyMutation() {
       toast({
         variant: "destructive",
         title: "회사 수정 실패",
-        description: error instanceof Error 
-          ? error.message 
-          : "회사 수정 중 오류가 발생했습니다.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "회사 수정 중 오류가 발생했습니다.",
       });
     },
   });
@@ -89,9 +98,10 @@ export function useDeleteCompanyMutation() {
       toast({
         variant: "destructive",
         title: "회사 삭제 실패",
-        description: error instanceof Error 
-          ? error.message 
-          : "회사 삭제 중 오류가 발생했습니다.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "회사 삭제 중 오류가 발생했습니다.",
       });
     },
   });

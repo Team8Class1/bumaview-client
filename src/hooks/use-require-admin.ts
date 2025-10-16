@@ -14,7 +14,6 @@ export function useRequireAdmin() {
   const router = useRouter();
   const { toast } = useToast();
 
-
   useEffect(() => {
     // 로그인하지 않은 경우
     if (!isAuthenticated || !user) {

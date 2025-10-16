@@ -4,6 +4,8 @@ import { MessageSquare, Plus, Search, Users } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BookmarkButton } from "@/components/bookmark/bookmark-button";
+import { AddUserDialog } from "@/components/group/add-user-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,13 +24,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
-import { BookmarkButton } from "@/components/bookmark/bookmark-button";
-import { AddUserDialog } from "@/components/group/add-user-dialog";
 import {
   useAddInterviewsToGroupMutation,
   useGroup,
-  useGroupUsers,
   useGroups,
+  useGroupUsers,
 } from "@/hooks/use-group-queries";
 import { useInterviews } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
@@ -142,13 +142,16 @@ export default function GroupDetailPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={openAddDialog} disabled={!group || !allInterviewsData}>
+          <Button
+            onClick={openAddDialog}
+            disabled={!group || !allInterviewsData}
+          >
             <Plus className="h-4 w-4 mr-2" />
             질문 추가
           </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => setShowAddUserDialog(true)} 
+          <Button
+            variant="outline"
+            onClick={() => setShowAddUserDialog(true)}
             disabled={!group}
           >
             <Users className="h-4 w-4 mr-2" />
@@ -185,13 +188,12 @@ export default function GroupDetailPage() {
                 <div className="text-center py-8 text-muted-foreground">
                   <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>그룹에 추가된 멤버가 없습니다.</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowAddUserDialog(true)} 
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAddUserDialog(true)}
                     className="mt-4"
                   >
-                    <Users className="h-4 w-4 mr-2" />
-                    첫 번째 멤버 추가하기
+                    <Users className="h-4 w-4 mr-2" />첫 번째 멤버 추가하기
                   </Button>
                 </div>
               ) : (
@@ -230,48 +232,48 @@ export default function GroupDetailPage() {
           ) : (
             <div className="space-y-4">
               {groupInterviews?.data?.map((interview) => (
-            <Card
-              key={interview.interviewId}
-              className="hover:shadow-md transition-shadow"
-            >
-              <Link href={`/interview/${interview.interviewId}`}>
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">
-                        {interview.question}
-                      </CardTitle>
-                      <CardDescription className="mt-2 flex flex-wrap gap-2">
-                        {interview.categoryList.map((cat) => (
-                          <span
-                            key={cat.categoryId}
-                            className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
-                          >
-                            {cat.categoryName}
+                <Card
+                  key={interview.interviewId}
+                  className="hover:shadow-md transition-shadow"
+                >
+                  <Link href={`/interview/${interview.interviewId}`}>
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg">
+                            {interview.question}
+                          </CardTitle>
+                          <CardDescription className="mt-2 flex flex-wrap gap-2">
+                            {interview.categoryList.map((cat) => (
+                              <span
+                                key={cat.categoryId}
+                                className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
+                              >
+                                {cat.categoryName}
+                              </span>
+                            ))}
+                          </CardDescription>
+                        </div>
+                        <BookmarkButton
+                          interviewId={interview.interviewId}
+                          className="shrink-0"
+                        />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        {interview.companyName && (
+                          <span className="font-medium text-foreground">
+                            {interview.companyName}
                           </span>
-                        ))}
-                      </CardDescription>
-                    </div>
-                    <BookmarkButton 
-                      interviewId={interview.interviewId}
-                      className="shrink-0"
-                    />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    {interview.companyName && (
-                      <span className="font-medium text-foreground">
-                        {interview.companyName}
-                      </span>
-                    )}
-                    <span>
-                      {new Date(interview.questionAt).getFullYear()}년
-                    </span>
-                  </div>
-                </CardContent>
-              </Link>
-            </Card>
+                        )}
+                        <span>
+                          {new Date(interview.questionAt).getFullYear()}년
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Link>
+                </Card>
               ))}
             </div>
           )}
@@ -363,7 +365,6 @@ export default function GroupDetailPage() {
                 </div>
               )}
             </div>
-
           </div>
           <DialogFooter>
             <Button

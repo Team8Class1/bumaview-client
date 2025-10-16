@@ -6,12 +6,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -85,10 +80,15 @@ export default function InterviewEditPage() {
       companyId: values.companyId,
       questionAt: values.questionAt, // 입력된 값 그대로 전송
     };
-    
+
     console.log("🔧 인터뷰 수정 요청 데이터:", requestData);
-    console.log("📅 questionAt 값:", values.questionAt, "타입:", typeof values.questionAt);
-    
+    console.log(
+      "📅 questionAt 값:",
+      values.questionAt,
+      "타입:",
+      typeof values.questionAt,
+    );
+
     updateInterviewMutation.mutate(
       {
         id: Number(id),
@@ -114,7 +114,7 @@ export default function InterviewEditPage() {
         },
       },
     );
-  };
+  }
 
   return (
     <>
@@ -280,12 +280,11 @@ export default function InterviewEditPage() {
                   <Button
                     type="submit"
                     disabled={
-                      !form.formState.isValid || updateInterviewMutation.isPending
+                      !form.formState.isValid ||
+                      updateInterviewMutation.isPending
                     }
                   >
-                    {updateInterviewMutation.isPending
-                      ? "수정 중..."
-                      : "수정"}
+                    {updateInterviewMutation.isPending ? "수정 중..." : "수정"}
                   </Button>
                 </div>
               </form>

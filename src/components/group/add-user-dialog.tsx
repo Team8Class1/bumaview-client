@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useId } from "react";
+import { X } from "lucide-react";
+import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAddUsersToGroupMutation } from "@/hooks/use-group-queries";
 import { useToast } from "@/hooks/use-toast";
-import { X } from "lucide-react";
 
 interface AddUserDialogProps {
   open: boolean;
@@ -23,11 +23,11 @@ interface AddUserDialogProps {
   groupName: string;
 }
 
-export function AddUserDialog({ 
-  open, 
-  onOpenChange, 
-  groupId, 
-  groupName 
+export function AddUserDialog({
+  open,
+  onOpenChange,
+  groupId,
+  groupName,
 }: AddUserDialogProps) {
   const baseId = useId();
   const [userIds, setUserIds] = useState<string[]>([""]);
@@ -54,8 +54,8 @@ export function AddUserDialog({
   };
 
   const handleSubmit = () => {
-    const validUserIds = userIds.filter(id => id.trim());
-    
+    const validUserIds = userIds.filter((id) => id.trim());
+
     if (validUserIds.length === 0) {
       toast({
         variant: "destructive",
@@ -66,9 +66,9 @@ export function AddUserDialog({
     }
 
     addUsersMutation.mutate(
-      { 
-        groupId, 
-        data: { userIdList: validUserIds } 
+      {
+        groupId,
+        data: { userIdList: validUserIds },
       },
       {
         onSuccess: () => {
@@ -84,12 +84,13 @@ export function AddUserDialog({
           toast({
             variant: "destructive",
             title: "유저 추가 실패",
-            description: error instanceof Error 
-              ? error.message 
-              : "유저 추가 중 오류가 발생했습니다.",
+            description:
+              error instanceof Error
+                ? error.message
+                : "유저 추가 중 오류가 발생했습니다.",
           });
         },
-      }
+      },
     );
   };
 
@@ -132,7 +133,7 @@ export function AddUserDialog({
               )}
             </div>
           ))}
-          
+
           <Button
             type="button"
             variant="outline"
@@ -154,7 +155,9 @@ export function AddUserDialog({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={addUsersMutation.isPending || userIds.every(id => !id.trim())}
+            disabled={
+              addUsersMutation.isPending || userIds.every((id) => !id.trim())
+            }
           >
             {addUsersMutation.isPending ? "추가 중..." : "유저 추가"}
           </Button>

@@ -99,7 +99,6 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
     setSelectedFile(null);
   };
 
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
@@ -146,7 +145,9 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
                     <Upload className="h-5 w-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-green-900">{selectedFile.name}</p>
+                    <p className="font-medium text-green-900">
+                      {selectedFile.name}
+                    </p>
                     <p className="text-sm text-green-700">
                       {(selectedFile.size / 1024).toFixed(1)} KB
                     </p>
@@ -195,7 +196,10 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
             <h4 className="font-medium mb-2">CSV 파일 형식 안내</h4>
             <ul className="text-sm text-muted-foreground space-y-1">
               <li>• 첫 번째 행은 헤더로 사용됩니다</li>
-              <li>• <strong>현재 지원 형식</strong>: question, category, company, question_at</li>
+              <li>
+                • <strong>현재 지원 형식</strong>: question, category, company,
+                question_at
+              </li>
               <li>• category: 카테고리명 (예: "백엔드", "프론트엔드")</li>
               <li>• company: 회사명 (예: "마이다스IT")</li>
               <li>• question_at: 연도 (예: "2023")</li>

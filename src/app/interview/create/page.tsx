@@ -30,12 +30,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTrimQuestionMutation } from "@/hooks/use-gemini-queries";
 import {
   useCreateInterviewMutation,
   useInterviewCreateData,
 } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
-import { useTrimQuestionMutation } from "@/hooks/use-gemini-queries";
 
 const formSchema = z.object({
   question: z
@@ -98,7 +98,7 @@ export default function InterviewCreatePage() {
 
   const handleTrimQuestion = () => {
     const currentQuestion = form.getValues("question");
-    
+
     if (!currentQuestion.trim()) {
       toast({
         variant: "destructive",
@@ -133,9 +133,7 @@ export default function InterviewCreatePage() {
     <Card>
       <CardHeader>
         <CardTitle className="text-2xl">면접 질문 등록</CardTitle>
-        <CardDescription>
-          새로운 면접 질문을 등록하세요.
-        </CardDescription>
+        <CardDescription>새로운 면접 질문을 등록하세요.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -152,11 +150,17 @@ export default function InterviewCreatePage() {
                       variant="outline"
                       size="sm"
                       onClick={handleTrimQuestion}
-                      disabled={isLoading || trimQuestionMutation.isPending || !field.value?.trim()}
+                      disabled={
+                        isLoading ||
+                        trimQuestionMutation.isPending ||
+                        !field.value?.trim()
+                      }
                       className="h-8"
                     >
                       <Sparkles className="h-4 w-4 mr-2" />
-                      {trimQuestionMutation.isPending ? "AI 다듬는 중..." : "AI로 다듬기"}
+                      {trimQuestionMutation.isPending
+                        ? "AI 다듬는 중..."
+                        : "AI로 다듬기"}
                     </Button>
                   </div>
                   <FormControl>
@@ -168,7 +172,8 @@ export default function InterviewCreatePage() {
                     />
                   </FormControl>
                   <FormDescription>
-                    실제 면접에서 받은 질문을 입력해주세요. AI로 다듬기 버튼을 눌러 질문을 개선할 수 있습니다.
+                    실제 면접에서 받은 질문을 입력해주세요. AI로 다듬기 버튼을
+                    눌러 질문을 개선할 수 있습니다.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -266,12 +271,12 @@ export default function InterviewCreatePage() {
             <div className="flex gap-3">
               <Button
                 type="submit"
-                disabled={!form.formState.isValid || createInterviewMutation.isPending}
+                disabled={
+                  !form.formState.isValid || createInterviewMutation.isPending
+                }
                 className="w-full"
               >
-                {createInterviewMutation.isPending
-                  ? "등록 중..."
-                  : "등록하기"}
+                {createInterviewMutation.isPending ? "등록 중..." : "등록하기"}
               </Button>
               <Button
                 type="button"

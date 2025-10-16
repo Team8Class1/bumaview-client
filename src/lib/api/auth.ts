@@ -1,9 +1,5 @@
 import { api } from "@/lib/http-client";
-import type {
-  JoinDto,
-  LoginRequestDto,
-  UserInfoDto,
-} from "@/types/api";
+import type { JoinDto, LoginRequestDto, UserInfoDto } from "@/types/api";
 
 // API Functions
 export const authAPI = {

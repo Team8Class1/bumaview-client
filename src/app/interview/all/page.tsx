@@ -4,6 +4,7 @@ import { Bookmark, FolderPlus, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { BookmarkButton } from "@/components/bookmark/bookmark-button";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,7 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BookmarkButton } from "@/components/bookmark/bookmark-button";
 import {
   useAddInterviewsToGroupMutation,
   useGroups,
@@ -147,7 +147,7 @@ export default function InterviewAllPage() {
                       </CardDescription>
                     </div>
                     <div className="flex gap-1">
-                      <BookmarkButton 
+                      <BookmarkButton
                         interviewId={interview.interviewId}
                         className="shrink-0"
                       />
@@ -170,7 +170,9 @@ export default function InterviewAllPage() {
                         {interview.companyName}
                       </span>
                     )}
-                    <span>{new Date(interview.questionAt).getFullYear()}년</span>
+                    <span>
+                      {new Date(interview.questionAt).getFullYear()}년
+                    </span>
                   </div>
                 </CardContent>
               </Link>
