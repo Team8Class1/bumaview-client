@@ -97,6 +97,25 @@ export interface AddGroupList {
   interviewIdList: number[];
 }
 
+// Group User types
+export interface GroupUserDto {
+  userSequenceId: number;
+  userId: string;
+}
+
+export interface AddGroupUsersDto {
+  userIdList: string[];
+}
+
+// User types
+export interface UserDto {
+  userSequenceId: number;
+  userId: string;
+  email?: string;
+  role?: string;
+  createdAt?: string;
+}
+
 // Category types
 export interface CategoryList {
   categoryId: number;

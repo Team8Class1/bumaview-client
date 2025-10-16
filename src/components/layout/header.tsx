@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, Building2, MessageSquare, Users } from "lucide-react";
+import { Bookmark, Building2, MessageSquare, Users, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,12 @@ const navigation = [
     name: "회사 관리",
     href: "/admin/company",
     icon: Building2,
+    role: ["admin"],
+  },
+  {
+    name: "유저 관리",
+    href: "/admin/users",
+    icon: UserCheck,
     role: ["admin"],
   },
 ];

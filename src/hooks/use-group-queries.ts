@@ -3,10 +3,12 @@ import { groupAPI } from "@/lib/api/group";
 import { useAuthStore } from "@/stores/auth";
 import type {
   AddGroupList,
+  AddGroupUsersDto,
   AllInterviewDto,
   CreateGroupDto,
   Data,
   GroupDto,
+  GroupUserDto,
 } from "@/types/api";
 
 // Query keys
@@ -16,6 +18,7 @@ export const groupKeys = {
   details: () => [...groupKeys.all, "detail"] as const,
   detail: (id: number) => [...groupKeys.details(), id] as const,
   interviews: (id: number) => [...groupKeys.detail(id), "interviews"] as const,
+  users: (id: number) => [...groupKeys.detail(id), "users"] as const,
 };
 
 // Queries
@@ -92,6 +95,29 @@ export function useAddInterviewsToGroupMutation() {
       queryClient.invalidateQueries({
         queryKey: groupKeys.interviews(groupId),
       });
+      queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
+    },
+  });
+}
+
+// 그룹 유저 관련 훅들
+export function useGroupUsers(groupId: number) {
+  const { isAuthenticated } = useAuthStore();
+  return useQuery<Data<GroupUserDto[]>>({
+    queryKey: groupKeys.users(groupId),
+    queryFn: () => groupAPI.getUsers(groupId),
+    enabled: !!groupId && isAuthenticated,
+  });
+}
+
+export function useAddUsersToGroupMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ groupId, data }: { groupId: number; data: AddGroupUsersDto }) =>
+      groupAPI.addUsers(groupId, data),
+    onSuccess: (_, { groupId }) => {
+      queryClient.invalidateQueries({ queryKey: groupKeys.users(groupId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
     },
   });

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, MessageSquare, Plus, Search } from "lucide-react";
+import { MessageSquare, Plus, Search, Users } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -23,9 +23,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
 import { BookmarkButton } from "@/components/bookmark/bookmark-button";
+import { AddUserDialog } from "@/components/group/add-user-dialog";
 import {
   useAddInterviewsToGroupMutation,
   useGroup,
+  useGroupUsers,
   useGroups,
 } from "@/hooks/use-group-queries";
 import { useInterviews } from "@/hooks/use-interview-queries";
@@ -38,6 +40,7 @@ export default function GroupDetailPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showAddUserDialog, setShowAddUserDialog] = useState(false);
   const [availableInterviews, setAvailableInterviews] = useState<
     InterviewItem[]
   >([]);
@@ -50,6 +53,7 @@ export default function GroupDetailPage() {
 
   // React Query hooks
   const { data: groupInterviews, isLoading } = useGroup(params.id as string);
+  const { data: groupUsers } = useGroupUsers(Number(params.id));
   const { data: groupsData } = useGroups();
   const { data: allInterviewsData } = useInterviews();
   const addInterviewsToGroupMutation = useAddInterviewsToGroupMutation();
@@ -137,10 +141,20 @@ export default function GroupDetailPage() {
             {`${groupInterviews?.data?.length || 0}개의 질문`}
           </p>
         </div>
-        <Button onClick={openAddDialog} disabled={!group || !allInterviewsData}>
-          <Plus className="h-4 w-4 mr-2" />
-          질문 추가
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={openAddDialog} disabled={!group || !allInterviewsData}>
+            <Plus className="h-4 w-4 mr-2" />
+            질문 추가
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowAddUserDialog(true)} 
+            disabled={!group}
+          >
+            <Users className="h-4 w-4 mr-2" />
+            유저 추가
+          </Button>
+        </div>
       </div>
 
       {!group ? (
@@ -156,21 +170,66 @@ export default function GroupDetailPage() {
             </Button>
           </CardContent>
         </Card>
-      ) : !groupInterviews?.data || groupInterviews.data.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              그룹에 추가된 질문이 없습니다.
-            </p>
-            <Button onClick={openAddDialog} className="mt-4">
-              질문 추가하기
-            </Button>
-          </CardContent>
-        </Card>
       ) : (
-        <div className="space-y-4">
-          {groupInterviews?.data?.map((interview) => (
+        <div className="space-y-6">
+          {/* 그룹 유저 목록 - 항상 표시 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                그룹 멤버 ({groupUsers?.data?.length || 0}명)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!groupUsers?.data || groupUsers.data.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>그룹에 추가된 멤버가 없습니다.</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowAddUserDialog(true)} 
+                    className="mt-4"
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    첫 번째 멤버 추가하기
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {groupUsers.data.map((user) => (
+                    <div
+                      key={user.userSequenceId}
+                      className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30"
+                    >
+                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Users className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{user.userId}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 질문 목록 */}
+          {!groupInterviews?.data || groupInterviews.data.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">
+                  그룹에 추가된 질문이 없습니다.
+                </p>
+                <Button onClick={openAddDialog} className="mt-4">
+                  질문 추가하기
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {groupInterviews?.data?.map((interview) => (
             <Card
               key={interview.interviewId}
               className="hover:shadow-md transition-shadow"
@@ -213,7 +272,9 @@ export default function GroupDetailPage() {
                 </CardContent>
               </Link>
             </Card>
-          ))}
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -303,11 +364,6 @@ export default function GroupDetailPage() {
               )}
             </div>
 
-            {selectedInterviewIds.length > 0 && (
-              <div className="text-sm text-muted-foreground">
-                {selectedInterviewIds.length}개 선택됨
-              </div>
-            )}
           </div>
           <DialogFooter>
             <Button
@@ -328,13 +384,21 @@ export default function GroupDetailPage() {
                 selectedInterviewIds.length === 0
               }
             >
-              {addInterviewsToGroupMutation.isPending
-                ? "추가 중..."
-                : `${selectedInterviewIds.length}개 추가`}
+              {addInterviewsToGroupMutation.isPending ? "추가 중..." : "추가"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 유저 추가 다이얼로그 */}
+      {group && (
+        <AddUserDialog
+          open={showAddUserDialog}
+          onOpenChange={setShowAddUserDialog}
+          groupId={group.groupId}
+          groupName={group.name}
+        />
+      )}
     </>
   );
 }
