@@ -9,8 +9,8 @@ export interface JoinDto {
 }
 
 export interface LoginRequestDto {
-  userId: string;
-  userPw: string;
+  id: string;
+  password: string;
 }
 
 export interface UserInfoDto {

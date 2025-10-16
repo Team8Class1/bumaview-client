@@ -54,19 +54,30 @@ export const api = ky.create({
         if (!response.ok) {
           let errorMessage = "요청이 실패했습니다";
           try {
-            const error = await response.json();
-            if (
-              error &&
-              typeof error === "object" &&
-              "message" in error &&
-              typeof error.message === "string"
-            ) {
-              errorMessage = error.message || errorMessage;
+            const errorText = await response.text();
+            try {
+              const errorJson = JSON.parse(errorText);
+              if (
+                errorJson &&
+                typeof errorJson === "object" &&
+                "message" in errorJson &&
+                typeof errorJson.message === "string"
+              ) {
+                errorMessage = errorJson.message;
+              } else {
+                errorMessage = errorText;
+              }
+            } catch {
+              // Not a JSON, so the text is the error message
+              errorMessage = errorText;
             }
           } catch {
-            // JSON 파싱 실패시 기본 메시지 사용
+            // Could not read the response body
           }
-          throw new ApiError(response.status, errorMessage);
+          throw new ApiError(
+            response.status,
+            errorMessage.trim() || "요청이 실패했습니다",
+          );
         }
       },
     ],
