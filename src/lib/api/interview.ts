@@ -1,4 +1,5 @@
 import { api } from "@/lib/http-client";
+import { geminiApi } from "@/lib/gemini-http-client";
 import type {
   DataListAllInterviewDto,
   FileUploadRequest,
@@ -205,4 +206,11 @@ export const interviewAPI = {
   // 인터뷰 삭제 (새 스펙)
   deleteByIdSpec: (interviewId: number): Promise<void> =>
     api.delete(`interview/${interviewId}`).json(),
+
+  // Gemini API로 단건 질문 다듬기
+  trimSingleWithGemini: (question: string): Promise<{ question: string }> => {
+    return geminiApi
+      .post("api/interview/trim/single", { json: { question } })
+      .json();
+  },
 };

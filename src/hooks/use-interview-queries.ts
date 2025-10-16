@@ -109,3 +109,10 @@ export function useTrimInterviewFileMutation() {
     mutationFn: (file: File) => interviewAPI.trimFile(file),
   });
 }
+
+export function useTrimInterviewWithGeminiMutation() {
+  return useMutation({
+    mutationFn: (question: string) =>
+      interviewAPI.trimSingleWithGemini(question),
+  });
+}

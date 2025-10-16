@@ -18,9 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  useInterviewCreateData,
   useTrimInterviewFileMutation,
-  useTrimInterviewSingleMutation,
+  useTrimInterviewWithGeminiMutation,
 } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
 
@@ -31,8 +30,7 @@ export default function InterviewTrimPage() {
   const { toast } = useToast();
 
   // React Query hooks
-  const { data: createData } = useInterviewCreateData();
-  const trimSingleMutation = useTrimInterviewSingleMutation();
+  const trimSingleMutation = useTrimInterviewWithGeminiMutation();
   const trimFileMutation = useTrimInterviewFileMutation();
 
   const handleTrimSingle = () => {
@@ -45,30 +43,22 @@ export default function InterviewTrimPage() {
       return;
     }
 
-    trimSingleMutation.mutate(
-      {
-        question,
-        category: createData?.categoryList || [],
-        companyId: null,
-        questionAt: new Date().toISOString().split("T")[0],
+    trimSingleMutation.mutate(question, {
+      onSuccess: (result) => {
+        setTrimmedQuestion(result.question);
+        toast({
+          title: "다듬기 완료",
+          description: "질문이 정리되었습니다.",
+        });
       },
-      {
-        onSuccess: (result) => {
-          setTrimmedQuestion(result.question);
-          toast({
-            title: "다듬기 완료",
-            description: "질문이 정리되었습니다.",
-          });
-        },
-        onError: () => {
-          toast({
-            variant: "destructive",
-            title: "처리 실패",
-            description: "질문 다듬기에 실패했습니다.",
-          });
-        },
+      onError: () => {
+        toast({
+          variant: "destructive",
+          title: "처리 실패",
+          description: "질문 다듬기에 실패했습니다.",
+        });
       },
-    );
+    });
   };
 
   const handleTrimFile = (file: File) => {
@@ -151,7 +141,7 @@ export default function InterviewTrimPage() {
               className="w-full"
             >
               <Sparkles className="h-4 w-4 mr-2" />
-              {trimSingleMutation.isPending ? "처리 중..." : "질문 다듬기"}
+              {trimSingleMutation.isPending ? "처리 중..." : "AI로 질문 다듬기"}
             </Button>
 
             {trimmedQuestion && (

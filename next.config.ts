@@ -5,7 +5,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/:path*`,
+      },
+      {
+        source: "/gemini-api/:path*",
+        destination: `${process.env.NEXT_PUBLIC_GEMINI_API_URL}/:path*`,
       },
     ];
   },

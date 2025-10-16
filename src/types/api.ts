@@ -9,8 +9,8 @@ export interface JoinDto {
 }
 
 export interface LoginRequestDto {
-  id: string;
-  password: string;
+  userId: string;
+  userPw: string;
 }
 
 export interface UserInfoDto {
@@ -122,11 +122,6 @@ export interface InterviewSearchParams {
 // File upload
 export interface FileUploadRequest {
   file: File;
-}
-
-// API Response types - 백엔드는 object로 반환 (구체적 구조 미정의)
-export interface LoginResponse {
-  [key: string]: any; // 백엔드에서 object 타입으로 정의됨
 }
 
 export interface ApiError {

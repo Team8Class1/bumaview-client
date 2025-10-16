@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { authAPI } from "@/lib/api/auth";
 import { useAuthStore } from "@/stores/auth";
-import type { JoinDto, LoginRequestDto, LoginResponse } from "@/types/api";
+import type { JoinDto, LoginRequestDto } from "@/types/api";
 
 // Query keys
 export const authKeys = {
@@ -23,68 +23,52 @@ export function useUser() {
 
 // Mutations
 export function useLoginMutation() {
-  const { loginWithUserInfo, setHasHydrated, setToken } = useAuthStore();
+  const { login } = useAuthStore();
   const router = useRouter();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
     mutationFn: (data: LoginRequestDto) => authAPI.login(data),
-    onSuccess: async (response: LoginResponse) => {
-      console.log("로그인 응답:", response);
+    onSuccess: async () => {
+      try {
+        // 로그인 성공 후 사용자 정보 조회
+        const user = await queryClient.fetchQuery({
+          queryKey: authKeys.user,
+          queryFn: authAPI.getUser,
+        });
 
-      // 백엔드 응답에서 토큰 추출 (응답 구조가 명확하지 않으므로 유연하게 처리)
-      const token =
-        response.accessToken || response.token || response.access_token;
+        if (user) {
+          login(user); // Zustand 스토어에 사용자 정보 저장
 
-      if (token) {
-        const cleanToken = token.startsWith("Bearer ") ? token.slice(7) : token;
-        setToken(cleanToken);
-
-        try {
-          // 사용자 정보 조회
-          const user = await queryClient.fetchQuery({
-            queryKey: authKeys.user,
-            queryFn: authAPI.getUser,
-          });
-
-          if (user) {
-            loginWithUserInfo({
-              token: cleanToken,
-              user,
-            });
-            setHasHydrated(true);
-
-            toast({
-              title: "로그인 성공",
-              description: `${user.userId}님 환영합니다!`,
-              variant: "success",
-            });
-
-            router.push("/");
-          }
-        } catch (error) {
-          console.error("사용자 정보 조회 실패:", error);
           toast({
-            title: "로그인 실패",
-            description: "사용자 정보를 가져올 수 없습니다.",
-            variant: "destructive",
+            title: "로그인 성공",
+            description: `${user.userId}님 환영합니다!`,
+            variant: "success",
           });
+
+          router.push("/");
+        } else {
+          // getUser가 user 정보를 반환하지 않은 경우
+          throw new Error("사용자 정보를 가져올 수 없습니다.");
         }
-      } else {
-        console.error("토큰이 응답에 포함되지 않았습니다:", response);
+      } catch (error) {
+        console.error("로그인 후 처리 오류:", error);
         toast({
           title: "로그인 실패",
-          description: "서버 응답에 오류가 있습니다.",
+          description:
+            error instanceof Error
+              ? error.message
+              : "사용자 정보를 가져오는 데 실패했습니다.",
           variant: "destructive",
         });
       }
     },
     onError: (error) => {
-      console.error("로그인 오류:", error);
+      console.error("로그인 API 오류:", error);
       toast({
         title: "로그인 실패",
-        description: error.message || "로그인에 실패했습니다.",
+        description: error.message || "아이디 또는 비밀번호를 확인해주세요.",
         variant: "destructive",
       });
     },

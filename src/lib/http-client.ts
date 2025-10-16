@@ -2,7 +2,7 @@ import ky from "ky";
 import { useAuthStore } from "@/stores/auth";
 
 // 백엔드 서버 URL
-const API_BASE_URL = "http://3.39.213.125:8080";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export class ApiError extends Error {
   constructor(
@@ -18,7 +18,8 @@ export class ApiError extends Error {
 
 // ky 인스턴스 생성
 export const api = ky.create({
-  prefixUrl: `${API_BASE_URL}/api`,
+  prefixUrl: "/api",
+  credentials: "include", // 쿠키를 포함시키기 위한 설정
   headers: {
     "Content-Type": "application/json",
   },
@@ -35,11 +36,11 @@ export const api = ky.create({
           return;
         }
 
-        // 인증이 필요한 요청에 토큰 추가
-        const token = useAuthStore.getState().token;
-        if (token) {
-          request.headers.set("Authorization", `Bearer ${token}`);
-        }
+        // 인증이 필요한 요청에 토큰 추가 -> 쿠키 방식으로 변경되어 제거
+        // const token = useAuthStore.getState().token;
+        // if (token) {
+        //   request.headers.set("Authorization", `Bearer ${token}`);
+        // }
       },
     ],
     afterResponse: [

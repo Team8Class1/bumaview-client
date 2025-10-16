@@ -15,17 +15,12 @@ interface AuthUser extends UserInfoDto {
 
 interface AuthState {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
   _hasHydrated: boolean;
-  // New methods for OpenAPI spec
   userInfo: AuthUser | null;
   setHasHydrated: (state: boolean) => void;
-  login: (data: { token: string; user: User }) => void;
-  loginWithUserInfo: (data: { token?: string; user: AuthUser }) => void;
-  setUser: (user: User | null) => void;
+  login: (user: AuthUser) => void;
   setUserInfo: (user: AuthUser | null) => void;
-  setToken: (token: string | null) => void;
   logout: () => void;
 }
 
@@ -33,7 +28,6 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      token: null,
       isAuthenticated: false,
       _hasHydrated: false,
       userInfo: null,
@@ -46,31 +40,16 @@ export const useAuthStore = create<AuthState>()(
 
       login: (data) => {
         set({
-          user: data.user,
-          token: data.token,
-          isAuthenticated: true,
-        });
-      },
-
-      loginWithUserInfo: (data) => {
-        set({
-          userInfo: data.user,
-          token: data.token || null,
+          userInfo: data,
           isAuthenticated: true,
           // Also set legacy user format for backward compatibility
           user: {
-            id: data.user.userId,
-            email: data.user.email,
-            role: data.user.role?.toLowerCase(),
+            id: data.userId,
+            email: data.email,
+            role: data.role?.toLowerCase(),
           },
         });
       },
-
-      setUser: (user) =>
-        set({
-          user,
-          isAuthenticated: !!user,
-        }),
 
       setUserInfo: (userInfo) =>
         set({
@@ -86,16 +65,10 @@ export const useAuthStore = create<AuthState>()(
             : null,
         }),
 
-      setToken: (token) =>
-        set({
-          token,
-        }),
-
       logout: () => {
         set({
           user: null,
           userInfo: null,
-          token: null,
           isAuthenticated: false,
         });
       },

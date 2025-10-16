@@ -2,15 +2,14 @@ import { api } from "@/lib/http-client";
 import type {
   JoinDto,
   LoginRequestDto,
-  LoginResponse,
   UserInfoDto,
 } from "@/types/api";
 
 // API Functions
 export const authAPI = {
   // 로그인
-  login: (data: LoginRequestDto): Promise<LoginResponse> => {
-    return api.post("user/login", { json: data }).json();
+  login: async (data: LoginRequestDto): Promise<void> => {
+    await api.post("user/login", { json: data });
   },
 
   // 회원가입
@@ -20,9 +19,9 @@ export const authAPI = {
   // 유저 정보 조회
   getUser: (): Promise<UserInfoDto> => api.get("user").json(),
 
-  // 로그아웃 - 클라이언트에서만 처리 (백엔드에 로그아웃 API 없음)
+  // 로그아웃
   logout: async (): Promise<void> => {
-    // 클라이언트 측에서만 토큰 제거
-    return Promise.resolve();
+    // 백엔드 로그아웃 API 호출하여 쿠키 삭제
+    await api.post("user/logout");
   },
 };
