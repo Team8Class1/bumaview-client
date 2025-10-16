@@ -151,15 +151,77 @@ export const interviewAPI = {
 
     try {
       console.log("🚀 API 요청 시작: POST /api/interview/file");
-      const response = await api.post("interview/file", { 
-        body: formData,
-        headers: {
-          // FormData 사용 시 Content-Type을 자동으로 설정하도록 함
-          // 'Content-Type': 'multipart/form-data' 는 boundary가 필요하므로 제거
+      console.log("📤 요청 설정:");
+      console.log("  Method: POST");
+      console.log("  URL: /api/interview/file");
+      console.log("  Body: FormData");
+      console.log("  Credentials: include");
+      
+      // 여러 엔드포인트 시도
+      const endpoints = [
+        "/api/interview/file",
+        "/api/interview/upload", 
+        "/api/interview/csv",
+        "/api/file/upload"
+      ];
+      
+      let response;
+      let lastError;
+      
+      for (const endpoint of endpoints) {
+        try {
+          console.log(`🎯 엔드포인트 시도: ${endpoint}`);
+          response = await fetch(endpoint, {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+          });
+          
+          if (response.ok) {
+            console.log(`✅ 성공한 엔드포인트: ${endpoint}`);
+            break;
+          } else {
+            console.log(`❌ 실패한 엔드포인트: ${endpoint} (${response.status})`);
+            lastError = await response.text();
+          }
+        } catch (error) {
+          console.log(`💥 오류 발생 엔드포인트: ${endpoint}`, error);
+          lastError = error;
         }
-      }).json();
-      console.log("✅ 파일 업로드 성공:", response);
-      return response;
+      }
+      
+      if (!response || !response.ok) {
+        throw new Error(`모든 엔드포인트 실패. 마지막 오류: ${lastError}`);
+      }
+      
+      console.log("📡 응답 상태:", response.status, response.statusText);
+      console.log("📡 응답 헤더:", Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("📡 응답 내용:", errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+      
+      // 응답 본문 확인
+      const responseText = await response.text();
+      console.log("📡 응답 본문:", responseText);
+      
+      let result;
+      if (responseText.trim()) {
+        try {
+          result = JSON.parse(responseText);
+          console.log("✅ 파일 업로드 성공 (JSON):", result);
+        } catch (e) {
+          console.log("✅ 파일 업로드 성공 (텍스트):", responseText);
+          result = { message: responseText || "업로드 성공" };
+        }
+      } else {
+        console.log("✅ 파일 업로드 성공 (빈 응답)");
+        result = { message: "업로드 성공" };
+      }
+      
+      return result;
     } catch (error) {
       console.error("❌ 파일 업로드 실패:", error);
       

@@ -207,11 +207,7 @@ export default function GroupDetailPage() {
                       </span>
                     )}
                     <span>
-                      {new Date(interview.questionAt).toLocaleDateString("ko-KR", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {new Date(interview.questionAt).getFullYear()}년
                     </span>
                   </div>
                 </CardContent>
@@ -286,14 +282,7 @@ export default function GroupDetailPage() {
                               </span>
                             )}
                             <span>
-                              {new Date(interview.questionAt).toLocaleDateString(
-                                "ko-KR",
-                                {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                },
-                              )}
+                              {new Date(interview.questionAt).getFullYear()}년
                             </span>
                           </div>
                           <div className="flex flex-wrap gap-1 mt-2">

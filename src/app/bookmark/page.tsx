@@ -128,11 +128,7 @@ export default function BookmarkPage() {
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>{interview.companyName}</span>
                   <span>
-                    {new Date(interview.questionAt).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                    {new Date(interview.questionAt).getFullYear()}년
                   </span>
                 </div>
               </CardContent>

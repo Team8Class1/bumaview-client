@@ -65,10 +65,10 @@ export function useUploadInterviewFileMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    // 임시로 uploadFromFile 함수 사용해보기
+    // 수정된 uploadFile 함수 사용 (fetch 직접 사용)
     mutationFn: (data: FileUploadRequest) => {
-      console.log("🔄 uploadFromFile 함수 사용 시도");
-      return interviewAPI.uploadFromFile(data);
+      console.log("🔄 수정된 uploadFile 함수 사용 시도");
+      return interviewAPI.uploadFile(data.file);
     },
     onSuccess: () => {
       console.log("🎉 파일 업로드 성공, 캐시 무효화");

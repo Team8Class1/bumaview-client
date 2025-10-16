@@ -170,7 +170,7 @@ export default function InterviewAllPage() {
                         {interview.companyName}
                       </span>
                     )}
-                    <span>{interview.questionAt}</span>
+                    <span>{new Date(interview.questionAt).getFullYear()}년</span>
                   </div>
                 </CardContent>
               </Link>

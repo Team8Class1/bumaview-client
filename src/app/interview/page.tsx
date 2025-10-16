@@ -336,11 +336,7 @@ export default function InterviewPage() {
                       </span>
                     )}
                     <span>
-                      {new Date(interview.questionAt).toLocaleDateString("ko-KR", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      {new Date(interview.questionAt).getFullYear()}년
                     </span>
                   </div>
                 </CardContent>
