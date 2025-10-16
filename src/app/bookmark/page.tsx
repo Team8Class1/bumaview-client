@@ -1,9 +1,11 @@
 "use client";
 
+import { Bookmark } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { BookmarkButton } from "@/components/bookmark/bookmark-button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -52,6 +54,7 @@ export default function BookmarkPage() {
             {error?.message || "북마크 목록을 불러오지 못했습니다."}
           </p>
           <button
+            type="button"
             onClick={() => window.location.reload()}
             className="text-primary hover:underline"
           >
@@ -74,19 +77,15 @@ export default function BookmarkPage() {
       </div>
 
       {interviews.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-6xl mb-4">📚</div>
-          <h2 className="text-xl font-semibold mb-2">북마크가 없습니다</h2>
-          <p className="text-muted-foreground mb-6">
-            관심 있는 면접 질문을 북마크해보세요.
-          </p>
-          <Link
-            href="/interview"
-            className="text-primary hover:underline font-medium"
-          >
-            면접 질문 둘러보기 →
-          </Link>
-        </div>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">북마크한 면접 질문이 없습니다.</p>
+            <Button asChild className="mt-4">
+              <Link href="/interview">면접 질문 둘러보기</Link>
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-4">
           {interviews.map((interview) => (

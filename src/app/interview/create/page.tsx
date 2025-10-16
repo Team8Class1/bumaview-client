@@ -47,15 +47,17 @@ const formSchema = z.object({
   questionAt: z.string().min(1, "면접 날짜를 입력해주세요."),
 });
 
+type FormData = z.infer<typeof formSchema>;
+
 export default function InterviewCreatePage() {
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    mode: "onChange", // 실시간 유효성 검사를 위해 추가
+    mode: "onChange",
     defaultValues: {
       question: "",
-      companyId: undefined, // default value for non-nullable number
-      categoryId: undefined,
+      companyId: 0,
+      categoryId: 0,
       questionAt: "",
     },
   });
@@ -65,7 +67,7 @@ export default function InterviewCreatePage() {
   const createInterviewMutation = useCreateInterviewMutation();
   const trimQuestionMutation = useTrimQuestionMutation();
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: FormData) {
     createInterviewMutation.mutate(
       {
         question: values.question,
@@ -187,7 +189,7 @@ export default function InterviewCreatePage() {
                   <FormLabel>직군</FormLabel>
                   <Select
                     onValueChange={(value) => field.onChange(Number(value))}
-                    defaultValue={field.value?.toString()}
+                    value={field.value ? field.value.toString() : ""}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -219,10 +221,8 @@ export default function InterviewCreatePage() {
                 <FormItem>
                   <FormLabel>회사명</FormLabel>
                   <Select
-                    onValueChange={(value) =>
-                      field.onChange(value ? Number(value) : null)
-                    }
-                    value={field.value?.toString()}
+                    onValueChange={(value) => field.onChange(Number(value))}
+                    value={field.value ? field.value.toString() : ""}
                   >
                     <FormControl>
                       <SelectTrigger>

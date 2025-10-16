@@ -15,13 +15,13 @@ const navigation = [
     role: ["basic", "admin"],
   },
   {
-    name: "즐겨찾기",
+    name: "북마크",
     href: "/bookmark",
     icon: Bookmark,
     role: ["basic", "admin"],
   },
   {
-    name: "내 그룹",
+    name: "그룹",
     href: "/group",
     icon: Users,
     role: ["basic", "admin"],
