@@ -31,31 +31,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   useInterview,
   useInterviewCreateData,
   useUpdateInterviewMutation,
 } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
+import { AddCompanyDialog } from "@/components/interview/add-company-dialog";
 
-const interviewSchema = z.object({
-  question: z
-    .string()
-    .min(5, { message: "질문은 최소 5자 이상이어야 합니다." }),
-  categoryList: z
-    .array(z.number())
-    .min(1, { message: "최소 1개의 카테고리를 선택해주세요." }),
-  companyId: z.string().optional(),
-  questionAt: z.string().min(1, { message: "질문 날짜를 입력해주세요." }),
+const formSchema = z.object({
+  question: z.string().min(1, "질문을 입력해주세요."),
+  categoryId: z.coerce.number().min(1, "직군을 선택해주세요."),
+  companyId: z.number().nullable(),
+  questionAt: z.string().min(1, "면접 년도를 입력해주세요."),
 });
-
-type InterviewFormValues = z.infer<typeof interviewSchema>;
 
 export default function InterviewEditPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [isAddCompanyOpen, setIsAddCompanyOpen] = useState(false);
 
   // React Query hooks
   const { data: interview, isLoading: isLoadingInterview } = useInterview(
@@ -65,12 +62,12 @@ export default function InterviewEditPage() {
     useInterviewCreateData();
   const updateInterviewMutation = useUpdateInterviewMutation();
 
-  const form = useForm<InterviewFormValues>({
-    resolver: zodResolver(interviewSchema),
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       question: "",
-      categoryList: [],
-      companyId: "none",
+      categoryId: 0,
+      companyId: null,
       questionAt: "",
     },
   });
@@ -78,39 +75,24 @@ export default function InterviewEditPage() {
   // 인터뷰 데이터 로드 시 폼에 설정
   useEffect(() => {
     if (interview) {
-      form.setValue("question", interview.question);
-      form.setValue("questionAt", interview.questionAt);
-      form.setValue("companyId", interview.companyId?.toString() || "none");
-
-      const categoryIds = interview.categoryList.map((cat) => cat.categoryId);
-      setSelectedCategories(categoryIds);
-      form.setValue("categoryList", categoryIds);
+      form.reset({
+        question: interview.question,
+        categoryId: interview.categoryList[0]?.categoryId,
+        companyId: interview.companyId,
+        questionAt: interview.questionAt,
+      });
     }
   }, [interview, form]);
 
-  const toggleCategory = (categoryId: number) => {
-    const newCategories = selectedCategories.includes(categoryId)
-      ? selectedCategories.filter((id) => id !== categoryId)
-      : [...selectedCategories, categoryId];
-
-    setSelectedCategories(newCategories);
-    form.setValue("categoryList", newCategories, { shouldValidate: true });
-  };
-
-  const onSubmit = (data: InterviewFormValues) => {
-    if (!interview) return;
-
+  function onSubmit(values: z.infer<typeof formSchema>) {
     updateInterviewMutation.mutate(
       {
         id: Number(params.id),
         data: {
-          question: data.question,
-          category: selectedCategories,
-          companyId:
-            data.companyId && data.companyId !== "none"
-              ? Number(data.companyId)
-              : 0,
-          questionAt: data.questionAt,
+          question: values.question,
+          categoryList: [values.categoryId], // 단일 ID를 배열로 변환
+          companyId: values.companyId || null,
+          questionAt: values.questionAt,
         },
       },
       {
@@ -183,7 +165,7 @@ export default function InterviewEditPage() {
                     <FormItem>
                       <FormLabel>질문</FormLabel>
                       <FormControl>
-                        <textarea
+                        <Textarea
                           placeholder="면접 질문을 입력하세요"
                           className="w-full min-h-[120px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                           {...field}
@@ -200,32 +182,33 @@ export default function InterviewEditPage() {
 
                 <FormField
                   control={form.control}
-                  name="categoryList"
-                  render={() => (
+                  name="categoryId"
+                  render={({ field }) => (
                     <FormItem>
-                      <FormLabel>카테고리</FormLabel>
+                      <FormLabel>직군</FormLabel>
+                      <Select
+                        onValueChange={(value) => field.onChange(Number(value))}
+                        value={field.value?.toString()}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="직군을 선택해주세요." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {createData?.categoryList.map((category) => (
+                            <SelectItem
+                              key={category.categoryId}
+                              value={category.categoryId.toString()}
+                            >
+                              {category.categoryName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormDescription>
-                        질문과 관련된 분야를 선택해주세요. (복수 선택 가능)
+                        질문과 관련된 직군을 선택해주세요.
                       </FormDescription>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                        {createData.categoryList.map((category) => (
-                          <Button
-                            key={category.categoryId}
-                            type="button"
-                            variant={
-                              selectedCategories.includes(category.categoryId)
-                                ? "default"
-                                : "outline"
-                            }
-                            size="sm"
-                            onClick={() => toggleCategory(category.categoryId)}
-                            disabled={updateInterviewMutation.isPending}
-                            className="justify-start"
-                          >
-                            {category.categoryName}
-                          </Button>
-                        ))}
-                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -236,20 +219,20 @@ export default function InterviewEditPage() {
                   name="companyId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>회사명 (선택)</FormLabel>
+                      <FormLabel>회사명</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        disabled={updateInterviewMutation.isPending}
+                        onValueChange={(value) =>
+                          field.onChange(value ? Number(value) : null)
+                        }
+                        value={field.value?.toString()}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="회사를 선택하세요" />
+                            <SelectValue placeholder="회사를 선택해주세요." />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="none">선택 안 함</SelectItem>
-                          {createData.companyList.map((company) => (
+                          {createData?.companyList.map((company) => (
                             <SelectItem
                               key={company.companyId}
                               value={company.companyId.toString()}
@@ -260,12 +243,21 @@ export default function InterviewEditPage() {
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        특정 회사의 면접이라면 선택해주세요.
+                        질문과 관련된 회사를 선택해주세요.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsAddCompanyOpen(true)}
+                  className="mt-2"
+                >
+                  새 회사 추가
+                </Button>
 
                 <FormField
                   control={form.control}
@@ -312,6 +304,13 @@ export default function InterviewEditPage() {
                 </div>
               </form>
             </Form>
+            <AddCompanyDialog
+              open={isAddCompanyOpen}
+              onOpenChange={setIsAddCompanyOpen}
+              onCompanyAdded={(newCompany) => {
+                form.setValue("companyId", newCompany.companyId);
+              }}
+            />
           </CardContent>
         </Card>
       )}

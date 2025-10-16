@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useUser } from "@/hooks/use-auth-queries";
+import { useLogoutMutation, useUser } from "@/hooks/use-auth-queries";
 import { useAuthStore } from "@/stores/auth";
 
 /**
@@ -14,14 +14,15 @@ export function UserInfoSyncer() {
     isAuthenticated,
     setUserInfo,
     userInfo: storedUserInfo,
+    logout,
   } = useAuthStore();
-  const { data: fetchedUserInfo, isError } = useUser();
+  const { data: fetchedUserInfo, isError, error } = useUser();
 
   useEffect(() => {
     if (
       isAuthenticated &&
       fetchedUserInfo &&
-      fetchedUserInfo !== storedUserInfo
+      JSON.stringify(fetchedUserInfo) !== JSON.stringify(storedUserInfo)
     ) {
       setUserInfo(fetchedUserInfo);
     }
@@ -29,11 +30,11 @@ export function UserInfoSyncer() {
 
   useEffect(() => {
     if (isError) {
-      // It might be useful to handle token validation errors here,
-      // for example by logging the user out.
-      console.error("Failed to sync user info, token might be invalid.");
+      console.error("Failed to sync user info, logging out.", error);
+      // Automatically log out the user if fetching user info fails
+      logout();
     }
-  }, [isError]);
+  }, [isError, logout, error]);
 
   return null; // This component does not render anything
 }
