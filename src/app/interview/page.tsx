@@ -72,8 +72,8 @@ export default function InterviewPage() {
 
   // Update bookmarked IDs when bookmark data changes
   useEffect(() => {
-    if (bookmarkData) {
-      setBookmarkedIds(new Set(bookmarkData.map((item) => item.interviewId)));
+    if (bookmarkData?.data) {
+      setBookmarkedIds(new Set(bookmarkData.data.map((item) => item.interviewId)));
     }
   }, [bookmarkData, setBookmarkedIds]);
 
@@ -186,9 +186,9 @@ export default function InterviewPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="2025">2025년</SelectItem>
                   <SelectItem value="2024">2024년</SelectItem>
                   <SelectItem value="2023">2023년</SelectItem>
-                  <SelectItem value="2022">2022년</SelectItem>
                 </SelectContent>
               </Select>
             </div>
