@@ -30,8 +30,8 @@ import {
   useUpdateGroupMutation,
 } from "@/hooks/use-group-queries";
 import { useToast } from "@/hooks/use-toast";
-import type { GroupDto } from "@/types/api";
 import { useAuthStore } from "@/stores/auth";
+import type { GroupDto } from "@/types/api";
 
 export default function GroupPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);

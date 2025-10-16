@@ -29,7 +29,10 @@ import {
 } from "@/components/ui/select";
 import { useBookmark } from "@/hooks/use-bookmark";
 import { useBookmarks } from "@/hooks/use-bookmark-queries";
-import { useAddInterviewsToGroupMutation, useGroups } from "@/hooks/use-group-queries";
+import {
+  useAddInterviewsToGroupMutation,
+  useGroups,
+} from "@/hooks/use-group-queries";
 import {
   useInterviewCreateData,
   useInterviewSearch,
@@ -70,9 +73,7 @@ export default function InterviewPage() {
   // Update bookmarked IDs when bookmark data changes
   useEffect(() => {
     if (bookmarkData) {
-      setBookmarkedIds(
-        new Set(bookmarkData.map((item) => item.interviewId)),
-      );
+      setBookmarkedIds(new Set(bookmarkData.map((item) => item.interviewId)));
     }
   }, [bookmarkData, setBookmarkedIds]);
 

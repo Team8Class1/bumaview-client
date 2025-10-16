@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { answerAPI } from "@/lib/api/answer";
-import type { AnswerDto, CreateAnswerDto, ReplyDto } from "@/types/api";
+import type { CreateAnswerDto, ReplyDto } from "@/types/api";
 
 // Mutations
 export function useCreateAnswerMutation() {

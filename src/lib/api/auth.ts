@@ -20,22 +20,9 @@ export const authAPI = {
   // 유저 정보 조회
   getUser: (): Promise<UserInfoDto> => api.get("user").json(),
 
-  // 아이디 중복 검사
-  checkIdAvailable: (id: string): Promise<{ available: boolean }> =>
-    api.get(`user/check-id/${encodeURIComponent(id)}`).json(),
-
-  // 이메일 중복 검사
-  checkEmailAvailable: (email: string): Promise<{ available: boolean }> =>
-    api.get(`user/check-email/${encodeURIComponent(email)}`).json(),
-
-  // 비밀번호 재설정 요청
-  requestPasswordReset: (email: string): Promise<{ message: string }> =>
-    api.post("user/reset-password", { json: { email } }).json(),
-
-  // 비밀번호 변경
-  changePassword: (data: {
-    currentPassword: string;
-    newPassword: string;
-  }): Promise<{ message: string }> =>
-    api.patch("user/password", { json: data }).json(),
+  // 로그아웃 - 클라이언트에서만 처리 (백엔드에 로그아웃 API 없음)
+  logout: async (): Promise<void> => {
+    // 클라이언트 측에서만 토큰 제거
+    return Promise.resolve();
+  },
 };

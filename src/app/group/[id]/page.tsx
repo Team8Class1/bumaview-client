@@ -23,7 +23,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/ui/loading";
 import { useBookmark } from "@/hooks/use-bookmark";
-import { useAddInterviewsToGroupMutation, useGroup, useGroups } from "@/hooks/use-group-queries";
+import {
+  useAddInterviewsToGroupMutation,
+  useGroup,
+  useGroups,
+} from "@/hooks/use-group-queries";
 import { useInterviews } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
 import type { InterviewItem } from "@/lib/api";

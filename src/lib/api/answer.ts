@@ -1,5 +1,5 @@
 import { api } from "@/lib/http-client";
-import type { AnswerDto, CreateAnswerDto, ReplyDto } from "@/types/api";
+import type { CreateAnswerDto, ReplyDto } from "@/types/api";
 
 // API Functions
 export const answerAPI = {

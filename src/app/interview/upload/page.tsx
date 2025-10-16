@@ -65,25 +65,28 @@ export default function InterviewUploadPage() {
   const handleUpload = () => {
     if (!selectedFile) return;
 
-    uploadFileMutation.mutate({ file: selectedFile }, {
-      onSuccess: () => {
-        toast({
-          title: "업로드 성공",
-          description: "면접 질문이 성공적으로 등록되었습니다.",
-        });
-        setSelectedFile(null);
+    uploadFileMutation.mutate(
+      { file: selectedFile },
+      {
+        onSuccess: () => {
+          toast({
+            title: "업로드 성공",
+            description: "면접 질문이 성공적으로 등록되었습니다.",
+          });
+          setSelectedFile(null);
+        },
+        onError: (error) => {
+          toast({
+            variant: "destructive",
+            title: "업로드 실패",
+            description:
+              error instanceof Error
+                ? error.message
+                : "파일 업로드 중 오류가 발생했습니다.",
+          });
+        },
       },
-      onError: (error) => {
-        toast({
-          variant: "destructive",
-          title: "업로드 실패",
-          description:
-            error instanceof Error
-              ? error.message
-              : "파일 업로드 중 오류가 발생했습니다.",
-        });
-      },
-    });
+    );
   };
 
   return (

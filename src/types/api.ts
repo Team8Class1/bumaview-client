@@ -44,7 +44,7 @@ export interface InterviewDto {
   companyName: string;
   questionAt: string;
   categoryList: CategoryList[];
-  answer: AnswerDto[];
+  answer: DetailedAnswerDto[];
 }
 
 export interface AllInterviewDto {
@@ -62,24 +62,17 @@ export interface CompanyDto {
   link: string;
 }
 
-// Answer types
+// Answer types (기본 DTO - API 스펙 기준)
 export interface AnswerDto {
-  answerId: number;
-  userSequenceId: number;
-  userId: string;
   interviewId: number;
   answer: string;
   isPrivate: boolean;
-  like: number;
-  parentAnswerId?: number;
-  replies?: AnswerDto[];
 }
 
 export interface CreateAnswerDto {
   interviewId: number;
   answer: string;
   isPrivate: boolean;
-  parentAnswerId?: number;
 }
 
 export interface ReplyDto {
@@ -131,12 +124,9 @@ export interface FileUploadRequest {
   file: File;
 }
 
-// API Response types
+// API Response types - 백엔드는 object로 반환 (구체적 구조 미정의)
 export interface LoginResponse {
-  accessToken: string;
-  refreshToken?: string;
-  expiresIn?: number;
-  user?: UserInfoDto;
+  [key: string]: any; // 백엔드에서 object 타입으로 정의됨
 }
 
 export interface ApiError {
@@ -149,8 +139,20 @@ export interface InterviewWithBookmark extends AllInterviewDto {
   isBookmarked?: boolean;
 }
 
-export interface AnswerWithReplies extends AnswerDto {
-  replies?: AnswerDto[];
+// 상세 답변 타입 (실제 서버 응답에 포함되는 필드들)
+export interface DetailedAnswerDto {
+  answerId: number;
+  userSequenceId: number;
+  userId: string;
+  interviewId: number;
+  answer: string;
+  isPrivate: boolean;
+  like: number;
+  parentAnswerId?: number;
+  replies?: DetailedAnswerDto[];
+}
+
+export interface AnswerWithReplies extends DetailedAnswerDto {
   likeCount?: number;
   isLiked?: boolean;
 }

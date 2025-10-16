@@ -95,7 +95,11 @@ export function useIdleTimer({
         clearTimeout(timerRef.current);
       }
     };
-  }, [isRunning, timeout, events]);
+  }, [
+    isRunning,
+    events, // 초기 타이머 설정
+    resetTimer,
+  ]);
 
   return {
     isIdle,

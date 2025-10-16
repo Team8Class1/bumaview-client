@@ -1,7 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { groupAPI } from "@/lib/api/group";
 import { useAuthStore } from "@/stores/auth";
-import type { AddGroupList, AllInterviewDto, CreateGroupDto, Data, GroupDto } from "@/types/api";
+import type {
+  AddGroupList,
+  AllInterviewDto,
+  CreateGroupDto,
+  Data,
+  GroupDto,
+} from "@/types/api";
 
 // Query keys
 export const groupKeys = {

@@ -22,9 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { usePasswordResetMutation } from "@/hooks/use-auth-queries";
 import { useToast } from "@/hooks/use-toast";
-import { AuthErrorType, classifyError } from "@/lib/error-handling";
 import {
   type ResetPasswordFormValues,
   resetPasswordSchema,
@@ -32,9 +30,8 @@ import {
 
 export default function ResetPasswordPage() {
   const { toast } = useToast();
-  const resetMutation = usePasswordResetMutation();
   const [serverError, setServerError] = useState<string | null>(null);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSuccess, _setIsSuccess] = useState(false);
 
   const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
@@ -43,37 +40,14 @@ export default function ResetPasswordPage() {
     },
   });
 
-  const onSubmit = (data: ResetPasswordFormValues) => {
+  const onSubmit = (_data: ResetPasswordFormValues) => {
     setServerError(null);
 
-    resetMutation.mutate(data.email, {
-      onSuccess: () => {
-        setIsSuccess(true);
-        toast({
-          title: "비밀번호 재설정 요청 완료",
-          description: "이메일로 비밀번호 재설정 링크를 전송했습니다.",
-        });
-      },
-      onError: (error) => {
-        const { type, message } = classifyError(error);
-
-        if (type === AuthErrorType.USER_NOT_FOUND) {
-          form.setError("email", {
-            type: "server",
-            message: "등록되지 않은 이메일입니다.",
-          });
-        } else {
-          setServerError(message);
-        }
-
-        if (type === AuthErrorType.RATE_LIMITED) {
-          toast({
-            variant: "destructive",
-            title: "요청 제한",
-            description: message,
-          });
-        }
-      },
+    // 백엔드에 비밀번호 재설정 API가 없으므로 서비스 이용 불가 안내
+    toast({
+      variant: "destructive",
+      title: "서비스 준비 중",
+      description: "비밀번호 재설정 기능은 현재 준비 중입니다.",
     });
   };
 
@@ -132,7 +106,6 @@ export default function ResetPasswordPage() {
                         type="email"
                         placeholder="example@email.com"
                         {...field}
-                        disabled={resetMutation.isPending}
                         autoComplete="email"
                       />
                     </FormControl>
@@ -141,14 +114,8 @@ export default function ResetPasswordPage() {
                 )}
               />
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={resetMutation.isPending}
-              >
-                {resetMutation.isPending
-                  ? "전송 중..."
-                  : "비밀번호 재설정 링크 전송"}
+              <Button type="submit" className="w-full">
+                비밀번호 재설정 링크 전송
               </Button>
             </form>
           </Form>

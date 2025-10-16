@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { InterviewTrimSingleRequest } from "@/lib/api/interview";
 import { interviewAPI } from "@/lib/api/interview";
 import type {
   FileUploadRequest,
@@ -6,7 +7,6 @@ import type {
   ModifyInterviewDto,
   UploadInterviewDto,
 } from "@/types/api";
-import type { InterviewTrimSingleRequest } from "@/lib/api/interview";
 
 // Query keys
 export const interviewKeys = {

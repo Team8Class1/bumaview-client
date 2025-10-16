@@ -1,5 +1,11 @@
 import { api } from "@/lib/http-client";
-import type { AddGroupList, AllInterviewDto, CreateGroupDto, Data, GroupDto } from "@/types/api";
+import type {
+  AddGroupList,
+  AllInterviewDto,
+  CreateGroupDto,
+  Data,
+  GroupDto,
+} from "@/types/api";
 
 // API Functions based on OpenAPI specification
 export const groupAPI = {

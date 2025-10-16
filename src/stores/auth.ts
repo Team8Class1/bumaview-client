@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { getTokenExpiry, TokenManager } from "@/lib/token-manager";
 import type { UserInfoDto } from "@/types/api";
 
 interface User {
@@ -46,16 +45,6 @@ export const useAuthStore = create<AuthState>()(
       },
 
       login: (data) => {
-        // 토큰을 TokenManager로 관리
-        if (data.token) {
-          const expiry = getTokenExpiry(data.token);
-          TokenManager.setTokens(
-            data.token,
-            undefined,
-            expiry ? Math.floor((expiry - Date.now()) / 1000) : undefined,
-          );
-        }
-
         set({
           user: data.user,
           token: data.token,
@@ -64,16 +53,6 @@ export const useAuthStore = create<AuthState>()(
       },
 
       loginWithUserInfo: (data) => {
-        // 토큰을 TokenManager로 관리
-        if (data.token) {
-          const expiry = getTokenExpiry(data.token);
-          TokenManager.setTokens(
-            data.token,
-            undefined,
-            expiry ? Math.floor((expiry - Date.now()) / 1000) : undefined,
-          );
-        }
-
         set({
           userInfo: data.user,
           token: data.token || null,
@@ -113,9 +92,6 @@ export const useAuthStore = create<AuthState>()(
         }),
 
       logout: () => {
-        // 토큰 매니저에서도 토큰 삭제
-        TokenManager.clearTokens();
-
         set({
           user: null,
           userInfo: null,
