@@ -39,9 +39,12 @@ import { useToast } from "@/hooks/use-toast";
 import { AddCompanyDialog } from "@/components/interview/add-company-dialog";
 
 const formSchema = z.object({
-  question: z.string().min(1, "질문을 입력해주세요."),
+  question: z
+    .string()
+    .min(10, "질문은 최소 10자 이상 입력해주세요.")
+    .max(200, "질문은 최대 200자까지 입력 가능합니다."),
   categoryId: z.coerce.number().min(1, "직군을 선택해주세요."),
-  companyId: z.number().nullable(),
+  companyId: z.coerce.number().min(1, "회사를 선택해주세요."),
   questionAt: z.string().min(1, "면접 년도를 입력해주세요."),
 });
 
@@ -49,10 +52,11 @@ export default function InterviewCreatePage() {
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: "onChange", // 실시간 유효성 검사를 위해 추가
     defaultValues: {
       question: "",
-      companyId: null,
-      questionAt: new Date().getFullYear().toString(),
+      companyId: undefined, // default value for non-nullable number
+      categoryId: undefined,
     },
   });
   const { toast } = useToast();
@@ -220,17 +224,24 @@ export default function InterviewCreatePage() {
               name="questionAt"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>질문 날짜</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      {...field}
-                      disabled={isLoading}
-                      max={new Date().toISOString().split("T")[0]}
-                    />
-                  </FormControl>
+                  <FormLabel>면접 년도</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="면접 년도를 선택해주세요." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="2025">2025년</SelectItem>
+                      <SelectItem value="2024">2024년</SelectItem>
+                      <SelectItem value="2023">2023년</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormDescription>
-                    면접을 본 날짜를 선택해주세요.
+                    면접을 본 년도를 선택해주세요.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -240,11 +251,12 @@ export default function InterviewCreatePage() {
             <div className="flex gap-3">
               <Button
                 type="submit"
-                disabled={isLoading}
-                className="flex-1"
-                size="lg"
+                disabled={!form.formState.isValid || createInterviewMutation.isPending}
+                className="w-full"
               >
-                {isLoading ? "등록 중..." : "등록"}
+                {createInterviewMutation.isPending
+                  ? "등록 중..."
+                  : "등록하기"}
               </Button>
               <Button
                 type="button"
@@ -262,9 +274,9 @@ export default function InterviewCreatePage() {
           open={isAddCompanyOpen}
           onOpenChange={setIsAddCompanyOpen}
           onCompanyAdded={(newCompany) => {
-            // In a real app, you'd get the actual new company object from the mutation.
-            // For now, we'll optimistically update the form.
-            form.setValue("companyId", newCompany.companyId);
+            form.setValue("companyId", newCompany.companyId, {
+              shouldValidate: true,
+            });
           }}
         />
       </CardContent>

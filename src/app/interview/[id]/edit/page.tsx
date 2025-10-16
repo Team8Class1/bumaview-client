@@ -43,12 +43,13 @@ import { AddCompanyDialog } from "@/components/interview/add-company-dialog";
 const formSchema = z.object({
   question: z.string().min(1, "질문을 입력해주세요."),
   categoryId: z.coerce.number().min(1, "직군을 선택해주세요."),
-  companyId: z.number().nullable(),
+  companyId: z.coerce.number().min(1, "회사를 선택해주세요."),
   questionAt: z.string().min(1, "면접 년도를 입력해주세요."),
 });
 
 export default function InterviewEditPage() {
   const params = useParams();
+  const id = params.id as string;
   const router = useRouter();
   const { toast } = useToast();
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
@@ -56,7 +57,7 @@ export default function InterviewEditPage() {
 
   // React Query hooks
   const { data: interview, isLoading: isLoadingInterview } = useInterview(
-    Number(params.id),
+    Number(id),
   );
   const { data: createData, isLoading: isLoadingData } =
     useInterviewCreateData();
@@ -64,10 +65,11 @@ export default function InterviewEditPage() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       question: "",
-      categoryId: 0,
-      companyId: null,
+      categoryId: undefined,
+      companyId: undefined,
       questionAt: "",
     },
   });
@@ -87,7 +89,7 @@ export default function InterviewEditPage() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     updateInterviewMutation.mutate(
       {
-        id: Number(params.id),
+        id: Number(id),
         data: {
           question: values.question,
           categoryList: [values.categoryId], // 단일 ID를 배열로 변환
@@ -264,42 +266,48 @@ export default function InterviewEditPage() {
                   name="questionAt"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>질문 날짜</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="date"
-                          {...field}
-                          disabled={updateInterviewMutation.isPending}
-                          max={new Date().toISOString().split("T")[0]}
-                        />
-                      </FormControl>
+                      <FormLabel>면접 년도</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="면접 년도를 선택해주세요." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="2025">2025년</SelectItem>
+                          <SelectItem value="2024">2024년</SelectItem>
+                          <SelectItem value="2023">2023년</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormDescription>
-                        면접을 본 날짜를 선택해주세요.
+                        면접을 본 년도를 선택해주세요.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <div className="flex gap-3">
-                  <Button
-                    type="submit"
-                    disabled={updateInterviewMutation.isPending}
-                    className="flex-1"
-                    size="lg"
-                  >
-                    {updateInterviewMutation.isPending
-                      ? "수정 중..."
-                      : "수정 완료"}
-                  </Button>
+                <div className="flex justify-end gap-2 mt-8">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => router.back()}
                     disabled={updateInterviewMutation.isPending}
-                    size="lg"
                   >
                     취소
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={
+                      !form.formState.isValid || updateInterviewMutation.isPending
+                    }
+                  >
+                    {updateInterviewMutation.isPending
+                      ? "수정 중..."
+                      : "수정"}
                   </Button>
                 </div>
               </form>
@@ -308,7 +316,9 @@ export default function InterviewEditPage() {
               open={isAddCompanyOpen}
               onOpenChange={setIsAddCompanyOpen}
               onCompanyAdded={(newCompany) => {
-                form.setValue("companyId", newCompany.companyId);
+                form.setValue("companyId", newCompany.companyId, {
+                  shouldValidate: true,
+                });
               }}
             />
           </CardContent>

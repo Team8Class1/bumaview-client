@@ -1,10 +1,10 @@
 import { api } from "@/lib/http-client";
-import type { CompanyDto } from "@/types/api";
+import type { CompanyDto, CompanyWithId } from "@/types/api";
 
 // API Functions based on OpenAPI specification
 export const companyAPI = {
   // 회사 등록 (OpenAPI 스펙)
-  create: (data: CompanyDto): Promise<void> =>
+  create: (data: CompanyDto): Promise<CompanyWithId> =>
     api.post("company", { json: data }).json(),
 
   // 회사 삭제 (OpenAPI 스펙)

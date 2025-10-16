@@ -34,7 +34,7 @@ export interface ModifyInterviewDto {
   question: string;
   companyId: number;
   questionAt: string;
-  category: number[];
+  categoryList: number[];
 }
 
 export interface InterviewDto {

@@ -15,11 +15,12 @@ import { Label } from "@/components/ui/label";
 import { useCreateCompanyMutation } from "@/hooks/use-company-queries";
 import { useToast } from "@/hooks/use-toast";
 import type { CompanyDto } from "@/types/api";
+import type { CompanyWithId } from "@/types/api";
 
 interface AddCompanyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCompanyAdded: (newCompany: CompanyDto & { companyId: number }) => void;
+  onCompanyAdded: (newCompany: CompanyWithId) => void;
 }
 
 export function AddCompanyDialog({
@@ -41,21 +42,18 @@ export function AddCompanyDialog({
       return;
     }
 
-    // This is a optimistic implementation. We assume the backend will assign an ID.
-    // The actual ID will be updated upon query refetch.
-    const optimisticCompany = {
-      companyId: Date.now(), // Temporary ID for optimistic update
+    const newCompanyData: CompanyDto = {
       companyName: companyName.trim(),
-      companyUrl: "", // companyUrl is not required in the form
+      link: "", // 'link' is a required field in CompanyDto
     };
 
-    createCompanyMutation.mutate(optimisticCompany, {
-      onSuccess: () => {
+    createCompanyMutation.mutate(newCompanyData, {
+      onSuccess: (createdCompany) => {
         toast({
           title: "회사 추가 성공",
-          description: `${optimisticCompany.companyName} 회사가 추가되었습니다.`,
+          description: `${createdCompany.companyName} 회사가 추가되었습니다.`,
         });
-        onCompanyAdded(optimisticCompany);
+        onCompanyAdded(createdCompany);
         setCompanyName("");
         onOpenChange(false);
       },
