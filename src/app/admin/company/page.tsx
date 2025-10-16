@@ -3,7 +3,6 @@
 import {
   Building2,
   Edit,
-  ExternalLink,
   Plus,
   Search,
   Trash2,
@@ -73,7 +72,7 @@ export default function CompanyManagePage() {
 
   const handleEdit = (company: CompanyWithId) => {
     setSelectedCompany(company);
-    setFormData({ companyName: company.companyName, link: company.link });
+    setFormData({ companyName: company.companyName, link: company.link || "" });
     setShowEditDialog(true);
   };
 
@@ -256,17 +255,6 @@ export default function CompanyManagePage() {
                         <h3 className="font-semibold text-lg">
                           {company.companyName}
                         </h3>
-                        {company.link && (
-                          <a
-                            href={company.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1 mt-1"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            웹사이트
-                          </a>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -275,7 +263,7 @@ export default function CompanyManagePage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleEdit(company)}
+                      onClick={() => handleEdit(company as CompanyWithId)}
                       className="flex-1"
                     >
                       <Edit className="h-4 w-4 mr-1" />
@@ -284,7 +272,7 @@ export default function CompanyManagePage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(company)}
+                      onClick={() => handleDelete(company as CompanyWithId)}
                       className="text-destructive hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -314,18 +302,6 @@ export default function CompanyManagePage() {
                   value={formData.companyName || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, companyName: e.target.value })
-                  }
-                  disabled={createCompanyMutation.isPending}
-                />
-              </div>
-              <div>
-                <Label htmlFor="link">웹사이트 (선택사항)</Label>
-                <Input
-                  id="link"
-                  placeholder="https://example.com"
-                  value={formData.link || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, link: e.target.value })
                   }
                   disabled={createCompanyMutation.isPending}
                 />
@@ -370,18 +346,6 @@ export default function CompanyManagePage() {
                   value={formData.companyName || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, companyName: e.target.value })
-                  }
-                  disabled={updateCompanyMutation.isPending}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-link">웹사이트 (선택사항)</Label>
-                <Input
-                  id="edit-link"
-                  placeholder="https://example.com"
-                  value={formData.link || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, link: e.target.value })
                   }
                   disabled={updateCompanyMutation.isPending}
                 />
