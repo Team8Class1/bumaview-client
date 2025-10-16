@@ -83,15 +83,20 @@ export default function InterviewEditPage() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    const requestData = {
+      question: values.question,
+      categoryList: [values.categoryId],
+      companyId: values.companyId,
+      questionAt: values.questionAt, // 입력된 값 그대로 전송
+    };
+    
+    console.log("🔧 인터뷰 수정 요청 데이터:", requestData);
+    console.log("📅 questionAt 값:", values.questionAt, "타입:", typeof values.questionAt);
+    
     updateInterviewMutation.mutate(
       {
         id: Number(id),
-        data: {
-          question: values.question,
-          categoryList: [values.categoryId],
-          companyId: values.companyId,
-          questionAt: values.questionAt, // 입력된 값 그대로 전송
-        },
+        data: requestData,
       },
       {
         onSuccess: () => {
