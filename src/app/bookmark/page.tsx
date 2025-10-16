@@ -145,7 +145,13 @@ export default function BookmarkPage() {
                         {interview.companyName}
                       </span>
                     )}
-                    <span>{interview.questionAt}</span>
+                    <span>
+                      {new Date(interview.questionAt).toLocaleDateString("ko-KR", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </span>
                   </div>
                 </CardContent>
               </Link>

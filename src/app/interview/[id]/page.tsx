@@ -313,7 +313,11 @@ export default function InterviewDetailPage() {
               <span className="font-medium">{interview.companyName}</span>
             )}
             <span className="text-muted-foreground">
-              {interview.questionAt}
+              {new Date(interview.questionAt).toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
             </span>
           </div>
         </CardContent>

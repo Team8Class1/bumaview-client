@@ -223,7 +223,13 @@ export default function GroupDetailPage() {
                         {interview.companyName}
                       </span>
                     )}
-                    <span>{interview.questionAt}</span>
+                    <span>
+                      {new Date(interview.questionAt).toLocaleDateString("ko-KR", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </span>
                   </div>
                 </CardContent>
               </Link>
@@ -296,7 +302,16 @@ export default function GroupDetailPage() {
                                 {interview.companyName}
                               </span>
                             )}
-                            <span>{interview.questionAt}</span>
+                            <span>
+                              {new Date(interview.questionAt).toLocaleDateString(
+                                "ko-KR",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                },
+                              )}
+                            </span>
                           </div>
                           <div className="flex flex-wrap gap-1 mt-2">
                             {interview.categoryList.map((cat) => (

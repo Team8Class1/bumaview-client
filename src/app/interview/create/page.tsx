@@ -45,7 +45,7 @@ const formSchema = z.object({
     .max(200, "질문은 최대 200자까지 입력 가능합니다."),
   categoryId: z.coerce.number().min(1, "직군을 선택해주세요."),
   companyId: z.coerce.number().min(1, "회사를 선택해주세요."),
-  questionAt: z.string().min(1, "면접 년도를 입력해주세요."),
+  questionAt: z.string().min(1, "면접 날짜를 입력해주세요."),
 });
 
 export default function InterviewCreatePage() {
@@ -57,6 +57,7 @@ export default function InterviewCreatePage() {
       question: "",
       companyId: undefined, // default value for non-nullable number
       categoryId: undefined,
+      questionAt: "",
     },
   });
   const { toast } = useToast();
@@ -69,9 +70,9 @@ export default function InterviewCreatePage() {
     createInterviewMutation.mutate(
       {
         question: values.question,
-        companyId: values.companyId || null,
-        questionAt: values.questionAt,
-        categoryList: [values.categoryId], // 단일 ID를 배열로 변환
+        companyId: values.companyId,
+        questionAt: values.questionAt, // 입력된 값 그대로 전송
+        categoryList: [values.categoryId],
       },
       {
         onSuccess: () => {
@@ -224,24 +225,16 @@ export default function InterviewCreatePage() {
               name="questionAt"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>면접 년도</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="면접 년도를 선택해주세요." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="2025">2025년</SelectItem>
-                      <SelectItem value="2024">2024년</SelectItem>
-                      <SelectItem value="2023">2023년</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>면접 날짜</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="YYYY-MM-DD"
+                      {...field}
+                      disabled={createInterviewMutation.isPending}
+                    />
+                  </FormControl>
                   <FormDescription>
-                    면접을 본 년도를 선택해주세요.
+                    면접을 본 날짜를 입력해주세요. (예: 2025-10-09)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

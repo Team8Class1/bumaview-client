@@ -44,7 +44,7 @@ const formSchema = z.object({
   question: z.string().min(1, "질문을 입력해주세요."),
   categoryId: z.coerce.number().min(1, "직군을 선택해주세요."),
   companyId: z.coerce.number().min(1, "회사를 선택해주세요."),
-  questionAt: z.string().min(1, "면접 년도를 입력해주세요."),
+  questionAt: z.string().min(1, "면접 날짜를 입력해주세요."),
 });
 
 export default function InterviewEditPage() {
@@ -92,9 +92,9 @@ export default function InterviewEditPage() {
         id: Number(id),
         data: {
           question: values.question,
-          categoryList: [values.categoryId], // 단일 ID를 배열로 변환
-          companyId: values.companyId || null,
-          questionAt: values.questionAt,
+          categoryList: [values.categoryId],
+          companyId: values.companyId,
+          questionAt: values.questionAt, // 입력된 값 그대로 전송
         },
       },
       {
@@ -266,24 +266,16 @@ export default function InterviewEditPage() {
                   name="questionAt"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>면접 년도</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="면접 년도를 선택해주세요." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="2025">2025년</SelectItem>
-                          <SelectItem value="2024">2024년</SelectItem>
-                          <SelectItem value="2023">2023년</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>면접 날짜</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="YYYY-MM-DD"
+                          {...field}
+                          disabled={updateInterviewMutation.isPending}
+                        />
+                      </FormControl>
                       <FormDescription>
-                        면접을 본 년도를 선택해주세요.
+                        면접을 본 날짜를 입력해주세요. (예: 2025-10-09)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
