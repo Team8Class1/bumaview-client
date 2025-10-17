@@ -7,7 +7,7 @@ export interface TrimQuestionRequest {
 
 export interface TrimQuestionResponse {
   modified_question: string;
-  [key: string]: any; // 다른 필드들도 허용
+  [key: string]: unknown; // 다른 필드들도 허용
 }
 
 // Gemini API 함수들

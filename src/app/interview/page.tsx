@@ -1,16 +1,9 @@
 "use client";
 
-import {
-  Bookmark,
-  Filter,
-  FolderPlus,
-  MessageSquare,
-  Upload,
-  X,
-} from "lucide-react";
+import { Filter, FolderPlus, MessageSquare, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BookmarkButton } from "@/components/bookmark/bookmark-button";
 import { UploadModal } from "@/components/interview/upload-modal";
 import { Button } from "@/components/ui/button";
@@ -68,7 +61,7 @@ export default function InterviewPage() {
   // React Query hooks
   const { data: createData } = useInterviewCreateData();
   const { data: interviewData, isLoading } = useInterviewSearch(searchParams);
-  const { data: bookmarkData } = useBookmarks();
+  useBookmarks();
   const { data: groupData } = useGroups();
   const addToGroupMutation = useAddInterviewsToGroupMutation();
 

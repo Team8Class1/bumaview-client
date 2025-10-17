@@ -1,5 +1,5 @@
 import { api } from "@/lib/http-client";
-import type { CompanyDto, CompanyWithId, Data } from "@/types/api";
+import type { CompanyDto, CompanyWithId } from "@/types/api";
 
 // API Functions based on OpenAPI specification
 export const companyAPI = {

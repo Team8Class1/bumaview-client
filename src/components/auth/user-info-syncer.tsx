@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useLogoutMutation, useUser } from "@/hooks/use-auth-queries";
+import { useUser } from "@/hooks/use-auth-queries";
 import { useAuthStore } from "@/stores/auth";
 
 /**

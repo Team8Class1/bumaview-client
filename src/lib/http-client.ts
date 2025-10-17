@@ -1,8 +1,6 @@
 import ky from "ky";
-import { useAuthStore } from "@/stores/auth";
 
 // 백엔드 서버 URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export class ApiError extends Error {
   constructor(
@@ -43,7 +41,7 @@ export const api = ky.create({
         // }
       },
     ],
-    afterResponse: async (request, options, response) => {
+    afterResponse: async (_request, _options, response) => {
       if (!response.ok) {
         let errorMessage = "요청이 실패했습니다";
         const contentType = response.headers.get("Content-Type");

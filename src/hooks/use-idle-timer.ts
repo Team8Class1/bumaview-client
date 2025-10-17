@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseIdleTimerProps {
   timeout: number; // 비활성 시간 (밀리초)
@@ -29,7 +29,7 @@ export function useIdleTimer({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lastActivityRef = useRef<number>(Date.now());
 
-  const resetTimer = () => {
+  const resetTimer = useCallback(() => {
     if (!isRunning) return;
 
     lastActivityRef.current = Date.now();
@@ -47,7 +47,7 @@ export function useIdleTimer({
       setIsIdle(true);
       onIdle();
     }, timeout);
-  };
+  }, [isRunning, isIdle, onActive, onIdle, timeout]);
 
   const start = () => {
     setIsRunning(true);

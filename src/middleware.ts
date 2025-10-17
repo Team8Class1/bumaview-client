@@ -21,7 +21,7 @@ export function middleware(request: NextRequest) {
 
   const isAuthPage =
     pathname.startsWith("/login") || pathname.startsWith("/register");
-  const isAdminPage = pathname.startsWith("/admin");
+  const _isAdminPage = pathname.startsWith("/admin");
 
   // 토큰이 있고 로그인/회원가입 페이지에 접근하면 홈으로 리다이렉트
   // 임시로 비활성화하여 문제 확인

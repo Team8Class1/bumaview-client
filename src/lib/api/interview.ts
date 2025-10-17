@@ -165,8 +165,8 @@ export const interviewAPI = {
         "/api/file/upload",
       ];
 
-      let response;
-      let lastError;
+      let response: Response | undefined;
+      let lastError: unknown;
 
       for (const endpoint of endpoints) {
         try {
@@ -212,12 +212,12 @@ export const interviewAPI = {
       const responseText = await response.text();
       console.log("📡 응답 본문:", responseText);
 
-      let result;
+      let result: { message: string } | unknown;
       if (responseText.trim()) {
         try {
           result = JSON.parse(responseText);
           console.log("✅ 파일 업로드 성공 (JSON):", result);
-        } catch (e) {
+        } catch (_e) {
           console.log("✅ 파일 업로드 성공 (텍스트):", responseText);
           result = { message: responseText || "업로드 성공" };
         }
@@ -232,7 +232,7 @@ export const interviewAPI = {
 
       // 더 자세한 오류 정보 확인
       if (error instanceof Error && "response" in error) {
-        const httpError = error as any;
+        const httpError = error as { response?: Response };
         console.error("📋 오류 상세 정보:");
         console.error("  상태 코드:", httpError.response?.status);
         console.error("  상태 텍스트:", httpError.response?.statusText);

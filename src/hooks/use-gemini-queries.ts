@@ -8,14 +8,13 @@ export function useTrimQuestionMutation() {
 
   return useMutation({
     mutationFn: geminiAPI.trimSingle,
-    onSuccess: (trimmedQuestion: string) => {
-      console.log("🎉 질문 다듬기 성공:", trimmedQuestion);
+    onSuccess: () => {
       toast({
-        title: "질문 다듬기 완료",
-        description: "AI가 질문을 다듬었습니다.",
+        title: "✨ 질문이 수정되었습니다",
+        description: "수정된 질문을 확인해보세요.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error("❌ 질문 다듬기 실패:", error);
       toast({
         variant: "destructive",

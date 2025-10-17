@@ -4,6 +4,11 @@ import { bookmarkAPI } from "@/lib/api/bookmark";
 import { useAuthStore } from "@/stores/auth";
 import type { AllInterviewDto } from "@/types/api";
 
+interface BookmarkMutationContext {
+  previousBookmarks: AllInterviewDto[] | undefined;
+  interviewId: number;
+}
+
 // Query keys
 export const bookmarkKeys = {
   all: ["bookmarks"] as const,
@@ -96,7 +101,11 @@ export function useToggleBookmarkMutation() {
     },
 
     // 실패 시 롤백
-    onError: (error: any, interviewId: number, context: any) => {
+    onError: (
+      error: Error,
+      _interviewId: number,
+      context: BookmarkMutationContext | undefined,
+    ) => {
       // 이전 데이터로 롤백
       if (context?.previousBookmarks) {
         queryClient.setQueryData(

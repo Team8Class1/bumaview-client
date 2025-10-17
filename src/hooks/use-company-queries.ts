@@ -1,13 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { interviewKeys } from "@/hooks/use-interview-queries";
 import { useToast } from "@/hooks/use-toast";
 import { companyAPI } from "@/lib/api/company";
-import { useAuthStore } from "@/stores/auth";
-import type { CompanyDto, CompanyWithId, Data } from "@/types/api";
+import type { CompanyDto } from "@/types/api";
 
 // Query keys
 export const companyKeys = {
-  all: ["companies"] as const,
+  all: ["company"] as const,
   lists: () => [...companyKeys.all, "list"] as const,
   details: () => [...companyKeys.all, "detail"] as const,
   detail: (id: number) => [...companyKeys.details(), id] as const,

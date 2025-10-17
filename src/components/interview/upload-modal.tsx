@@ -112,7 +112,8 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
         <div className="space-y-6">
           {/* 파일 업로드 영역 */}
           {!selectedFile ? (
-            <div
+            <button
+              type="button"
               className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors cursor-pointer ${
                 isDragging
                   ? "border-primary bg-primary/5"
@@ -132,10 +133,10 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
                   CSV 파일만 지원 (최대 10MB)
                 </p>
               </div>
-              <Button variant="secondary" className="mt-4 pointer-events-none">
-                파일 선택
-              </Button>
-            </div>
+              <div className="mt-4 pointer-events-none">
+                <Button variant="secondary">파일 선택</Button>
+              </div>
+            </button>
           ) : (
             /* 선택된 파일 표시 */
             <div className="p-4 rounded-lg border bg-green-50 border-green-200">
