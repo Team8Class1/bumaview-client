@@ -327,7 +327,7 @@ export default function InterviewDetailPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <Textarea
-              placeholder="Share your thoughts..."
+              placeholder="당신의 답변을 공유해보세요!"
               value={newAnswer}
               onChange={(e) => setNewAnswer(e.target.value)}
               disabled={isSubmittingAnswer}
@@ -336,7 +336,7 @@ export default function InterviewDetailPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="private"
+                  id="개인"
                   checked={isPrivate}
                   onCheckedChange={(checked) => setIsPrivate(!!checked)}
                   disabled={isSubmittingAnswer}
@@ -366,9 +366,9 @@ export default function InterviewDetailPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No answers yet.</p>
+              <p className="text-muted-foreground">아직 답변이 없습니다.</p>
               <p className="text-sm text-muted-foreground mt-2">
-                Be the first to answer this question!
+                첫 번째로 답변을 입력해보세요!
               </p>
             </CardContent>
           </Card>
@@ -391,11 +391,11 @@ export default function InterviewDetailPage() {
                           </span>
                           {ans.isPrivate && (
                             <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-1 text-xs text-yellow-800">
-                              Private
+                              개인
                             </span>
                           )}
                           <span className="text-xs text-muted-foreground">
-                            now
+                            작성일
                           </span>
                         </div>
                         <DropdownMenu>
@@ -407,14 +407,14 @@ export default function InterviewDetailPage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => startEdit(ans)}>
                               <Pencil className="h-4 w-4 mr-2" />
-                              Edit
+                              수정
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleDeleteAnswer(ans.answerId)}
                               className="text-destructive"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
+                              삭제
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -440,7 +440,7 @@ export default function InterviewDetailPage() {
                                 htmlFor={`edit-private-${ans.answerId}`}
                                 className="text-sm"
                               >
-                                Private
+                                개인
                               </label>
                             </div>
                             <div className="flex gap-2">
@@ -449,14 +449,14 @@ export default function InterviewDetailPage() {
                                 size="sm"
                                 onClick={cancelEdit}
                               >
-                                Cancel
+                                취소
                               </Button>
                               <Button
                                 size="sm"
                                 onClick={() => handleEditAnswer(ans.answerId)}
                                 disabled={!editAnswerText.trim()}
                               >
-                                Save
+                                저장
                               </Button>
                             </div>
                           </div>
@@ -489,7 +489,7 @@ export default function InterviewDetailPage() {
                               }`}
                             >
                               <Reply className="h-3 w-3 mr-1" />
-                              Reply
+                              답변
                             </Button>
                           </div>
                         </>
@@ -507,7 +507,7 @@ export default function InterviewDetailPage() {
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">
-                            Replying to {ans.userId}
+                            답변 작성: {ans.userId}
                           </span>
                           <Button
                             variant="ghost"
@@ -519,7 +519,7 @@ export default function InterviewDetailPage() {
                           </Button>
                         </div>
                         <Textarea
-                          placeholder="Write a reply..."
+                          placeholder="당신의 답변을 공유해보세요!"
                           value={newAnswer}
                           onChange={(e) => setNewAnswer(e.target.value)}
                           disabled={isSubmittingAnswer}
@@ -537,7 +537,7 @@ export default function InterviewDetailPage() {
                               disabled={isSubmittingAnswer}
                             />
                             <label htmlFor="reply-private" className="text-sm">
-                              Private
+                              개인
                             </label>
                           </div>
                           <div className="flex gap-2">
@@ -547,14 +547,14 @@ export default function InterviewDetailPage() {
                               onClick={() => setReplyTo(null)}
                               disabled={isSubmittingAnswer}
                             >
-                              Cancel
+                              취소
                             </Button>
                             <Button
                               onClick={handleSubmitAnswer}
                               disabled={isSubmittingAnswer || !newAnswer.trim()}
                               size="sm"
                             >
-                              Reply
+                              답변
                             </Button>
                           </div>
                         </div>
@@ -584,11 +584,11 @@ export default function InterviewDetailPage() {
                                 </span>
                                 {reply.isPrivate && (
                                   <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-1 text-xs text-yellow-800">
-                                    Private
+                                    개인
                                   </span>
                                 )}
                                 <span className="text-xs text-muted-foreground">
-                                  now
+                                  작성일
                                 </span>
                               </div>
                               <DropdownMenu>
@@ -602,7 +602,7 @@ export default function InterviewDetailPage() {
                                     onClick={() => startEdit(reply)}
                                   >
                                     <Pencil className="h-3 w-3 mr-2" />
-                                    Edit
+                                    수정
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() =>
@@ -611,7 +611,7 @@ export default function InterviewDetailPage() {
                                     className="text-destructive"
                                   >
                                     <Trash2 className="h-3 w-3 mr-2" />
-                                    Delete
+                                    삭제
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -639,7 +639,7 @@ export default function InterviewDetailPage() {
                                       htmlFor={`edit-private-reply-${reply.answerId}`}
                                       className="text-sm"
                                     >
-                                      Private
+                                      개인
                                     </label>
                                   </div>
                                   <div className="flex gap-2">
@@ -648,7 +648,7 @@ export default function InterviewDetailPage() {
                                       size="sm"
                                       onClick={cancelEdit}
                                     >
-                                      Cancel
+                                      취소
                                     </Button>
                                     <Button
                                       size="sm"
@@ -657,7 +657,7 @@ export default function InterviewDetailPage() {
                                       }
                                       disabled={!editAnswerText.trim()}
                                     >
-                                      Save
+                                      저장
                                     </Button>
                                   </div>
                                 </div>

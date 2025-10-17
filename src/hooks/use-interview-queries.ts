@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import type { InterviewTrimSingleRequest } from "@/lib/api/interview";
 import { interviewAPI } from "@/lib/api/interview";
 import type {
@@ -52,11 +53,13 @@ export function useInterviewCreateData() {
 // Mutations
 export function useCreateInterviewMutation() {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: (data: UploadInterviewDto) => interviewAPI.uploadSingle(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: interviewKeys.lists() });
+      router.push("/interview");
     },
   });
 }
