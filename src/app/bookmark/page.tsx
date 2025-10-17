@@ -80,7 +80,9 @@ export default function BookmarkPage() {
         <Card>
           <CardContent className="py-12 text-center">
             <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">북마크한 면접 질문이 없습니다.</p>
+            <p className="text-muted-foreground">
+              북마크한 면접 질문이 없습니다.
+            </p>
             <Button asChild className="mt-4">
               <Link href="/interview">면접 질문 둘러보기</Link>
             </Button>

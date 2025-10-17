@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Building2,
-  Edit,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { Building2, Edit, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { RequireAdmin } from "@/components/auth/require-admin";
 import {
